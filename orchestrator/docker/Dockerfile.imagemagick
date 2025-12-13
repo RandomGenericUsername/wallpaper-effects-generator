@@ -1,0 +1,56 @@
+# Multi-stage build for ImageMagick backend
+# Stage 1: Build and cache dependencies
+FROM python:3.12-slim-bookworm AS builder
+
+WORKDIR /tmp
+
+# Install build dependencies (cached layer)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies into /opt/venv (cached layer)
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install base dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
+    pillow>=10.0.0 \
+    pydantic>=2.11.9 \
+    dynaconf>=3.2.0
+
+# Install wallpaper-effects-processor core from the parent directory
+# The build context is the project root (wallpaper-effects-generator/)
+COPY core /tmp/core
+RUN cd /tmp/core && pip install --no-cache-dir .
+
+# Stage 2: Runtime image
+FROM python:3.12-slim-bookworm
+
+WORKDIR /workspace
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Install ImageMagick runtime (pinned to Debian bookworm version for reproducibility)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    imagemagick \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up environment
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create non-root user (will be overridden at runtime)
+RUN useradd -m -u 1000 wallpaper || true
+
+# Set entrypoint to wallpaper-effects-process
+ENTRYPOINT ["wallpaper-effects-process"]
+

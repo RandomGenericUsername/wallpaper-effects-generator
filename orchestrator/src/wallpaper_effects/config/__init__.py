@@ -1,0 +1,38 @@
+"""Configuration module for wallpaper effects orchestrator."""
+
+from wallpaper_effects.config.config import OrchestratorConfig
+from wallpaper_effects.config.constants import (
+    BACKEND_VERSIONS,
+    BASE_IMAGES,
+    CONTAINER_CONFIG_DIR,
+    CONTAINER_CPUSET_CPUS,
+    CONTAINER_INPUT_DIR,
+    CONTAINER_MEMORY_LIMIT,
+    CONTAINER_OUTPUT_DIR,
+    CONTAINER_TIMEOUT,
+    DEFAULT_BACKEND,
+    DEFAULT_BACKENDS,
+    DEFAULT_CONFIG_DIR,
+    DEFAULT_OUTPUT_DIR,
+    RUNTIME_DEFAULTS,
+    RUNTIME_DETECTION_ORDER,
+)
+
+__all__ = [
+    "OrchestratorConfig",
+    "BASE_IMAGES",
+    "BACKEND_VERSIONS",
+    "DEFAULT_BACKEND",
+    "DEFAULT_BACKENDS",
+    "DEFAULT_OUTPUT_DIR",
+    "DEFAULT_CONFIG_DIR",
+    "CONTAINER_TIMEOUT",
+    "CONTAINER_MEMORY_LIMIT",
+    "CONTAINER_CPUSET_CPUS",
+    "CONTAINER_INPUT_DIR",
+    "CONTAINER_OUTPUT_DIR",
+    "CONTAINER_CONFIG_DIR",
+    "RUNTIME_DETECTION_ORDER",
+    "RUNTIME_DEFAULTS",
+]
+
