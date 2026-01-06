@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 license = { text = "MIT" }
 
 dependencies = [
-    "container-manager",
+    "container-manager @ git+https://github.com/RandomGenericUsername/container-manager",
     "pydantic>=2.11.9",
     "rich>=13.0.0",
 ]
@@ -34,9 +34,6 @@ packages = ["src/wallpaper_effects"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.uv.sources]
-container-manager = { path = "../../container-manager", editable = true }
 
 [tool.black]
 line-length = 79
