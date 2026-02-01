@@ -73,3 +73,6 @@ Thumbs.db
 # Project specific
 *.log
 
+# Git worktrees
+.worktrees/
+
