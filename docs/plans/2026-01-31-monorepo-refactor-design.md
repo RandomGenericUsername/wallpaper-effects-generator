@@ -195,9 +195,13 @@ strict = true
 max_workers = 0
 
 [output]
-verbosity = 1
-format = "preserve"
-quality = 90
+verbosity = 1  # 0=QUIET, 1=NORMAL, 2=VERBOSE, 3=DEBUG
+
+[processing]
+# temp_dir = "/custom/tmp"  # Optional, defaults to system temp
+
+[backend]
+binary = "magick"  # ImageMagick binary path
 ```
 
 Project/User config (namespaced):
@@ -208,7 +212,10 @@ parallel = false
 max_workers = 4
 
 [core.output]
-verbosity = 2
+verbosity = 2  # VERBOSE
+
+[core.backend]
+binary = "/usr/local/bin/magick"
 
 [orchestrator.container]
 engine = "podman"
@@ -217,6 +224,66 @@ engine = "podman"
 ### Package 2: wallpaper_core
 
 **Purpose:** Wallpaper effects processor with CLI.
+
+**Settings Schema (Pydantic Models):**
+
+```python
+# packages/core/src/wallpaper_core/config/schema.py
+from enum import IntEnum
+from pathlib import Path
+from pydantic import BaseModel, Field
+
+class Verbosity(IntEnum):
+    """Output verbosity levels."""
+    QUIET = 0    # Errors only
+    NORMAL = 1   # Progress + results
+    VERBOSE = 2  # + command details
+    DEBUG = 3    # + full command output
+
+class ExecutionSettings(BaseModel):
+    """Batch execution settings."""
+    parallel: bool = Field(
+        default=True,
+        description="Run batch operations in parallel"
+    )
+    strict: bool = Field(
+        default=True,
+        description="Abort on first failure"
+    )
+    max_workers: int = Field(
+        default=0,
+        description="Max parallel workers (0=auto based on CPU count)"
+    )
+
+class OutputSettings(BaseModel):
+    """Output and display settings."""
+    verbosity: Verbosity = Field(
+        default=Verbosity.NORMAL,
+        description="Output verbosity level"
+    )
+
+class ProcessingSettings(BaseModel):
+    """Processing behavior settings."""
+    temp_dir: Path | None = Field(
+        default=None,
+        description="Temp directory for intermediate files (None=system default)"
+    )
+
+class BackendSettings(BaseModel):
+    """ImageMagick backend settings."""
+    binary: str = Field(
+        default="magick",
+        description="Path to ImageMagick binary"
+    )
+
+class CoreSettings(BaseModel):
+    """Root settings for wallpaper_core."""
+    version: str = Field(default="1.0", description="Settings schema version")
+    execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
+    output: OutputSettings = Field(default_factory=OutputSettings)
+    processing: ProcessingSettings = Field(default_factory=ProcessingSettings)
+    backend: BackendSettings = Field(default_factory=BackendSettings)
+```
 
 **Module Structure:**
 ```
@@ -396,85 +463,110 @@ layered-settings = { path = "../settings", editable = true }
 
 ---
 
-## TODO: Settings Audit
+## Settings Audit Results
 
-**STATUS: NOT YET COMPLETED**
+**STATUS: ✓ COMPLETED (2026-01-31)**
 
-Before finalizing the core settings schema, we need to audit the current implementation to identify all settings actually used.
+Comprehensive audit of current core implementation completed. Key findings below.
 
-### Audit Objectives
+### Current Settings Usage
 
-1. **Identify all config access points:**
-   - Where is config/settings accessed in the code?
-   - What values are actually read?
-   - Are there CLI arguments that affect behavior?
+**Settings Actually Used: 4/8 (50%)**
 
-2. **Compare schema vs. usage:**
-   - What does `config/settings.py` define?
-   - What's actually used vs. defined?
-   - Any hardcoded values that should be configurable?
+| Setting | Category | Status | CLI Override |
+|---------|----------|--------|--------------|
+| execution.parallel | Execution | ✓ Active | --parallel/--sequential |
+| execution.strict | Execution | ✓ Active | --strict/--no-strict |
+| execution.max_workers | Execution | ✓ Active | No |
+| output.verbosity | Output | ✓ Active | -q, -v |
+| output.format | Output | ✗ Unused | N/A |
+| output.quality | Output | ✗ Unused | N/A |
+| paths.effects_config | Paths | ✗ Unused | N/A |
+| paths.user_effects_dir | Paths | ✗ Unused | N/A |
 
-3. **Catalog current settings:**
-   - Execution settings (parallel, strict, max_workers, etc.)
-   - Output settings (verbosity, format, quality, etc.)
-   - Path settings (effects_config, user_effects_dir, output_dir?, etc.)
-   - Backend settings (from old settings.toml)?
-   - Any other settings?
+### Hardcoded Configuration Values
 
-4. **Identify missing settings:**
-   - Output directory configuration
-   - Metadata writing preferences
-   - Error handling behavior
-   - Any other configurable behavior currently hardcoded?
+**Should be configurable:**
+- Config directory: `~/.config/wallpaper-effects/` (hardcoded in loader.py)
+- ImageMagick binary: `"magick"` (hardcoded in executor.py)
+- Temp directory: System default `/tmp` (could be configurable)
+- Output format preservation: `input_suffix or ".png"` (hardcoded logic)
 
-### Recommended Audit Approach
+### Settings from Old settings.toml Not in Schema
 
-Use the Explore agent to systematically examine the current core:
+The old `core/config/settings.toml` had these settings that aren't in the current Pydantic schema:
+- `processing.mode` - "memory" vs "file"
+- `processing.write_metadata` - Write metadata.json
+- `backend.prefer_imagemagick` - Backend preference
+- `backend.imagemagick_binary` - Binary path
+- `backend.strict_mode` - Error on unavailable backend
+- `backend.fallback_enabled` - Fallback to PIL
 
+**Note:** Effect defaults (`defaults.blur.*`, etc.) are correctly moved to effects.yaml.
+
+### Finalized Settings Schema
+
+Based on audit, here's the cleaned and complete settings schema for the new core:
+
+**Execution Settings** (all actively used):
+- `parallel` (bool, default=True) - Run batch operations in parallel
+- `strict` (bool, default=True) - Abort on first failure
+- `max_workers` (int, default=0) - Max parallel workers (0=auto)
+
+**Output Settings**:
+- `verbosity` (Verbosity enum, default=NORMAL) - Output verbosity level
+- ~~`format`~~ - REMOVED (not implemented)
+- ~~`quality`~~ - REMOVED (not implemented)
+
+**Processing Settings** (new category):
+- `temp_dir` (Path|None, default=None) - Temp directory for intermediate files
+
+**Backend Settings** (new category):
+- `binary` (str, default="magick") - Path to ImageMagick binary
+
+**Paths Settings**:
+- ~~`effects_config`~~ - REMOVED (not implemented)
+- ~~`user_effects_dir`~~ - REMOVED (not implemented)
+
+### Complete Settings TOML Example
+
+```toml
+# packages/core/config/settings.toml (package defaults - flat)
+[execution]
+parallel = true
+strict = true
+max_workers = 0
+
+[output]
+verbosity = 1  # NORMAL
+
+[processing]
+# temp_dir defaults to None (uses system default)
+
+[backend]
+binary = "magick"
 ```
-Task: Audit current core settings usage
 
-Areas to investigate:
-1. All imports/uses of config or settings modules
-2. CLI argument definitions (typer.Option, typer.Argument)
-3. Hardcoded paths or configuration values
-4. Environment variable usage
-5. Default values in function signatures
-6. Current Settings Pydantic model vs. actual usage
+```toml
+# ./settings.toml or ~/.config/wallpaper-effects/settings.toml (namespaced)
+[core.execution]
+parallel = false
+max_workers = 4
+
+[core.output]
+verbosity = 2  # VERBOSE
+
+[core.backend]
+binary = "/usr/local/bin/magick"
 ```
 
-### Expected Output
+### Action Items Completed
 
-A comprehensive list of settings organized by category:
-
-**Execution Settings:**
-- [ ] parallel (bool) - Run batch operations in parallel
-- [ ] strict (bool) - Abort on first failure
-- [ ] max_workers (int) - Max parallel workers
-- [ ] ... (identify from audit)
-
-**Output Settings:**
-- [ ] verbosity (int/enum) - Output verbosity level
-- [ ] format (str) - Output format
-- [ ] quality (int) - Quality for lossy formats
-- [ ] output_dir (Path?) - Default output directory?
-- [ ] write_metadata (bool?) - Write metadata.json?
-- [ ] ... (identify from audit)
-
-**Path Settings:**
-- [ ] effects_config (Path?) - Custom effects.yaml path
-- [ ] user_effects_dir (Path?) - User-defined effects directory
-- [ ] ... (identify from audit)
-
-**Other Settings:**
-- [ ] ... (identify from audit)
-
-### Next Steps After Audit
-
-1. Update `packages/core/config/schema.py` with complete settings models
-2. Update `packages/core/config/settings.toml` with all defaults
-3. Ensure CLI arguments map to config overrides
-4. Update this design document with final settings schema
+- [x] Audit all config access points
+- [x] Identify unused settings (format, quality, path settings)
+- [x] Identify missing settings (temp_dir, backend.binary)
+- [x] Catalog hardcoded values
+- [x] Finalize settings schema
 
 ---
 
