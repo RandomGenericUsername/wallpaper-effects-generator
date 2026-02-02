@@ -34,6 +34,8 @@ pip install -e "packages/settings[dev]"
 
 ### Basic Usage
 
+**Note:** The API shown below is the planned interface. Implementation is in progress (see Task 8).
+
 ```python
 from pathlib import Path
 from pydantic import BaseModel, Field
