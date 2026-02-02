@@ -1,0 +1,19 @@
+# Package default settings for wallpaper_core
+# Format: flat sections (not namespaced)
+# User configs should use [core.execution] namespace
+
+[execution]
+parallel = true
+strict = true
+max_workers = 0  # 0 = auto-detect CPU count
+
+[output]
+verbosity = 1  # 0=QUIET, 1=NORMAL, 2=VERBOSE, 3=DEBUG
+
+[processing]
+# temp_dir is optional, defaults to system temp
+# Uncomment to set custom temp directory:
+# temp_dir = "/custom/tmp"
+
+[backend]
+binary = "magick"
