@@ -19,6 +19,9 @@ class CoreOnlyConfig(BaseModel):
 configure(CoreOnlyConfig, app_name="wallpaper-effects")
 
 # Create Typer app
+# Note: With only one command currently registered, Typer makes it the default
+# (so `wallpaper-process` works instead of requiring `wallpaper-process info`).
+# This behavior will change when more commands are added in Task 9.
 app = typer.Typer(
     name="wallpaper-process",
     help="Wallpaper effects processor with layered configuration",

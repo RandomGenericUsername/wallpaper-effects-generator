@@ -1,7 +1,5 @@
 """Tests for CLI bootstrap and configuration."""
 
-from unittest.mock import patch
-
 import pytest
 from typer.testing import CliRunner
 from wallpaper_core.cli.main import app
