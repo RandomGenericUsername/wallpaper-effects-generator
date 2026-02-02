@@ -25,7 +25,9 @@ class ParameterType(BaseModel):
         default=None, description="Maximum value for numeric types"
     )
     default: Any = Field(description="Default value for this parameter type")
-    description: str = Field(description="Human-readable description of the type")
+    description: str | None = Field(
+        default=None, description="Human-readable description of the type"
+    )
 
 
 class ParameterDefinition(BaseModel):
@@ -40,7 +42,9 @@ class ParameterDefinition(BaseModel):
         default=None, description="Command-line flag for this parameter"
     )
     default: Any = Field(default=None, description="Override default value")
-    description: str = Field(description="Human-readable description")
+    description: str | None = Field(
+        default=None, description="Human-readable description"
+    )
 
 
 class Effect(BaseModel):

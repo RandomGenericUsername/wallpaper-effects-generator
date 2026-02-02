@@ -75,6 +75,20 @@ class TestParameterType:
         assert param.pattern == r"^#[0-9a-fA-F]{6}$"
         assert param.default == "#000000"
 
+    def test_without_description(self) -> None:
+        """Should validate parameter type without description (optional field)."""
+        param = ParameterType(
+            type="integer",
+            min=0,
+            max=100,
+            default=50,
+        )
+        assert param.type == "integer"
+        assert param.min == 0
+        assert param.max == 100
+        assert param.default == 50
+        assert param.description is None
+
 
 class TestParameterDefinition:
     """Tests for ParameterDefinition model."""
@@ -115,6 +129,18 @@ class TestParameterDefinition:
         assert param.type == "percent"
         assert param.cli_flag == "--brightness"
         assert param.default == -20
+
+    def test_without_description(self) -> None:
+        """Should validate parameter definition without description (optional field)."""
+        param = ParameterDefinition(
+            type="blur_geometry",
+            cli_flag="--blur",
+            default="0x8",
+        )
+        assert param.type == "blur_geometry"
+        assert param.cli_flag == "--blur"
+        assert param.default == "0x8"
+        assert param.description is None
 
 
 class TestEffect:
