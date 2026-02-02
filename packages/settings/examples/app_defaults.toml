@@ -1,0 +1,20 @@
+# Example default configuration for a hypothetical application
+# This demonstrates the flat format used in package defaults
+
+[database]
+host = "localhost"
+port = 5432
+db_name = "myapp"
+pool_size = 10
+timeout = 30.0
+
+[server]
+host = "0.0.0.0"
+port = 8000
+workers = 4
+debug = false
+
+[logging]
+level = "INFO"
+format = "json"
+output = "stdout"
