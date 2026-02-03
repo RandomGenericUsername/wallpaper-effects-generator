@@ -2,4 +2,5 @@
 members = [
     "packages/settings",
     "packages/core",
+    "packages/orchestrator",
 ]
