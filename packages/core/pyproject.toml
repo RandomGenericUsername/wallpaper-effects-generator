@@ -40,7 +40,7 @@ packages = ["src/wallpaper_core"]
 allow-direct-references = true
 
 [tool.uv.sources]
-layered-settings = { path = "../settings", editable = true }
+layered-settings = { workspace = true }
 
 [tool.black]
 line-length = 79
