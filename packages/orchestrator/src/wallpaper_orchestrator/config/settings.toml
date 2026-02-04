@@ -1,0 +1,8 @@
+# Package default settings for wallpaper_orchestrator
+# Format: flat sections (not namespaced)
+
+[container]
+engine = "docker"
+image_name = "wallpaper-effects:latest"
+# image_registry is optional, uncomment to set:
+# image_registry = "ghcr.io/username"
