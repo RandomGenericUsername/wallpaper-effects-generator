@@ -151,6 +151,7 @@ class ContainerManager:
         output_mount = f"{abs_output_dir}:/output:rw"
 
         # Build container command
+        # Note: ENTRYPOINT in Dockerfile is "wallpaper-core"
         cmd = [
             self.engine,
             "run",
@@ -164,6 +165,7 @@ class ContainerManager:
             command_type,
             "/input/image.jpg",
             f"/output/{output_path.name}",
+            f"--{command_type}",
             command_name,
         ]
 

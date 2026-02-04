@@ -5,6 +5,7 @@ FROM python:3.12-alpine AS base
 RUN apk add --no-cache \
     imagemagick \
     imagemagick-dev \
+    imagemagick-jpeg \
     gcc \
     g++ \
     musl-dev \
@@ -39,8 +40,8 @@ RUN mkdir -p /input /output && \
 # Switch to non-root user
 USER wallpaper
 
-# Set entrypoint to wallpaper-process CLI
-ENTRYPOINT ["wallpaper-process"]
+# Set entrypoint to wallpaper-core CLI
+ENTRYPOINT ["wallpaper-core"]
 
 # Default command shows help
 CMD ["--help"]
