@@ -124,28 +124,28 @@ else
     print_fail
 fi
 
-print_test "Process composite (dark)"
-core_composite_out="$TEST_OUTPUT_DIR/core-composite-dark.jpg"
-if wallpaper-core process composite "$TEST_IMAGE" "$core_composite_out" --composite dark > /dev/null 2>&1 && [ -f "$core_composite_out" ]; then
+print_test "Process composite (blackwhite-blur)"
+core_composite_out="$TEST_OUTPUT_DIR/core-composite-blackwhite-blur.jpg"
+if wallpaper-core process composite "$TEST_IMAGE" "$core_composite_out" --composite blackwhite-blur > /dev/null 2>&1 && [ -f "$core_composite_out" ]; then
     print_pass
 else
     print_fail
 fi
 
-print_test "Process preset (dark_vibrant)"
-core_preset_out="$TEST_OUTPUT_DIR/core-preset-dark_vibrant.jpg"
-if wallpaper-core process preset "$TEST_IMAGE" "$core_preset_out" --preset dark_vibrant > /dev/null 2>&1 && [ -f "$core_preset_out" ]; then
+print_test "Process preset (dark_blur)"
+core_preset_out="$TEST_OUTPUT_DIR/core-preset-dark_blur.jpg"
+if wallpaper-core process preset "$TEST_IMAGE" "$core_preset_out" --preset dark_blur > /dev/null 2>&1 && [ -f "$core_preset_out" ]; then
     print_pass
 else
     print_fail
 fi
 
-print_test "Batch effect (blur, darken)"
+print_test "Batch effect (blur, sepia)"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
 mkdir -p "$core_batch_effect"
-if wallpaper-core batch effect "$TEST_IMAGE" "$core_batch_effect" --effects blur,darken > /dev/null 2>&1; then
+if wallpaper-core batch effect "$TEST_IMAGE" "$core_batch_effect" --effects blur,sepia > /dev/null 2>&1; then
     if [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
-       [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/darken.jpg" ]; then
+       [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/sepia.jpg" ]; then
         print_pass
     else
         print_fail
@@ -154,12 +154,12 @@ else
     print_fail
 fi
 
-print_test "Batch composite (dark, light)"
+print_test "Batch composite (blackwhite-blur, blur-brightness80)"
 core_batch_composite="$TEST_OUTPUT_DIR/core-batch-composite"
 mkdir -p "$core_batch_composite"
-if wallpaper-core batch composite "$TEST_IMAGE" "$core_batch_composite" --composites dark,light > /dev/null 2>&1; then
-    if [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/dark.jpg" ] && \
-       [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/light.jpg" ]; then
+if wallpaper-core batch composite "$TEST_IMAGE" "$core_batch_composite" --composites blackwhite-blur,blur-brightness80 > /dev/null 2>&1; then
+    if [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blackwhite-blur.jpg" ] && \
+       [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blur-brightness80.jpg" ]; then
         print_pass
     else
         print_fail
@@ -168,11 +168,12 @@ else
     print_fail
 fi
 
-print_test "Batch preset (dark_vibrant)"
+print_test "Batch preset (dark_blur, subtle_blur)"
 core_batch_preset="$TEST_OUTPUT_DIR/core-batch-preset"
 mkdir -p "$core_batch_preset"
-if wallpaper-core batch preset "$TEST_IMAGE" "$core_batch_preset" --presets dark_vibrant > /dev/null 2>&1; then
-    if [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/dark_vibrant.jpg" ]; then
+if wallpaper-core batch preset "$TEST_IMAGE" "$core_batch_preset" --presets dark_blur,subtle_blur > /dev/null 2>&1; then
+    if [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/dark_blur.jpg" ] && \
+       [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/subtle_blur.jpg" ]; then
         print_pass
     else
         print_fail
@@ -258,28 +259,28 @@ else
     print_fail
 fi
 
-print_test "Process composite (containerized - dark)"
-orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-dark.jpg"
-if wallpaper-process process composite "$TEST_IMAGE" "$orch_composite_out" dark > /dev/null 2>&1 && [ -f "$orch_composite_out" ]; then
+print_test "Process composite (containerized - blackwhite-blur)"
+orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
+if wallpaper-process process composite "$TEST_IMAGE" "$orch_composite_out" blackwhite-blur > /dev/null 2>&1 && [ -f "$orch_composite_out" ]; then
     print_pass
 else
     print_fail
 fi
 
-print_test "Process preset (containerized - dark_vibrant)"
-orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_vibrant.jpg"
-if wallpaper-process process preset "$TEST_IMAGE" "$orch_preset_out" dark_vibrant > /dev/null 2>&1 && [ -f "$orch_preset_out" ]; then
+print_test "Process preset (containerized - dark_blur)"
+orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
+if wallpaper-process process preset "$TEST_IMAGE" "$orch_preset_out" dark_blur > /dev/null 2>&1 && [ -f "$orch_preset_out" ]; then
     print_pass
 else
     print_fail
 fi
 
-print_test "Batch effect (host execution - blur, darken)"
+print_test "Batch effect (host execution - blur, brightness)"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
-if wallpaper-process batch effect "$TEST_IMAGE" "$orch_batch_effect" --effects blur,darken > /dev/null 2>&1; then
+if wallpaper-process batch effect "$TEST_IMAGE" "$orch_batch_effect" --effects blur,brightness > /dev/null 2>&1; then
     if [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
-       [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/darken.jpg" ]; then
+       [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/brightness.jpg" ]; then
         print_pass
     else
         print_fail
