@@ -105,3 +105,95 @@ class TestEffectsLoader:
 
         with pytest.raises(EffectsLoadError):
             loader._load_yaml_file(bad_file)
+
+
+class TestEffectsLoaderMerge:
+    """Tests for effects merging functionality."""
+
+    def test_merges_effects_from_layers(
+        self,
+        tmp_path: Path,
+    ):
+        """Should deep merge effects from all layers."""
+        from layered_effects.loader import EffectsLoader
+
+        # Package layer: blur + brightness
+        package_file = tmp_path / "package.yaml"
+        package_file.write_text("""
+version: "1.0"
+effects:
+  blur:
+    description: "Package blur"
+    command: "blur package"
+  brightness:
+    description: "Package brightness"
+    command: "brightness package"
+""")
+
+        # User layer: blur (override) + neon (new)
+        user_file = tmp_path / "user.yaml"
+        user_file.write_text("""
+version: "1.0"
+effects:
+  blur:
+    description: "User blur"
+    command: "blur user"
+  neon:
+    description: "User neon"
+    command: "neon user"
+""")
+
+        loader = EffectsLoader(
+            package_effects_file=package_file,
+            user_effects_file=user_file,
+        )
+        merged = loader.load_and_merge()
+
+        # Should have blur (user), brightness (package), neon (user)
+        assert "blur" in merged["effects"]
+        assert merged["effects"]["blur"]["command"] == "blur user"
+        assert "brightness" in merged["effects"]
+        assert merged["effects"]["brightness"]["command"] == "brightness package"
+        assert "neon" in merged["effects"]
+        assert merged["effects"]["neon"]["command"] == "neon user"
+
+    def test_uses_package_version(self, tmp_path: Path):
+        """Should use package version as canonical."""
+        from layered_effects.loader import EffectsLoader
+
+        package_file = tmp_path / "package.yaml"
+        package_file.write_text('version: "1.0"\neffects: {}')
+
+        user_file = tmp_path / "user.yaml"
+        user_file.write_text('version: "2.0"\neffects: {}')
+
+        loader = EffectsLoader(
+            package_effects_file=package_file,
+            user_effects_file=user_file,
+        )
+        merged = loader.load_and_merge()
+
+        # First layer (package) version should be used
+        assert merged["version"] == "1.0"
+
+    def test_works_with_only_package_layer(self, package_effects_file: Path):
+        """Should work when only package layer exists."""
+        from layered_effects.loader import EffectsLoader
+
+        loader = EffectsLoader(package_effects_file=package_effects_file)
+        merged = loader.load_and_merge()
+
+        assert "version" in merged
+        assert "effects" in merged
+
+    def test_raises_when_no_package_layer(self, tmp_path: Path):
+        """Should raise when package layer doesn't exist."""
+        from layered_effects.loader import EffectsLoader
+        from layered_effects.errors import EffectsLoadError
+
+        missing_file = tmp_path / "missing.yaml"
+
+        loader = EffectsLoader(package_effects_file=missing_file)
+
+        with pytest.raises(EffectsLoadError):
+            loader.load_and_merge()

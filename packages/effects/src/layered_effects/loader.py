@@ -86,3 +86,39 @@ class EffectsLoader:
                 file_path=file_path,
                 reason=f"Cannot read file: {e}",
             ) from e
+
+    def load_and_merge(self) -> dict[str, Any]:
+        """Load all layers and deep merge into single configuration.
+
+        Returns:
+            Merged configuration dictionary
+
+        Raises:
+            EffectsLoadError: If package layer doesn't exist or loading fails
+        """
+        from layered_settings.merger import ConfigMerger
+
+        layers = self.discover_layers()
+
+        if not layers:
+            raise EffectsLoadError(
+                file_path=self.package_effects_file,
+                reason="Package effects.yaml not found",
+            )
+
+        # Load first layer as base
+        merged = self._load_yaml_file(layers[0])
+
+        # Store package version to preserve it
+        package_version = merged.get("version")
+
+        # Merge subsequent layers
+        for layer_path in layers[1:]:
+            layer_data = self._load_yaml_file(layer_path)
+            merged = ConfigMerger.merge(merged, layer_data)
+
+        # Restore package version as canonical
+        if package_version is not None:
+            merged["version"] = package_version
+
+        return merged
