@@ -1,0 +1,184 @@
+"""Tests for orchestrator process commands."""
+
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+from typer.testing import CliRunner
+
+from wallpaper_orchestrator.cli.main import app
+
+
+runner = CliRunner()
+
+
+def test_process_effect_calls_container_manager(tmp_path: Path) -> None:
+    """Test process effect command calls ContainerManager.run_process."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch(
+        "wallpaper_orchestrator.cli.main.ContainerManager"
+    ) as MockManager:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
+        MockManager.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 0
+        mock_manager.run_process.assert_called_once_with(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_path=output_file,
+        )
+
+
+def test_process_effect_checks_image_available(tmp_path: Path) -> None:
+    """Test process effect checks if container image is available."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch(
+        "wallpaper_orchestrator.cli.main.ContainerManager"
+    ) as MockManager:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = False
+        MockManager.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Container image not found" in result.output
+        assert "wallpaper-process install" in result.output
+
+
+def test_process_effect_handles_container_failure(
+    tmp_path: Path,
+) -> None:
+    """Test process effect handles container execution failure."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch(
+        "wallpaper_orchestrator.cli.main.ContainerManager"
+    ) as MockManager:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=1, stdout="", stderr="magick: invalid parameter"
+        )
+        MockManager.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "failed" in result.output.lower()
+
+
+def test_process_composite_calls_container_manager(
+    tmp_path: Path,
+) -> None:
+    """Test process composite command calls ContainerManager."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch(
+        "wallpaper_orchestrator.cli.main.ContainerManager"
+    ) as MockManager:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
+        MockManager.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                str(output_file),
+                "dark",
+            ],
+        )
+
+        assert result.exit_code == 0
+        mock_manager.run_process.assert_called_once_with(
+            command_type="composite",
+            command_name="dark",
+            input_path=input_file,
+            output_path=output_file,
+        )
+
+
+def test_process_preset_calls_container_manager(tmp_path: Path) -> None:
+    """Test process preset command calls ContainerManager."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch(
+        "wallpaper_orchestrator.cli.main.ContainerManager"
+    ) as MockManager:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
+        MockManager.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                str(output_file),
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 0
+        mock_manager.run_process.assert_called_once_with(
+            command_type="preset",
+            command_name="dark_vibrant",
+            input_path=input_file,
+            output_path=output_file,
+        )
