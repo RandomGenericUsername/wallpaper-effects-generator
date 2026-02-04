@@ -140,10 +140,10 @@ else
     print_fail
 fi
 
-print_test "Batch effect (blur, sepia)"
+print_test "Batch effects (blur, sepia)"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
 mkdir -p "$core_batch_effect"
-if wallpaper-core batch effect "$TEST_IMAGE" "$core_batch_effect" --effects blur,sepia > /dev/null 2>&1; then
+if wallpaper-core batch effects "$TEST_IMAGE" "$core_batch_effect" --effects blur,sepia > /dev/null 2>&1; then
     if [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
        [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/sepia.jpg" ]; then
         print_pass
@@ -154,10 +154,10 @@ else
     print_fail
 fi
 
-print_test "Batch composite (blackwhite-blur, blur-brightness80)"
+print_test "Batch composites (blackwhite-blur, blur-brightness80)"
 core_batch_composite="$TEST_OUTPUT_DIR/core-batch-composite"
 mkdir -p "$core_batch_composite"
-if wallpaper-core batch composite "$TEST_IMAGE" "$core_batch_composite" --composites blackwhite-blur,blur-brightness80 > /dev/null 2>&1; then
+if wallpaper-core batch composites "$TEST_IMAGE" "$core_batch_composite" --composites blackwhite-blur,blur-brightness80 > /dev/null 2>&1; then
     if [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blackwhite-blur.jpg" ] && \
        [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blur-brightness80.jpg" ]; then
         print_pass
@@ -168,10 +168,10 @@ else
     print_fail
 fi
 
-print_test "Batch preset (dark_blur, subtle_blur)"
+print_test "Batch presets (dark_blur, subtle_blur)"
 core_batch_preset="$TEST_OUTPUT_DIR/core-batch-preset"
 mkdir -p "$core_batch_preset"
-if wallpaper-core batch preset "$TEST_IMAGE" "$core_batch_preset" --presets dark_blur,subtle_blur > /dev/null 2>&1; then
+if wallpaper-core batch presets "$TEST_IMAGE" "$core_batch_preset" --presets dark_blur,subtle_blur > /dev/null 2>&1; then
     if [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/dark_blur.jpg" ] && \
        [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/subtle_blur.jpg" ]; then
         print_pass
@@ -275,10 +275,10 @@ else
     print_fail
 fi
 
-print_test "Batch effect (host execution - blur, brightness)"
+print_test "Batch effects (host execution - blur, brightness)"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
-if wallpaper-process batch effect "$TEST_IMAGE" "$orch_batch_effect" --effects blur,brightness > /dev/null 2>&1; then
+if wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" --effects blur,brightness > /dev/null 2>&1; then
     if [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
        [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/brightness.jpg" ]; then
         print_pass
