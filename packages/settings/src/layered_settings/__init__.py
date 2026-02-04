@@ -30,6 +30,11 @@ from typing import Any
 from pydantic import BaseModel
 
 from layered_settings.builder import ConfigBuilder
+from layered_settings.constants import (
+    APP_NAME,
+    EFFECTS_FILENAME,
+    SETTINGS_FILENAME,
+)
 from layered_settings.layers import LayerDiscovery
 from layered_settings.registry import SchemaRegistry
 
@@ -140,4 +145,8 @@ __all__ = [
     "SchemaRegistry",
     "configure",
     "get_config",
+    # Constants
+    "APP_NAME",
+    "SETTINGS_FILENAME",
+    "EFFECTS_FILENAME",
 ]
