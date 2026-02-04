@@ -1,0 +1,41 @@
+# Ignore build artifacts and caches
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/htmlcov/
+**/*.egg-info/
+**/dist/
+**/build/
+
+# Ignore virtual environments
+**/.venv/
+**/venv/
+**/.env
+
+# Ignore IDE and editor files
+**/.idea/
+**/.vscode/
+**/.DS_Store
+
+# Ignore git
+**/.git/
+**/.gitignore
+
+# Ignore test files (we only need source)
+**/tests/
+
+# Ignore documentation
+**/docs/
+**/*.md
+
+# Keep only necessary files
+!packages/settings/src/
+!packages/settings/pyproject.toml
+!packages/core/src/
+!packages/core/pyproject.toml
+!packages/core/effects/

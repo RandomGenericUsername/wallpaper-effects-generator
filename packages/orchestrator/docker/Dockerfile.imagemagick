@@ -1,13 +1,46 @@
-# Placeholder Dockerfile for wallpaper-effects container
-# This will be fully implemented in Task 11 (Dockerfile Creation)
+# Wallpaper effects processor with ImageMagick
+FROM python:3.12-alpine AS base
 
-FROM python:3.12-slim
+# Install ImageMagick and system dependencies
+RUN apk add --no-cache \
+    imagemagick \
+    imagemagick-dev \
+    gcc \
+    g++ \
+    musl-dev \
+    python3-dev \
+    libffi-dev
 
-# Install ImageMagick
-RUN apt-get update && apt-get install -y imagemagick && rm -rf /var/lib/apt/lists/*
+# Create non-root user
+RUN adduser -D -u 1000 wallpaper
 
 # Set working directory
 WORKDIR /app
 
-# TODO: Add wallpaper_core installation and configuration
-# This is a placeholder for testing CLI commands
+# Install uv for package management
+RUN pip install --no-cache-dir uv
+
+# Copy settings package (dependency of core)
+COPY --chown=wallpaper:wallpaper packages/settings /app/wallpaper-settings
+
+# Copy wallpaper-core package
+COPY --chown=wallpaper:wallpaper packages/core /app/wallpaper-core
+
+# Install settings first, then core (use pip to avoid uv.sources issues)
+RUN cd /app/wallpaper-settings && \
+    pip install --no-cache-dir . && \
+    cd /app/wallpaper-core && \
+    pip install --no-cache-dir .
+
+# Create mount points
+RUN mkdir -p /input /output && \
+    chown -R wallpaper:wallpaper /input /output
+
+# Switch to non-root user
+USER wallpaper
+
+# Set entrypoint to wallpaper-process CLI
+ENTRYPOINT ["wallpaper-process"]
+
+# Default command shows help
+CMD ["--help"]
