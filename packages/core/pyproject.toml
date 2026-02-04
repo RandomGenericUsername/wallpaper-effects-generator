@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-wallpaper-process = "wallpaper_core.cli.main:app"
+wallpaper-core = "wallpaper_core.cli.main:app"
 
 [build-system]
 requires = ["hatchling"]

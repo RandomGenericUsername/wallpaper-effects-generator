@@ -24,7 +24,7 @@ configure(CoreOnlyConfig, app_name="wallpaper-effects")
 
 # Create Typer app
 app = typer.Typer(
-    name="wallpaper-process",
+    name="wallpaper-core",
     help="Wallpaper effects processor with layered configuration",
     no_args_is_help=True,
 )

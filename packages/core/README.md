@@ -25,13 +25,13 @@ uv pip install -e .
 
 ```bash
 # Show current configuration
-wallpaper-process info
+wallpaper-core info
 
 # Process single image with effect
-wallpaper-process process input.jpg output.jpg blur
+wallpaper-core process input.jpg output.jpg blur
 
 # Process batch with multiple effects
-wallpaper-process batch input.jpg --effects blur,brightness --parallel
+wallpaper-core batch input.jpg --effects blur,brightness --parallel
 ```
 
 ## Configuration
