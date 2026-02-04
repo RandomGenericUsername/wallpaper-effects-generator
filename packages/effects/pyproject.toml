@@ -5,10 +5,13 @@ version = "0.1.0"
 description = "Layered effects configuration system for wallpaper-effects-generator"
 requires-python = ">=3.12"
 dependencies = [
-    "layered-settings>=0.1.0",
+    "layered-settings",
     "pyyaml>=6.0",
     "pydantic>=2.0",
 ]
+
+[tool.uv.sources]
+layered-settings = { workspace = true }
 
 [dependency-groups]
 dev = [

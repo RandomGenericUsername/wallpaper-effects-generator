@@ -1,6 +1,7 @@
 [tool.uv.workspace]
 members = [
     "packages/settings",
+    "packages/effects",
     "packages/core",
     "packages/orchestrator",
 ]
