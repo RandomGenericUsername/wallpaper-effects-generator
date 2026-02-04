@@ -1,15 +1,18 @@
 # wallpaper_orchestrator
 
-Container orchestrator for the wallpaper effects processor, providing isolated,
-portable, and reproducible image processing.
+Container orchestrator for wallpaper effects processing with Docker/Podman support.
+
+## Overview
+
+The orchestrator package provides containerized execution of wallpaper effects, offering isolation, reproducibility, and portability. All image processing happens inside containers - no need to install ImageMagick on your host system.
 
 ## Features
 
-- **Container Support**: Docker and Podman
-- **Isolation**: Run effects in isolated containers
-- **Portability**: Bundle ImageMagick with specific versions
-- **Reproducibility**: Consistent behavior across systems
-- **Simple Commands**: Easy install/uninstall
+- **Container Execution**: Run effects inside Docker/Podman containers
+- **Isolation**: Isolated execution environment, reproducible results
+- **Portability**: Works anywhere Docker/Podman runs
+- **No Dependencies**: ImageMagick bundled in container image
+- **Simple Commands**: Install image, run effects, uninstall
 
 ## Installation
 
@@ -17,7 +20,7 @@ portable, and reproducible image processing.
 # From workspace root
 uv sync
 
-# Install just orchestrator package
+# Install orchestrator package
 cd packages/orchestrator
 uv pip install -e .
 ```
@@ -25,100 +28,173 @@ uv pip install -e .
 ## Quick Start
 
 ```bash
-# Build container image
+# 1. Build container image (one-time setup)
 wallpaper-process install
 
-# Process with container (uses core functionality)
-wallpaper-process process input.jpg output.jpg blur
+# 2. Process images (runs in container)
+wallpaper-process process effect input.jpg output.jpg blur
 
-# View configuration
-wallpaper-process info
-
-# Remove container image
+# 3. When done, remove image
 wallpaper-process uninstall
 ```
 
-## Configuration
+## Commands
 
-### Layer Priority
+### Container Management
 
-1. **Package defaults** - Built-in settings
-2. **Project settings** - `./settings.toml`
-3. **User settings** - `~/.config/wallpaper-effects/settings.toml`
-4. **CLI overrides** - Command-line flags
+**Install container image:**
+```bash
+wallpaper-process install                # Use default engine (docker)
+wallpaper-process install --engine podman  # Use podman
+```
 
-### Orchestrator Settings
+**Uninstall container image:**
+```bash
+wallpaper-process uninstall             # With confirmation
+wallpaper-process uninstall --yes       # Skip confirmation
+```
 
-**Container Settings:**
-- `engine` (str, default="docker") - Container engine (docker or podman)
-- `image_name` (str, default="wallpaper-effects:latest") - Image name
-- `image_registry` (str, optional) - Registry prefix for images
+### Process Commands (Container Execution)
 
-**Example Configuration:**
+**Apply single effect:**
+```bash
+wallpaper-process process effect input.jpg output.jpg blur
+wallpaper-process process effect photo.png result.png darken
+```
 
-```toml
-# ~/.config/wallpaper-effects/settings.toml
+**Apply composite:**
+```bash
+wallpaper-process process composite input.jpg output.jpg dark
+```
 
-[orchestrator.container]
-engine = "podman"
-image_registry = "ghcr.io/username"
+**Apply preset:**
+```bash
+wallpaper-process process preset input.jpg output.jpg dark_vibrant
+```
+
+### Info Commands (Host Execution)
+
+These commands run on the host (no container):
+
+```bash
+wallpaper-process info       # Show configuration
+wallpaper-process version    # Show version
 ```
 
 ## Architecture
 
-The orchestrator package composes all configuration namespaces:
+### Container Execution Model
 
-```python
-from wallpaper_orchestrator.config.unified import UnifiedConfig
+When you run a process command, the orchestrator:
 
-config = UnifiedConfig()
-# Access: config.core.execution.parallel
-#         config.effects.effects["blur"]
-#         config.orchestrator.container.engine
+1. Validates container image exists
+2. Mounts input file (read-only) and output directory (read-write)
+3. Executes `wallpaper-core` inside container
+4. Returns results to your output location
+
+**Volume Mounts:**
+- Input: `{your-input}:/input/image.jpg:ro` (read-only)
+- Output: `{your-output-dir}:/output:rw` (read-write)
+
+**Example:**
+```bash
+$ wallpaper-process process effect ~/photo.jpg ~/output/blurred.jpg blur
+
+# Internally runs:
+# docker run --rm \
+#   -v ~/photo.jpg:/input/image.jpg:ro \
+#   -v ~/output:/output:rw \
+#   wallpaper-effects:latest \
+#   process effect /input/image.jpg /output/blurred.jpg blur
 ```
 
 ### Package Structure
 
 ```
-packages/orchestrator/
-├── src/wallpaper_orchestrator/
-│   ├── config/          # UnifiedConfig + OrchestratorSettings
-│   ├── container/       # ContainerManager
-│   ├── cli/             # CLI commands (wraps core)
-│   └── docker/          # Dockerfile
-├── tests/
-└── pyproject.toml
+wallpaper_orchestrator/
+├── cli/
+│   ├── main.py              # CLI entry point (wallpaper-process)
+│   └── commands/
+│       ├── install.py       # Build container image
+│       └── uninstall.py     # Remove container image
+├── config/
+│   ├── settings.py          # OrchestratorSettings
+│   └── unified.py           # UnifiedConfig (core + orchestrator)
+└── container/
+    └── manager.py           # ContainerManager (execution)
 ```
 
-## Commands
+## Configuration
 
-### Install
+Settings are managed via `layered_settings` with multiple layers:
 
-Build the container image:
+1. Package defaults (built-in)
+2. Project settings (`./settings.toml`)
+3. User settings (`~/.config/wallpaper-effects/settings.toml`)
+4. CLI overrides
 
+### Orchestrator Settings
+
+**Container engine:**
+```toml
+# ~/.config/wallpaper-effects/settings.toml
+[orchestrator.container]
+engine = "podman"  # or "docker" (default)
+```
+
+**Custom registry:**
+```toml
+[orchestrator.container]
+image_registry = "ghcr.io/username"
+image_name = "wallpaper-effects:latest"
+```
+
+## vs. wallpaper-core
+
+**Use orchestrator when:**
+- You want isolated, reproducible execution
+- You don't want to install ImageMagick
+- You need portability across systems
+- You're okay with Docker/Podman requirement
+
+**Use core when:**
+- You want direct control over ImageMagick
+- You have ImageMagick installed already
+- You want minimal overhead
+- You don't need containers
+
+**Installation:**
 ```bash
+# Core only (local execution)
+pip install wallpaper-core
+# Command: wallpaper-core
+
+# Orchestrator (containerized execution)
+pip install wallpaper-orchestrator
+# Command: wallpaper-process
+```
+
+## Troubleshooting
+
+**"Container image not found"**
+```bash
+# Solution: Install the image
 wallpaper-process install
+```
+
+**"docker: command not found"**
+```bash
+# Solution: Install Docker or switch to Podman
+# Install Docker: https://docs.docker.com/get-docker/
+# Or use Podman:
 wallpaper-process install --engine podman
 ```
 
-### Uninstall
-
-Remove the container image:
-
+**"permission denied" on output**
 ```bash
-wallpaper-process uninstall
-wallpaper-process uninstall --yes  # Skip confirmation
-```
-
-### Core Commands
-
-All core commands are available through the orchestrator:
-
-```bash
-wallpaper-process info
-wallpaper-process process <input> <output> <effect>
-wallpaper-process batch <input> --effects <list>
-wallpaper-process show effects
+# Solution: Ensure output directory is writable
+mkdir -p output
+chmod 755 output
 ```
 
 ## Development
@@ -138,19 +214,14 @@ black src/ tests/
 isort src/ tests/
 ```
 
-## Container Details
+## Security
 
-The container image includes:
-
-- Python 3.12 (Alpine Linux)
-- ImageMagick (latest Alpine version)
-- wallpaper-settings package
-- wallpaper-core package
-- All dependencies
-
-**Security:**
+The container image:
 - Runs as non-root user (UID 1000)
-- Input mounts are read-only
-- Output directory is the only writable mount
+- Input mounts are read-only (`:ro`)
+- Output directory is the only writable mount (`:rw`)
+- Container is removed after execution (`--rm`)
 
-See `docker/README.md` for container build details.
+## License
+
+MIT
