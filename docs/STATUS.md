@@ -1,8 +1,8 @@
-# Project Status - 2026-02-03
+# Project Status - 2026-02-04
 
-## Current State: Phase 3 Complete ✅
+## Current State: Phase 4 Complete ✅
 
-The wallpaper-effects-generator monorepo refactor is successfully through Phase 3. All packages are functional and fully tested.
+The wallpaper-effects-generator monorepo refactor is complete. All packages are functional, fully tested, and production-ready.
 
 ## What's Been Completed
 
@@ -26,7 +26,18 @@ The wallpaper-effects-generator monorepo refactor is successfully through Phase 
 - CLI commands: install, uninstall (plus inherited core commands)
 - ContainerManager for image lifecycle
 - Dockerfile for wallpaper-effects:latest image
-- 39 tests passing, comprehensive integration tests
+- 52 tests passing, comprehensive integration tests
+
+### Phase 4: Container Execution & Polish ✅
+- Renamed core CLI from `wallpaper-process` to `wallpaper-core`
+- Implemented actual container execution (ContainerManager.run_process)
+- Added process commands: effect, composite, preset (containerized)
+- Volume mounting for input/output files
+- Batch and show commands exposed in orchestrator
+- Fixed effects.yaml packaging for proper distribution
+- Comprehensive testing with real wallpaper files
+- 153 total tests passing (52 orchestrator + 101 core)
+- Archived old core/ and orchestrator/ directories
 
 ## Project Structure
 
@@ -79,75 +90,65 @@ wallpaper-process show <type>     # Show effects/composites/presets
 - ✅ Fully tested (39 orchestrator tests + 101 core tests)
 
 ### What's Not Yet Implemented
-- ❌ Actual container execution (orchestrator builds images but doesn't run effects in them)
-- ❌ Volume mounting for container-based processing
 - ❌ Container health checks
-- ❌ Old directories archived
-- ❌ Root-level documentation updated
+- ❌ Root-level documentation (project README.md)
 - ❌ End-to-end usage examples
+- ❌ PyPI publication preparation
+- ❌ CI/CD workflows
 
-## Phase 4 Options
+## Potential Phase 5 Focus Areas
 
-From Phase 3 plan's "Next Steps" section, the suggested Phase 4 items are:
+1. **Polish & Documentation**
+   - Update project root README.md with architecture overview
+   - Create end-to-end usage examples and tutorials
+   - Add container health checks
+   - Contribution guidelines
 
-1. **Add container execution support** - Make orchestrator actually run effects inside containers
-2. **Implement volume mounting** - Proper I/O handling for containerized execution
-3. **Add container health checks** - Verify container state before execution
-4. **Archive old directories** - Move old `core/` and `orchestrator/` to `.archive/`
-5. **Update root documentation** - README.md at project root
-6. **Create end-to-end examples** - Usage documentation and tutorials
+2. **Publishing & Distribution**
+   - Prepare packages for PyPI publication
+   - GitHub Actions workflows for CI/CD
+   - Automated testing and releases
+   - Container registry integration (GHCR)
 
-## How to Resume Tomorrow
+3. **Advanced Features**
+   - Batch container processing optimization
+   - Container resource limits
+   - Custom effect creation guide
+   - Plugin system for user-defined effects
+
+## How to Continue
 
 ### Quick Start
 ```bash
 cd /home/inumaki/Development/wallpaper-effects-generator
-git status                    # Verify clean state
-uv sync                       # Ensure dependencies up to date
+source .venv/bin/activate
+
+# Test core (local execution)
+wallpaper-core --help
+
+# Test orchestrator (containerized execution)
+wallpaper-process --help
+wallpaper-process install  # Build container image
 ```
 
-### Option A: Continue with Phase 4 Implementation
-
-**If choosing container execution:**
-1. Use brainstorming skill to design container execution approach
-2. Create Phase 4 plan with `superpowers:writing-plans`
-3. Execute with `superpowers:subagent-driven-development`
-
-**If choosing cleanup/polish:**
-1. Archive old directories
-2. Update root README
-3. Create examples
-4. Commit and push all work
-
-### Option B: Create Phase 4 Plan First
+### Testing Current Implementation
 
 ```bash
-# Start brainstorming session
-claude code
-# Then say: "Create Phase 4 plan for [chosen focus]"
+# Run all tests
+cd packages/orchestrator && uv run pytest -v
+cd packages/core && uv run pytest -v
+
+# Test real wallpaper processing
+wallpaper-process process effect ~/Downloads/wallpaper.jpg /tmp/output.jpg blur
+wallpaper-process batch all ~/Downloads/wallpaper.jpg /tmp/batch-output
 ```
 
-### Option C: Test Current Implementation
+### Next Phase Options
 
-```bash
-# Verify everything works
-cd packages/orchestrator
-uv run pytest -v
-
-# Test CLI
-uv run wallpaper-process --help
-uv run wallpaper-process info
-```
-
-## Key Decisions Needed for Phase 4
-
-1. **Scope**: Container execution? Cleanup? Both?
-2. **Approach**: How should containerized execution work?
-   - Transparent (automatically use container if available)?
-   - Explicit flag (--use-container)?
-   - Separate commands (process vs container-process)?
-3. **Testing**: How to test container execution without requiring Docker?
-4. **Migration**: When to remove old directories?
+Choose a focus area for Phase 5 (see "Potential Phase 5 Focus Areas" above):
+1. Polish & Documentation
+2. Publishing & Distribution
+3. Advanced Features
 
 ## Notes
 
@@ -160,14 +161,12 @@ uv run wallpaper-process info
 
 ## Reference Documents
 
-- Design: `docs/plans/2026-01-31-monorepo-refactor-design.md`
-- Phase 1: `docs/plans/2026-01-31-phase1-layered-settings.md`
-- Phase 2: `docs/plans/2026-02-02-phase2-core-migration.md`
-- Phase 3: `docs/plans/2026-02-03-phase3-orchestrator.md`
-- Reference: `/home/inumaki/Development/color-scheme` (similar patterns)
+- **Design**: `docs/plans/2026-01-31-monorepo-refactor-design.md` (overall architecture)
+- **Archived Plans**: `.archive/docs/plans/` (completed phase implementations)
+- **Reference Project**: `/home/inumaki/Development/color-scheme` (similar patterns)
 
 ---
 
-**Last Updated**: 2026-02-03
-**Status**: Ready for Phase 4
-**Next Session**: Choose Phase 4 focus and create implementation plan
+**Last Updated**: 2026-02-04
+**Status**: Phase 4 Complete - Production Ready
+**Next Session**: Choose Phase 5 focus area
