@@ -82,3 +82,101 @@ class ContainerManager:
             return result.returncode == 0
         except (subprocess.SubprocessError, FileNotFoundError):
             return False
+
+    def run_process(
+        self,
+        command_type: str,
+        command_name: str,
+        input_path: Path,
+        output_path: Path,
+        additional_args: list[str] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        """Execute wallpaper-core command inside container.
+
+        Args:
+            command_type: Type of command (effect/composite/preset)
+            command_name: Name of effect/composite/preset
+            input_path: Path to input image on host
+            output_path: Path for output image on host
+            additional_args: Additional CLI arguments to pass
+
+        Returns:
+            CompletedProcess with returncode, stdout, stderr
+
+        Raises:
+            RuntimeError: If container image not available
+            FileNotFoundError: If input file doesn't exist
+        """
+        # Validate parameters
+        valid_types = {"effect", "composite", "preset"}
+        if command_type not in valid_types:
+            raise ValueError(
+                f"Invalid command_type: {command_type}. "
+                f"Must be one of: {', '.join(sorted(valid_types))}"
+            )
+
+        if not command_name:
+            raise ValueError("command_name cannot be empty")
+
+        # Validate container image exists
+        if not self.is_image_available():
+            raise RuntimeError(
+                "Container image not found. "
+                "Install the image first: wallpaper-process install"
+            )
+
+        # Validate input file exists
+        if not input_path.exists():
+            raise FileNotFoundError(
+                f"Input file not found: {input_path}\n"
+                "Please check the file path is correct."
+            )
+
+        # Ensure output directory exists
+        output_dir = output_path.parent
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError as e:
+            raise PermissionError(
+                f"Cannot create output directory: {output_dir}\n"
+                "Please check directory permissions."
+            ) from e
+
+        # Convert paths to absolute
+        abs_input = input_path.absolute()
+        abs_output_dir = output_dir.absolute()
+
+        # Build volume mounts
+        input_mount = f"{abs_input}:/input/image.jpg:ro"
+        output_mount = f"{abs_output_dir}:/output:rw"
+
+        # Build container command
+        cmd = [
+            self.engine,
+            "run",
+            "--rm",
+            "-v",
+            input_mount,
+            "-v",
+            output_mount,
+            self.get_image_name(),
+            "process",
+            command_type,
+            "/input/image.jpg",
+            f"/output/{output_path.name}",
+            command_name,
+        ]
+
+        # Add additional arguments if provided
+        if additional_args:
+            cmd.extend(additional_args)
+
+        # Execute container
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        return result
