@@ -203,10 +203,54 @@ def process_preset(
 app.add_typer(process_app, name="process")
 
 
-# Add core's batch and show commands directly as sub-apps
-# These run on the host (no container), so delegation to core is appropriate
-app.add_typer(core_batch_module.app, name="batch")
-app.add_typer(core_show_module.app, name="show")
+# Create batch and show sub-apps with proper context initialization
+batch_app = typer.Typer(
+    name="batch",
+    help="Batch generate effects (runs on host)",
+    no_args_is_help=True,
+)
+
+show_app = typer.Typer(
+    name="show",
+    help="Show available effects, composites, and presets",
+    no_args_is_help=True,
+)
+
+
+@batch_app.callback()
+def batch_callback(ctx: typer.Context) -> None:
+    """Initialize context for batch commands."""
+    from wallpaper_core.console.output import RichOutput
+
+    config = get_config()
+    ctx.ensure_object(dict)
+    ctx.obj["output"] = RichOutput()
+    ctx.obj["config"] = config.effects
+    ctx.obj["settings"] = config.core
+
+
+@show_app.callback()
+def show_callback(ctx: typer.Context) -> None:
+    """Initialize context for show commands."""
+    from wallpaper_core.console.output import RichOutput
+
+    config = get_config()
+    ctx.ensure_object(dict)
+    ctx.obj["output"] = RichOutput()
+    ctx.obj["config"] = config.effects
+    ctx.obj["settings"] = config.core
+
+
+# Add core commands to the sub-apps
+for cmd_info in core_batch_module.app.registered_commands:
+    batch_app.command(name=cmd_info.name)(cmd_info.callback)
+
+for cmd_info in core_show_module.app.registered_commands:
+    show_app.command(name=cmd_info.name)(cmd_info.callback)
+
+# Add the sub-apps to main app
+app.add_typer(batch_app, name="batch")
+app.add_typer(show_app, name="show")
 
 
 @app.command()
