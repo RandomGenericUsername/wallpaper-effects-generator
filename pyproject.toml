@@ -1,6 +1,25 @@
+[project]
+name = "wallpaper-effects-generator"
+version = "0.1.0"
+description = "Wallpaper effects generator with layered configuration"
+requires-python = ">=3.12"
+dependencies = [
+    "layered-settings",
+    "wallpaper-core",
+    "wallpaper-orchestrator",
+    "layered-effects",
+]
+
 [tool.uv.workspace]
 members = [
     "packages/settings",
     "packages/core",
     "packages/orchestrator",
+    "packages/effects",
 ]
+
+[tool.uv.sources]
+layered-settings = { workspace = true }
+wallpaper-core = { workspace = true }
+wallpaper-orchestrator = { workspace = true }
+layered-effects = { workspace = true }
