@@ -1,0 +1,13 @@
+# Placeholder Dockerfile for wallpaper-effects container
+# This will be fully implemented in Task 11 (Dockerfile Creation)
+
+FROM python:3.12-slim
+
+# Install ImageMagick
+RUN apt-get update && apt-get install -y imagemagick && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# TODO: Add wallpaper_core installation and configuration
+# This is a placeholder for testing CLI commands
