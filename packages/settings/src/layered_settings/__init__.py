@@ -36,6 +36,14 @@ from layered_settings.constants import (
     SETTINGS_FILENAME,
 )
 from layered_settings.layers import LayerDiscovery
+from layered_settings.paths import (
+    USER_CONFIG_DIR,
+    USER_EFFECTS_FILE,
+    USER_SETTINGS_FILE,
+    XDG_CONFIG_HOME,
+    get_project_effects_file,
+    get_project_settings_file,
+)
 from layered_settings.registry import SchemaRegistry
 
 __version__ = "0.1.0"
@@ -149,4 +157,11 @@ __all__ = [
     "APP_NAME",
     "SETTINGS_FILENAME",
     "EFFECTS_FILENAME",
+    # Paths
+    "XDG_CONFIG_HOME",
+    "USER_CONFIG_DIR",
+    "USER_SETTINGS_FILE",
+    "USER_EFFECTS_FILE",
+    "get_project_settings_file",
+    "get_project_effects_file",
 ]
