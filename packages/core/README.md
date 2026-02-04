@@ -1,6 +1,15 @@
 # wallpaper_core
 
-Wallpaper effects processor with layered configuration using `layered_settings`.
+Core wallpaper effects processor with local ImageMagick execution.
+
+> **Note:** For containerized execution, see `wallpaper-orchestrator` package.
+> This package runs effects locally using your system's ImageMagick installation.
+
+## CLI Command
+
+This package provides the `wallpaper-core` command for local execution.
+
+For containerized execution, install `wallpaper-orchestrator` which provides the `wallpaper-process` command.
 
 ## Features
 
