@@ -6,6 +6,8 @@ import typer
 from rich.console import Console
 
 from layered_settings import configure, get_config
+from wallpaper_core.cli import batch as core_batch_module
+from wallpaper_core.cli import show as core_show_module
 from wallpaper_orchestrator.cli.commands import install, uninstall
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
@@ -199,6 +201,12 @@ def process_preset(
 
 # Add process sub-app to main app
 app.add_typer(process_app, name="process")
+
+
+# Add core's batch and show commands directly as sub-apps
+# These run on the host (no container), so delegation to core is appropriate
+app.add_typer(core_batch_module.app, name="batch")
+app.add_typer(core_show_module.app, name="show")
 
 
 @app.command()

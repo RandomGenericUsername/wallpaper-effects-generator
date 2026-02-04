@@ -1,0 +1,25 @@
+# Wallpaper Effects Generator - Project Settings
+# This file demonstrates the layered configuration system
+# Settings merge: package defaults → this file → user config → CLI overrides
+
+# Core Settings
+[core.execution]
+parallel = true      # Enable parallel batch processing
+strict = true        # Stop on first error in batch mode
+max_workers = 0      # 0 = auto-detect CPU count
+
+[core.output]
+verbosity = 1        # 0=quiet, 1=normal, 2=verbose, 3=debug
+
+[core.backend]
+binary = "magick"    # ImageMagick binary name
+
+# Orchestrator Settings
+[orchestrator.container]
+engine = "docker"    # Container engine: "docker" or "podman"
+image_name = "wallpaper-effects:latest"
+# image_registry = "ghcr.io/username"  # Optional: custom registry
+
+# Effects Configuration
+# Effects are defined in packages/core/src/wallpaper_core/effects/effects.yaml
+# You can override effect parameters here if needed

@@ -20,14 +20,19 @@ The orchestrator package provides containerized execution of wallpaper effects, 
 # From workspace root
 uv sync
 
-# Install orchestrator package
-cd packages/orchestrator
-uv pip install -e .
+# Activate virtual environment
+source .venv/bin/activate
+
+# Or use 'uv run' prefix for all commands
+# Example: uv run wallpaper-process --help
 ```
 
 ## Quick Start
 
 ```bash
+# Activate the virtual environment
+source .venv/bin/activate
+
 # 1. Build container image (one-time setup)
 wallpaper-process install
 
@@ -36,6 +41,12 @@ wallpaper-process process effect input.jpg output.jpg blur
 
 # 3. When done, remove image
 wallpaper-process uninstall
+```
+
+**Note:** If not activating the venv, prefix all commands with `uv run`:
+```bash
+uv run wallpaper-process install
+uv run wallpaper-process process effect input.jpg output.jpg blur
 ```
 
 ## Commands

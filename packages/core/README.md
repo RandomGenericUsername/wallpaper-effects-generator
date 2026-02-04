@@ -25,22 +25,32 @@ For containerized execution, install `wallpaper-orchestrator` which provides the
 # From workspace root
 uv sync
 
-# Install just core package
-cd packages/core
-uv pip install -e .
+# Activate virtual environment
+source .venv/bin/activate
+
+# Or use 'uv run' prefix for all commands
 ```
 
 ## Quick Start
 
 ```bash
+# Activate virtual environment first
+source .venv/bin/activate
+
 # Show current configuration
 wallpaper-core info
 
 # Process single image with effect
-wallpaper-core process input.jpg output.jpg blur
+wallpaper-core process effect input.jpg output.jpg --effect blur
 
 # Process batch with multiple effects
-wallpaper-core batch input.jpg --effects blur,brightness --parallel
+wallpaper-core batch effect input.jpg --effects blur,brightness --parallel
+```
+
+**Note:** If not activating the venv, prefix all commands with `uv run`:
+```bash
+uv run wallpaper-core info
+uv run wallpaper-core process effect input.jpg output.jpg --effect blur
 ```
 
 ## Configuration
