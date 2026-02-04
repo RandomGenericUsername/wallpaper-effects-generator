@@ -140,12 +140,13 @@ else
     print_fail
 fi
 
-print_test "Batch effects (blur, sepia)"
+print_test "Batch effects (all effects)"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
 mkdir -p "$core_batch_effect"
-if wallpaper-core batch effects "$TEST_IMAGE" "$core_batch_effect" --effects blur,sepia > /dev/null 2>&1; then
-    if [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
-       [ -f "$core_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/sepia.jpg" ]; then
+if wallpaper-core batch effects "$TEST_IMAGE" "$core_batch_effect" > /dev/null 2>&1; then
+    # Should generate 9 effects
+    output_count=$(find "$core_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -ge 9 ]; then
         print_pass
     else
         print_fail
@@ -154,12 +155,13 @@ else
     print_fail
 fi
 
-print_test "Batch composites (blackwhite-blur, blur-brightness80)"
+print_test "Batch composites (all composites)"
 core_batch_composite="$TEST_OUTPUT_DIR/core-batch-composite"
 mkdir -p "$core_batch_composite"
-if wallpaper-core batch composites "$TEST_IMAGE" "$core_batch_composite" --composites blackwhite-blur,blur-brightness80 > /dev/null 2>&1; then
-    if [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blackwhite-blur.jpg" ] && \
-       [ -f "$core_batch_composite/$(basename "$TEST_IMAGE" .jpg)/composites/blur-brightness80.jpg" ]; then
+if wallpaper-core batch composites "$TEST_IMAGE" "$core_batch_composite" > /dev/null 2>&1; then
+    # Should generate 4 composites
+    output_count=$(find "$core_batch_composite" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -ge 4 ]; then
         print_pass
     else
         print_fail
@@ -168,12 +170,13 @@ else
     print_fail
 fi
 
-print_test "Batch presets (dark_blur, subtle_blur)"
+print_test "Batch presets (all presets)"
 core_batch_preset="$TEST_OUTPUT_DIR/core-batch-preset"
 mkdir -p "$core_batch_preset"
-if wallpaper-core batch presets "$TEST_IMAGE" "$core_batch_preset" --presets dark_blur,subtle_blur > /dev/null 2>&1; then
-    if [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/dark_blur.jpg" ] && \
-       [ -f "$core_batch_preset/$(basename "$TEST_IMAGE" .jpg)/presets/subtle_blur.jpg" ]; then
+if wallpaper-core batch presets "$TEST_IMAGE" "$core_batch_preset" > /dev/null 2>&1; then
+    # Should generate 7 presets
+    output_count=$(find "$core_batch_preset" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -ge 7 ]; then
         print_pass
     else
         print_fail
@@ -275,12 +278,13 @@ else
     print_fail
 fi
 
-print_test "Batch effects (host execution - blur, brightness)"
+print_test "Batch effects (host execution - all effects)"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
-if wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" --effects blur,brightness > /dev/null 2>&1; then
-    if [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/blur.jpg" ] && \
-       [ -f "$orch_batch_effect/$(basename "$TEST_IMAGE" .jpg)/effects/brightness.jpg" ]; then
+if wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" > /dev/null 2>&1; then
+    # Should generate 9 effects
+    output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -ge 9 ]; then
         print_pass
     else
         print_fail
