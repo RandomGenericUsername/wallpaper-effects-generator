@@ -16,7 +16,7 @@ class CoreOnlyConfig(BaseModel):
     """Configuration model for standalone core usage."""
 
     core: CoreSettings
-    effects: EffectsConfig
+    # effects: EffectsConfig  # REMOVED - now handled by layered-effects
 
 
 # Configure layered_settings at module import
