@@ -17,9 +17,8 @@ def test_config_loads_from_package_defaults() -> None:
     assert config.core.execution.parallel is True
     assert config.core.backend.binary == "magick"
 
-    # Should have effects from effects.yaml
-    assert config.effects.version == "1.0"
-    assert len(config.effects.effects) > 0
+    # Effects are now loaded separately via layered_effects
+    # CoreOnlyConfig no longer has effects field
 
 
 def test_config_merges_cli_overrides() -> None:
@@ -63,13 +62,26 @@ binary = "/custom/magick"
 
 
 def test_effects_loaded_from_yaml() -> None:
-    """Test effects are loaded from effects.yaml."""
-    configure(CoreOnlyConfig, app_name="wallpaper-effects-test")
-    config = get_config()
+    """Test effects are loaded from effects.yaml via layered_effects."""
+    from wallpaper_core.effects import get_package_effects_file
+    from layered_effects import configure, load_effects, _reset
+
+    # Reset any previous configuration
+    _reset()
+
+    # Verify package effects file exists
+    package_effects = get_package_effects_file()
+    assert package_effects.exists()
+
+    # Configure layered effects
+    configure(package_effects_file=package_effects)
+
+    # Load effects
+    effects_config = load_effects()
 
     # Should have blur effect
-    assert "blur" in config.effects.effects
-    blur = config.effects.effects["blur"]
+    assert "blur" in effects_config.effects
+    blur = effects_config.effects["blur"]
     assert blur.description
     assert "$INPUT" in blur.command
     assert "$OUTPUT" in blur.command
@@ -85,4 +97,5 @@ def test_cli_info_command_runs() -> None:
 
     assert result.exit_code == 0
     assert "Core Settings" in result.stdout
-    assert "Effects" in result.stdout
+    # Effects are displayed via layered_effects integration
+    assert "Available Effects" in result.stdout or "Effects" in result.stdout

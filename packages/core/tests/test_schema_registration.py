@@ -17,22 +17,21 @@ def test_core_settings_registered() -> None:
 
 
 def test_effects_config_registered() -> None:
-    """Test EffectsConfig is registered with 'effects' namespace."""
+    """Test EffectsConfig is NO LONGER registered (Phase 2 change)."""
+    # In Phase 2, effects are handled by layered_effects package
+    # EffectsConfig is no longer registered in SchemaRegistry
     entry = SchemaRegistry.get("effects")
-    assert entry.namespace == "effects"
-    assert entry.model == EffectsConfig
-    assert entry.defaults_file.name == "effects.yaml"
-    assert entry.defaults_file.exists()
+    assert entry is None  # Should not be registered
 
 
 def test_defaults_files_exist() -> None:
-    """Test both defaults files exist and are readable."""
+    """Test defaults file exists and is readable."""
     core_entry = SchemaRegistry.get("core")
-    effects_entry = SchemaRegistry.get("effects")
 
     assert core_entry.defaults_file.is_file()
-    assert effects_entry.defaults_file.is_file()
 
-    # Verify they're not empty
+    # Verify it's not empty
     assert core_entry.defaults_file.stat().st_size > 0
-    assert effects_entry.defaults_file.stat().st_size > 0
+
+    # Effects defaults are now managed by layered_effects package
+    # and are NOT in SchemaRegistry
