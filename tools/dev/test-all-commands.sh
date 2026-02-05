@@ -201,6 +201,97 @@ else
 fi
 
 # ============================================================================
+# LAYERED EFFECTS CONFIGURATION TESTS
+# ============================================================================
+
+print_header "LAYERED EFFECTS CONFIGURATION TESTS"
+
+# Setup test configuration directories
+TEST_USER_CONFIG="$TEST_OUTPUT_DIR/user-config"
+TEST_PROJECT_ROOT="$TEST_OUTPUT_DIR/project"
+mkdir -p "$TEST_USER_CONFIG"
+mkdir -p "$TEST_PROJECT_ROOT"
+
+# Create user-level effects.yaml with custom effect
+cat > "$TEST_USER_CONFIG/effects.yaml" << 'EOF'
+version: "1.0"
+parameter_types:
+  test_radius:
+    type: integer
+    min: 1
+    max: 50
+    default: 10
+    description: "Test radius parameter"
+effects:
+  test_custom:
+    description: "Custom user-defined blur effect"
+    command: "convert $INPUT -blur 0x15 $OUTPUT"
+    parameters: {}
+  blur:
+    description: "Overridden blur with stronger effect"
+    command: "convert $INPUT -blur 0x20 $OUTPUT"
+    parameters: {}
+EOF
+
+# Create project-level effects.yaml with different custom effect
+cat > "$TEST_PROJECT_ROOT/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  project_effect:
+    description: "Project-specific effect"
+    command: "convert $INPUT -brightness-contrast 10x10 $OUTPUT"
+    parameters: {}
+EOF
+
+print_test "User config custom effect loaded"
+# Set XDG_CONFIG_HOME to use our test directory
+export XDG_CONFIG_HOME="$TEST_OUTPUT_DIR"
+export WEG_USER_CONFIG_DIR="$TEST_USER_CONFIG"
+if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core show effects 2>&1 | grep -q "test_custom"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "User config effect override applied"
+# Check that blur effect description shows the override
+if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core show effects 2>&1 | grep -A1 "^blur$" | grep -q "Overridden blur"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Project-level effects loaded"
+# Change to project directory to test project-level config
+(cd "$TEST_PROJECT_ROOT" && wallpaper-core show effects 2>&1 | grep -q "project_effect")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "User custom effect can be processed"
+user_custom_out="$TEST_OUTPUT_DIR/user-custom-effect.jpg"
+if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core process effect "$TEST_IMAGE" "$user_custom_out" --effect test_custom > /dev/null 2>&1 && [ -f "$user_custom_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Project effect can be processed"
+project_effect_out="$TEST_OUTPUT_DIR/project-effect.jpg"
+(cd "$TEST_PROJECT_ROOT" && wallpaper-core process effect "$TEST_IMAGE" "$project_effect_out" --effect project_effect > /dev/null 2>&1)
+if [ -f "$project_effect_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# Cleanup test configs
+unset XDG_CONFIG_HOME
+unset WEG_USER_CONFIG_DIR
+
+# ============================================================================
 # ORCHESTRATOR CLI TESTS (wallpaper-process)
 # ============================================================================
 
