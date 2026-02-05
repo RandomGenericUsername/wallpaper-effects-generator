@@ -1,14 +1,18 @@
 """Main CLI entry point for wallpaper_core."""
 
+from pathlib import Path
 from typing import Annotated
 
 import typer
 from pydantic import BaseModel
 
+from layered_effects import configure as configure_effects, load_effects
+from layered_effects.errors import EffectsError, EffectsLoadError, EffectsValidationError
 from layered_settings import configure, get_config
 from wallpaper_core.cli import batch, process, show
 from wallpaper_core.config.schema import CoreSettings, Verbosity
 from wallpaper_core.console.output import RichOutput
+from wallpaper_core.effects import get_package_effects_file
 from wallpaper_core.effects.schema import EffectsConfig
 
 
@@ -21,6 +25,12 @@ class CoreOnlyConfig(BaseModel):
 
 # Configure layered_settings at module import
 configure(CoreOnlyConfig, app_name="wallpaper-effects")
+
+# Configure layered_effects for effects configuration
+configure_effects(
+    package_effects_file=get_package_effects_file(),
+    project_root=Path.cwd()
+)
 
 # Create Typer app
 app = typer.Typer(
@@ -72,7 +82,7 @@ def main(
 
     ctx.obj["verbosity"] = verbosity
     ctx.obj["output"] = RichOutput(verbosity)
-    ctx.obj["config"] = config_obj.effects
+    ctx.obj["config"] = load_effects()  # Load effects from layered-effects
     ctx.obj["settings"] = config_obj.core
 
 
@@ -89,6 +99,7 @@ def version() -> None:
 def info() -> None:
     """Show current configuration."""
     config = get_config()
+    effects = load_effects()  # Load effects from layered-effects
 
     typer.echo("=== Core Settings ===")
     typer.echo(f"Parallel: {config.core.execution.parallel}")
@@ -98,13 +109,13 @@ def info() -> None:
     typer.echo(f"Backend Binary: {config.core.backend.binary}")
 
     typer.echo("\n=== Effects ===")
-    typer.echo(f"Version: {config.effects.version}")
-    typer.echo(f"Effects defined: {len(config.effects.effects)}")
+    typer.echo(f"Version: {effects.version}")
+    typer.echo(f"Effects defined: {len(effects.effects)}")
 
-    if config.effects.effects:
+    if effects.effects:
         typer.echo("\nAvailable effects:")
-        for effect_name in sorted(config.effects.effects.keys()):
-            effect = config.effects.effects[effect_name]
+        for effect_name in sorted(effects.effects.keys()):
+            effect = effects.effects[effect_name]
             typer.echo(f"  - {effect_name}: {effect.description}")
 
 
