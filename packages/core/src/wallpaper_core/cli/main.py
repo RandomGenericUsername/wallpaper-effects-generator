@@ -71,18 +71,41 @@ def main(
     ] = 0,
 ) -> None:
     """Wallpaper Effects Processor - Apply ImageMagick effects to images."""
-    # Get configuration from layered_settings
+    # Get core settings from layered_settings
     config_obj = get_config()
+
+    # Get verbosity early for error output
+    verbosity = _get_verbosity(quiet, verbose)
+    output = RichOutput(verbosity)
+
+    # Load effects configuration with comprehensive error handling
+    try:
+        effects_config = load_effects()
+    except EffectsLoadError as e:
+        output.error(f"[bold red]Failed to load effects configuration[/bold red]")
+        output.error(f"Layer: {getattr(e, 'layer', 'unknown')}")
+        output.error(f"File: {e.file_path}")
+        output.error(f"Reason: {e.reason}")
+        raise typer.Exit(1)
+    except EffectsValidationError as e:
+        output.error(f"[bold red]Effects configuration validation failed[/bold red]")
+        output.error(f"Layer: {e.layer or 'merged'}")
+        output.error(f"Problem: {e.message}")
+        output.newline()
+        output.error("[dim]Check your effects.yaml for:[/dim]")
+        output.error("  • Undefined parameter types referenced in effects")
+        output.error("  • Missing required fields (description, command)")
+        output.error("  • Invalid YAML syntax")
+        raise typer.Exit(1)
+    except EffectsError as e:
+        output.error(f"[bold red]Effects error:[/bold red] {e}")
+        raise typer.Exit(1)
 
     # Store context for sub-commands
     ctx.ensure_object(dict)
-
-    # Get verbosity from flags or config
-    verbosity = _get_verbosity(quiet, verbose)
-
     ctx.obj["verbosity"] = verbosity
-    ctx.obj["output"] = RichOutput(verbosity)
-    ctx.obj["config"] = load_effects()  # Load effects from layered-effects
+    ctx.obj["output"] = output
+    ctx.obj["config"] = effects_config  # Changed from config_obj.effects
     ctx.obj["settings"] = config_obj.core
 
 
