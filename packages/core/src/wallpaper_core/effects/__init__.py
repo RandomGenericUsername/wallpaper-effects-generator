@@ -14,6 +14,18 @@ from wallpaper_core.effects.schema import (
     Preset,
 )
 
+
+def get_package_effects_file() -> Path:
+    """Get the path to the package's default effects.yaml file.
+
+    Returns:
+        Path to effects.yaml in the wallpaper_core.effects package.
+    """
+    from importlib import resources
+
+    return Path(resources.files("wallpaper_core.effects") / "effects.yaml")
+
+
 # Register EffectsConfig with layered_settings
 # effects.yaml is in the same directory as this file
 _effects_dir = Path(__file__).parent
@@ -28,6 +40,7 @@ __all__ = [
     "CompositeEffect",
     "Effect",
     "EffectsConfig",
+    "get_package_effects_file",
     "ParameterDefinition",
     "ParameterType",
     "Preset",
