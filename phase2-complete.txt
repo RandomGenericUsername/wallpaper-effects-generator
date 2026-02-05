@@ -1,0 +1,46 @@
+Phase 2: Layered Effects Integration - Complete
+================================================
+
+Date: 2026-02-05
+Branch: feature/phase2-integration
+
+Summary
+-------
+Successfully integrated layered-effects package into wallpaper-core CLI,
+enabling 3-layer configuration (package/project/user) for effects.
+
+Test Results
+------------
+Core Unit Tests: 11/11 passing
+CLI Loading Tests: 4/4 passing
+Integration Tests: 29/29 passing (including 5 layered effects tests)
+
+Changes Made
+------------
+1. Added get_package_effects_file() helper to effects module
+2. Removed effects field from CoreOnlyConfig
+3. Initialized layered-effects at module level in main.py
+4. Added comprehensive error handling for effects loading
+5. Removed SchemaRegistry registration for effects
+6. Added 11 new unit tests for integration
+7. Verified all integration tests pass
+
+Key Features
+------------
+- Users can define custom effects in ~/.config/wallpaper-effects-generator/effects.yaml
+- Projects can have local effects.yaml that extend package defaults
+- User effects can override package defaults
+- Clear, actionable error messages for configuration issues
+- Deep merge across all three layers (package/project/user)
+
+Breaking Changes
+----------------
+For developers importing wallpaper-core:
+- CoreOnlyConfig no longer has effects field
+- Must use layered_effects.load_effects() directly
+
+For CLI users: None (transparent change)
+
+Next Steps
+----------
+Ready for code review and merge to master.
