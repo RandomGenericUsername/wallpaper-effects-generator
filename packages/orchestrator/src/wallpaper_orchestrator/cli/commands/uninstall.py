@@ -5,6 +5,8 @@ import subprocess
 import typer
 from rich.console import Console
 
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
+
 console = Console()
 
 
@@ -22,6 +24,7 @@ def uninstall(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Remove container image for wallpaper effects processing.
 
@@ -53,6 +56,18 @@ def uninstall(
                 raise typer.Exit(1)
 
         image_name = "wallpaper-effects:latest"
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            cmd_str = f"{container_engine} rmi {image_name}"
+            renderer.render_uninstall(
+                engine=container_engine,
+                image_name=image_name,
+                command=cmd_str,
+            )
+            checks = renderer.validate_container(engine=container_engine, image_name=image_name)
+            renderer.render_validation(checks)
+            raise typer.Exit(0)
 
         # Confirm deletion
         if not yes:

@@ -20,7 +20,7 @@ def test_install_default_engine() -> None:
 
         # Call install function directly
         with pytest.raises(Exit) as exc_info:
-            install(engine=None)
+            install(engine=None, dry_run=False)
 
         # Should exit successfully
         assert exc_info.value.exit_code == 0
@@ -38,7 +38,7 @@ def test_install_with_podman() -> None:
         mock_run.return_value = MagicMock(returncode=0)
 
         with pytest.raises(Exit) as exc_info:
-            install(engine="podman")
+            install(engine="podman", dry_run=False)
 
         assert exc_info.value.exit_code == 0
 
@@ -55,7 +55,7 @@ def test_install_build_failure() -> None:
         )
 
         with pytest.raises(Exit) as exc_info:
-            install(engine=None)
+            install(engine=None, dry_run=False)
 
         # Should exit with error code
         assert exc_info.value.exit_code == 1
@@ -64,6 +64,6 @@ def test_install_build_failure() -> None:
 def test_install_invalid_engine() -> None:
     """Test install rejects invalid engine."""
     with pytest.raises(Exit) as exc_info:
-        install(engine="invalid")
+        install(engine="invalid", dry_run=False)
 
     assert exc_info.value.exit_code == 1

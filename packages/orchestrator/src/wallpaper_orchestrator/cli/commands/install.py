@@ -7,6 +7,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
+
 console = Console()
 
 
@@ -18,6 +20,7 @@ def install(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Build container image for wallpaper effects processing.
 
@@ -78,6 +81,26 @@ def install(
             image_name,
             str(project_root),
         ]
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            renderer.render_install(
+                engine=container_engine,
+                image_name=image_name,
+                dockerfile=dockerfile,
+                build_command=" ".join(cmd),
+            )
+            # Validation
+            checks = renderer.validate_container(engine=container_engine, image_name=image_name)
+            # Check Dockerfile exists
+            from layered_settings.dry_run import ValidationCheck
+            checks.insert(0, ValidationCheck(
+                name="Dockerfile exists",
+                passed=dockerfile.exists(),
+                detail=str(dockerfile),
+            ))
+            renderer.render_validation(checks)
+            raise typer.Exit(0)
 
         # Show progress while building
         with Progress(

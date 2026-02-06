@@ -17,7 +17,7 @@ def test_uninstall_with_confirmation() -> None:
         mock_confirm.return_value = True
 
         with pytest.raises(Exit) as exc_info:
-            uninstall(yes=False, engine=None)
+            uninstall(yes=False, engine=None, dry_run=False)
 
         assert exc_info.value.exit_code == 0
         mock_confirm.assert_called_once()
@@ -30,7 +30,7 @@ def test_uninstall_cancelled() -> None:
         mock_confirm.return_value = False
 
         with pytest.raises(Exit) as exc_info:
-            uninstall(yes=False, engine=None)
+            uninstall(yes=False, engine=None, dry_run=False)
 
         assert exc_info.value.exit_code == 0
         mock_confirm.assert_called_once()
@@ -42,7 +42,7 @@ def test_uninstall_skip_confirmation() -> None:
         mock_run.return_value = MagicMock(returncode=0)
 
         with pytest.raises(Exit) as exc_info:
-            uninstall(yes=True, engine=None)
+            uninstall(yes=True, engine=None, dry_run=False)
 
         assert exc_info.value.exit_code == 0
         mock_run.assert_called_once()
@@ -57,7 +57,7 @@ def test_uninstall_image_not_found() -> None:
         )
 
         with pytest.raises(Exit) as exc_info:
-            uninstall(yes=True, engine=None)
+            uninstall(yes=True, engine=None, dry_run=False)
 
         # Should still exit successfully (image already gone)
         assert exc_info.value.exit_code == 0
@@ -69,7 +69,7 @@ def test_uninstall_with_podman() -> None:
         mock_run.return_value = MagicMock(returncode=0)
 
         with pytest.raises(Exit) as exc_info:
-            uninstall(yes=True, engine="podman")
+            uninstall(yes=True, engine="podman", dry_run=False)
 
         assert exc_info.value.exit_code == 0
 
