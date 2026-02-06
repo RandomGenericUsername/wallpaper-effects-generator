@@ -903,83 +903,97 @@ fi
 
 print_test "Install container image"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install > /dev/null 2>&1); then
     test_passed
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Image built: wallpaper-effects:latest"
 else
-    test_failed("command failed")
+    test_failed "Container build failed"
 fi
 
 print_test "Process effect (containerized - blur)"
 orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" "$orch_effect_out" blur > /dev/null 2>&1) && [ -f "$orch_effect_out" ]; then
     test_passed
+    add_detail "• Output: $orch_effect_out"
+    add_detail "• Effect: blur (containerized)"
 else
-    test_failed("command failed")
+    test_failed "Containerized effect processing failed"
 fi
 
 print_test "Process composite (containerized - blackwhite-blur)"
 orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" "$orch_composite_out" blackwhite-blur > /dev/null 2>&1) && [ -f "$orch_composite_out" ]; then
     test_passed
+    add_detail "• Output: $orch_composite_out"
+    add_detail "• Composite: blackwhite-blur chain"
 else
-    test_failed("command failed")
+    test_failed "Containerized composite processing failed"
 fi
 
 print_test "Process preset (containerized - dark_blur)"
 orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" "$orch_preset_out" dark_blur > /dev/null 2>&1) && [ -f "$orch_preset_out" ]; then
     test_passed
+    add_detail "• Output: $orch_preset_out"
+    add_detail "• Preset: dark_blur"
 else
-    test_failed("command failed")
+    test_failed "Containerized preset processing failed"
 fi
 
 print_test "Batch effects (host execution - all effects)"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" > /dev/null 2>&1); then
     # Should generate 9 effects
     output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
         test_passed
+        add_detail "• Generated $output_count effect files"
     else
-        test_failed("command failed")
+        test_failed "Expected 9+ effects, got $output_count"
     fi
 else
-    test_failed("command failed")
+    test_failed "Batch effects command failed"
 fi
 
 print_test "Batch all (host execution)"
 orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
 mkdir -p "$orch_batch_all"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch all "$TEST_IMAGE" "$orch_batch_all" > /dev/null 2>&1); then
     output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -gt 15 ]; then
         test_passed
+        add_detail "• Generated $output_count total files (effects + composites + presets)"
     else
-        test_failed("command failed")
+        test_failed "Expected 15+ total outputs, got $output_count"
     fi
 else
-    test_failed("command failed")
+    test_failed "Batch all command failed"
 fi
 
 print_test "Uninstall container image"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    echo "  Skipped (no container engine)"
+    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1); then
     test_passed
+    add_detail "• Container image removed: wallpaper-effects:latest"
 else
-    test_failed("command failed")
+    test_failed "Container uninstall failed"
 fi
 
 # ============================================================================
