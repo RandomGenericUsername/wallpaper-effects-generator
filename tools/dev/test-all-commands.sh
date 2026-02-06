@@ -42,6 +42,20 @@ else
     exit 1
 fi
 
+# Helper functions to run commands via uv
+# Use --project to allow running from arbitrary CWD while keeping workspace resolution
+wallpaper-core() {
+    uv run --project "$PROJECT_ROOT" wallpaper-core "$@"
+}
+
+wallpaper-process() {
+    uv run --project "$PROJECT_ROOT" wallpaper-process "$@"
+}
+
+export -f wallpaper-core
+export -f wallpaper-process
+export PROJECT_ROOT
+
 TEST_OUTPUT_DIR="/tmp/wallpaper-effects-test"
 PASSED=0
 FAILED=0
@@ -213,7 +227,9 @@ mkdir -p "$TEST_USER_CONFIG"
 mkdir -p "$TEST_PROJECT_ROOT"
 
 # Create user-level effects.yaml with custom effect
-cat > "$TEST_USER_CONFIG/effects.yaml" << 'EOF'
+# Fix: Use proper directory structure for user config
+mkdir -p "$TEST_USER_CONFIG/wallpaper-effects-generator"
+cat > "$TEST_USER_CONFIG/wallpaper-effects-generator/effects.yaml" << 'EOF'
 version: "1.0"
 parameter_types:
   test_radius:
@@ -245,9 +261,7 @@ EOF
 
 print_test "User config custom effect loaded"
 # Set XDG_CONFIG_HOME to use our test directory
-export XDG_CONFIG_HOME="$TEST_OUTPUT_DIR"
-export WEG_USER_CONFIG_DIR="$TEST_USER_CONFIG"
-if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core show effects 2>&1 | grep -q "test_custom"; then
+if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core show effects 2>&1 | grep -q "test_custom"; then
     print_pass
 else
     print_fail
@@ -255,7 +269,7 @@ fi
 
 print_test "User config effect override applied"
 # Check that blur effect description shows the override
-if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core show effects 2>&1 | grep -A1 "^blur$" | grep -q "Overridden blur"; then
+if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core show effects 2>&1 | grep "blur" | grep -q "Overridden blur"; then
     print_pass
 else
     print_fail
@@ -272,7 +286,7 @@ fi
 
 print_test "User custom effect can be processed"
 user_custom_out="$TEST_OUTPUT_DIR/user-custom-effect.jpg"
-if XDG_CONFIG_HOME="$TEST_OUTPUT_DIR" wallpaper-core process effect "$TEST_IMAGE" "$user_custom_out" --effect test_custom > /dev/null 2>&1 && [ -f "$user_custom_out" ]; then
+if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core process effect "$TEST_IMAGE" "$user_custom_out" --effect test_custom > /dev/null 2>&1 && [ -f "$user_custom_out" ]; then
     print_pass
 else
     print_fail
@@ -290,6 +304,365 @@ fi
 # Cleanup test configs
 unset XDG_CONFIG_HOME
 unset WEG_USER_CONFIG_DIR
+
+# ============================================================================
+# LAYERED EFFECTS - ERROR HANDLING TESTS
+# ============================================================================
+
+print_header "LAYERED EFFECTS - ERROR HANDLING TESTS"
+
+# Setup error test directories
+TEST_ERROR_USER="$TEST_OUTPUT_DIR/error-user"
+TEST_ERROR_PROJECT="$TEST_OUTPUT_DIR/error-project"
+mkdir -p "$TEST_ERROR_USER/wallpaper-effects-generator"
+mkdir -p "$TEST_ERROR_PROJECT"
+
+print_test "Invalid YAML in user config shows error"
+cat > "$TEST_ERROR_USER/wallpaper-effects-generator/effects.yaml" << 'EOF'
+invalid: yaml: content:
+  bad: structure
+EOF
+XDG_CONFIG_HOME="$TEST_ERROR_USER" wallpaper-core show effects > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Invalid YAML in project config shows error"
+cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
+malformed yaml without proper structure
+  missing: colons
+EOF
+(cd "$TEST_ERROR_PROJECT" && wallpaper-core show effects > /dev/null 2>&1)
+if [ $? -ne 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Missing required field shows validation error"
+cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  broken_effect:
+    description: "Missing command field"
+    parameters: {}
+EOF
+(cd "$TEST_ERROR_PROJECT" && wallpaper-core show effects > /dev/null 2>&1)
+if [ $? -ne 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Well-formed but empty effects.yaml works"
+cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
+version: "1.0"
+EOF
+(cd "$TEST_ERROR_PROJECT" && wallpaper-core show effects > /dev/null 2>&1)
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# LAYERED EFFECTS - COMBINED LAYERS (3-LAYER MERGE)
+# ============================================================================
+
+print_header "LAYERED EFFECTS - COMBINED LAYERS (3-LAYER MERGE)"
+
+# Setup 3-layer test
+TEST_3LAYER_USER="$TEST_OUTPUT_DIR/3layer-user"
+TEST_3LAYER_PROJECT="$TEST_OUTPUT_DIR/3layer-project"
+mkdir -p "$TEST_3LAYER_USER/wallpaper-effects-generator"
+mkdir -p "$TEST_3LAYER_PROJECT"
+
+# User layer: override blur + add user_effect
+cat > "$TEST_3LAYER_USER/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  blur:
+    description: "User-overridden blur"
+    command: "convert $INPUT -blur 0x25 $OUTPUT"
+    parameters: {}
+  user_effect:
+    description: "User-only effect"
+    command: "convert $INPUT -negate $OUTPUT"
+    parameters: {}
+EOF
+
+# Project layer: add project_effect
+cat > "$TEST_3LAYER_PROJECT/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  project_effect:
+    description: "Project-only effect"
+    command: "convert $INPUT -sepia-tone 80% $OUTPUT"
+    parameters: {}
+EOF
+
+print_test "3-layer merge: all effects present"
+# Should have: package effects + project_effect + user_effect + user-overridden blur
+(cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep -q "user_effect") && \
+(cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep -q "project_effect")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "3-layer merge: user override takes precedence"
+(cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep "blur" | grep -q "User-overridden")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "3-layer merge: process user effect"
+threelayer_out="$TEST_OUTPUT_DIR/3layer-user-effect.jpg"
+(cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core process effect "$TEST_IMAGE" "$threelayer_out" --effect user_effect > /dev/null 2>&1)
+if [ -f "$threelayer_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "3-layer merge: process project effect"
+threelayer_project_out="$TEST_OUTPUT_DIR/3layer-project-effect.jpg"
+(cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core process effect "$TEST_IMAGE" "$threelayer_project_out" --effect project_effect > /dev/null 2>&1)
+if [ -f "$threelayer_project_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# LAYERED EFFECTS - PARAMETER TYPES ACROSS LAYERS
+# ============================================================================
+
+print_header "LAYERED EFFECTS - PARAMETER TYPES ACROSS LAYERS"
+
+TEST_PARAMS_USER="$TEST_OUTPUT_DIR/params-user"
+TEST_PARAMS_PROJECT="$TEST_OUTPUT_DIR/params-project"
+mkdir -p "$TEST_PARAMS_USER/wallpaper-effects-generator"
+mkdir -p "$TEST_PARAMS_PROJECT"
+
+# User adds custom parameter type and effect using it
+cat > "$TEST_PARAMS_USER/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+parameter_types:
+  user_strength:
+    type: integer
+    min: 0
+    max: 100
+    default: 50
+    description: "User-defined strength parameter"
+effects:
+  user_effect_with_param:
+    description: "Effect using user parameter type"
+    command: "convert $INPUT -brightness-contrast {user_strength} $OUTPUT"
+    parameters:
+      user_strength:
+        type_ref: user_strength
+EOF
+
+# Project adds different parameter type and effect using package parameter type
+cat > "$TEST_PARAMS_PROJECT/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  project_effect_with_package_param:
+    description: "Project effect using package parameter type"
+    command: "convert $INPUT -blur {blur_geometry} $OUTPUT"
+    parameters:
+      blur:
+        type_ref: blur_geometry
+EOF
+
+print_test "Parameter types merge across layers"
+# Verify both effects are present and can be listed (meaning parameter type merging worked)
+(cd "$TEST_PARAMS_PROJECT" && XDG_CONFIG_HOME="$TEST_PARAMS_USER" wallpaper-core show effects 2>&1 | grep -q "user_effect_with_param") && \
+(cd "$TEST_PARAMS_PROJECT" && XDG_CONFIG_HOME="$TEST_PARAMS_USER" wallpaper-core show effects 2>&1 | grep -q "project_effect_with_package_param")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# LAYERED EFFECTS - COMPOSITES AND PRESETS
+# ============================================================================
+
+print_header "LAYERED EFFECTS - COMPOSITES AND PRESETS"
+
+TEST_COMP_USER="$TEST_OUTPUT_DIR/comp-user"
+TEST_COMP_PROJECT="$TEST_OUTPUT_DIR/comp-project"
+mkdir -p "$TEST_COMP_USER/wallpaper-effects-generator"
+mkdir -p "$TEST_COMP_PROJECT"
+
+# User adds custom composite
+cat > "$TEST_COMP_USER/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+composites:
+  user_composite:
+    description: "User-defined composite"
+    chain:
+      - effect: blur
+      - effect: brightness
+presets:
+  user_preset:
+    description: "User-defined preset"
+    composite: user_composite
+EOF
+
+# Project adds custom preset
+cat > "$TEST_COMP_PROJECT/effects.yaml" << 'EOF'
+version: "1.0"
+presets:
+  project_preset:
+    description: "Project-defined preset"
+    effect: blur
+EOF
+
+print_test "User composite is loaded"
+(cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show composites 2>&1 | grep -q "user_composite")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "User preset is loaded"
+(cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show presets 2>&1 | grep -q "user_preset")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Project preset is loaded"
+(cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show presets 2>&1 | grep -q "project_preset")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "User composite can be processed"
+user_comp_out="$TEST_OUTPUT_DIR/user-composite.jpg"
+(cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core process composite "$TEST_IMAGE" "$user_comp_out" --composite user_composite > /dev/null 2>&1)
+if [ -f "$user_comp_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "User preset can be processed"
+user_preset_out="$TEST_OUTPUT_DIR/user-preset.jpg"
+(cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core process preset "$TEST_IMAGE" "$user_preset_out" --preset user_preset > /dev/null 2>&1)
+if [ -f "$user_preset_out" ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# LAYERED SETTINGS TESTS
+# ============================================================================
+
+print_header "LAYERED SETTINGS TESTS"
+
+TEST_SETTINGS_USER="$TEST_OUTPUT_DIR/settings-user"
+TEST_SETTINGS_PROJECT="$TEST_OUTPUT_DIR/settings-project"
+mkdir -p "$TEST_SETTINGS_USER/wallpaper-effects-generator"
+mkdir -p "$TEST_SETTINGS_PROJECT"
+
+# User settings
+cat > "$TEST_SETTINGS_USER/wallpaper-effects-generator/settings.toml" << 'EOF'
+[core]
+verbosity = "verbose"
+default_format = "png"
+EOF
+
+# Project settings
+cat > "$TEST_SETTINGS_PROJECT/settings.toml" << 'EOF'
+[core]
+default_format = "webp"
+EOF
+
+print_test "Settings load without errors"
+(cd "$TEST_SETTINGS_PROJECT" && XDG_CONFIG_HOME="$TEST_SETTINGS_USER" wallpaper-core info > /dev/null 2>&1)
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# EDGE CASES
+# ============================================================================
+
+print_header "EDGE CASES"
+
+TEST_EDGE="$TEST_OUTPUT_DIR/edge-cases"
+mkdir -p "$TEST_EDGE/wallpaper-effects-generator"
+
+print_test "Very long effect name"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  this_is_a_very_long_effect_name_that_tests_the_limits_of_identifier_length:
+    description: "Effect with very long name"
+    command: "convert $INPUT -blur 0x10 $OUTPUT"
+    parameters: {}
+EOF
+(XDG_CONFIG_HOME="$TEST_EDGE" wallpaper-core show effects 2>&1 | grep -q "this_is_a_very_long")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Effect name with underscores and numbers"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  effect_123_test:
+    description: "Effect with numbers"
+    command: "convert $INPUT -blur 0x10 $OUTPUT"
+    parameters: {}
+EOF
+(XDG_CONFIG_HOME="$TEST_EDGE" wallpaper-core show effects 2>&1 | grep -q "effect_123_test")
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Empty effects section"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects: {}
+EOF
+XDG_CONFIG_HOME="$TEST_EDGE" wallpaper-core show effects > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "Only version field (minimal valid file)"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+EOF
+XDG_CONFIG_HOME="$TEST_EDGE" wallpaper-core show effects > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
 
 # ============================================================================
 # ORCHESTRATOR CLI TESTS (wallpaper-process)
@@ -338,8 +711,35 @@ fi
 
 print_header "CONTAINER MANAGEMENT TESTS"
 
+# Detect container engine
+if command -v podman > /dev/null 2>&1; then
+    CONTAINER_ENGINE="podman"
+elif command -v docker > /dev/null 2>&1; then
+    CONTAINER_ENGINE="docker"
+else
+    echo "Warning: No container engine found, skipping container tests"
+    CONTAINER_ENGINE="none"
+fi
+
+# Create a project directory with settings.toml for container engine config
+# Note: layered_settings discovers project-level config from cwd/settings.toml
+TEST_CONTAINER_PROJECT="$TEST_OUTPUT_DIR/container-project"
+mkdir -p "$TEST_CONTAINER_PROJECT"
+if [ "$CONTAINER_ENGINE" != "none" ]; then
+    cat > "$TEST_CONTAINER_PROJECT/settings.toml" << EOF
+[orchestrator]
+version = "1.0"
+
+[orchestrator.container]
+engine = "$CONTAINER_ENGINE"
+image_name = "wallpaper-effects:latest"
+EOF
+fi
+
 print_test "Install container image"
-if wallpaper-process install > /dev/null 2>&1; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install > /dev/null 2>&1); then
     print_pass
 else
     print_fail
@@ -347,7 +747,9 @@ fi
 
 print_test "Process effect (containerized - blur)"
 orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
-if wallpaper-process process effect "$TEST_IMAGE" "$orch_effect_out" blur > /dev/null 2>&1 && [ -f "$orch_effect_out" ]; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" "$orch_effect_out" blur > /dev/null 2>&1) && [ -f "$orch_effect_out" ]; then
     print_pass
 else
     print_fail
@@ -355,7 +757,9 @@ fi
 
 print_test "Process composite (containerized - blackwhite-blur)"
 orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
-if wallpaper-process process composite "$TEST_IMAGE" "$orch_composite_out" blackwhite-blur > /dev/null 2>&1 && [ -f "$orch_composite_out" ]; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" "$orch_composite_out" blackwhite-blur > /dev/null 2>&1) && [ -f "$orch_composite_out" ]; then
     print_pass
 else
     print_fail
@@ -363,7 +767,9 @@ fi
 
 print_test "Process preset (containerized - dark_blur)"
 orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
-if wallpaper-process process preset "$TEST_IMAGE" "$orch_preset_out" dark_blur > /dev/null 2>&1 && [ -f "$orch_preset_out" ]; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" "$orch_preset_out" dark_blur > /dev/null 2>&1) && [ -f "$orch_preset_out" ]; then
     print_pass
 else
     print_fail
@@ -372,7 +778,9 @@ fi
 print_test "Batch effects (host execution - all effects)"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
-if wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" > /dev/null 2>&1; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch effects "$TEST_IMAGE" "$orch_batch_effect" > /dev/null 2>&1); then
     # Should generate 9 effects
     output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
@@ -387,7 +795,9 @@ fi
 print_test "Batch all (host execution)"
 orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
 mkdir -p "$orch_batch_all"
-if wallpaper-process batch all "$TEST_IMAGE" "$orch_batch_all" > /dev/null 2>&1; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch all "$TEST_IMAGE" "$orch_batch_all" > /dev/null 2>&1); then
     output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -gt 15 ]; then
         print_pass
@@ -399,7 +809,9 @@ else
 fi
 
 print_test "Uninstall container image"
-if wallpaper-process uninstall --yes > /dev/null 2>&1; then
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    echo "  Skipped (no container engine)"
+elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1); then
     print_pass
 else
     print_fail
