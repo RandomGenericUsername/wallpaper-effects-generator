@@ -156,6 +156,14 @@ class ContainerManager:
             self.engine,
             "run",
             "--rm",
+        ]
+
+        # Rootless podman needs --userns=keep-id for correct
+        # UID mapping with host-mounted volumes
+        if self.engine == "podman":
+            cmd.append("--userns=keep-id")
+
+        cmd.extend([
             "-v",
             input_mount,
             "-v",
@@ -167,7 +175,7 @@ class ContainerManager:
             f"/output/{output_path.name}",
             f"--{command_type}",
             command_name,
-        ]
+        ])
 
         # Add additional arguments if provided
         if additional_args:
