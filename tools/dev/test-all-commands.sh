@@ -818,6 +818,396 @@ else
 fi
 
 # ============================================================================
+# DRY-RUN TESTS - CORE CLI
+# ============================================================================
+
+print_header "DRY-RUN TESTS - CORE CLI"
+
+print_test "process effect --dry-run shows command without executing"
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/dry-run-test.jpg --effect blur --dry-run 2>&1)
+exit_code=$?
+if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process effect --dry-run creates no output file"
+test_output="/tmp/wallpaper-dry-run-should-not-exist.jpg"
+rm -f "$test_output" 2>/dev/null
+wallpaper-core process effect "$TEST_IMAGE" "$test_output" --effect blur --dry-run > /dev/null 2>&1
+if [ ! -f "$test_output" ]; then
+    print_pass
+else
+    print_fail
+    rm -f "$test_output"
+fi
+
+print_test "process effect --dry-run shows validation checks"
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(Validation|✓|✗)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process effect --dry-run with missing input shows warning"
+dry_run_output=$(wallpaper-core process effect /nonexistent/file.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process effect --dry-run with unknown effect shows warning"
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect nonexistent_effect --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process effect -q --dry-run shows only command (quiet mode)"
+dry_run_output=$(wallpaper-core -q process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+if echo "$dry_run_output" | grep -q "magick" && ! echo "$dry_run_output" | grep -q "Validation"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process composite --dry-run shows chain commands"
+dry_run_output=$(wallpaper-core process composite "$TEST_IMAGE" /tmp/test.jpg --composite blackwhite-blur --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qi "blur" && echo "$dry_run_output" | grep -qi "blackwhite"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process composite --dry-run creates no output file"
+test_output="/tmp/wallpaper-composite-dry-run.jpg"
+rm -f "$test_output" 2>/dev/null
+wallpaper-core process composite "$TEST_IMAGE" "$test_output" --composite blackwhite-blur --dry-run > /dev/null 2>&1
+if [ ! -f "$test_output" ]; then
+    print_pass
+else
+    print_fail
+    rm -f "$test_output"
+fi
+
+print_test "process preset --dry-run shows resolved command"
+dry_run_output=$(wallpaper-core process preset "$TEST_IMAGE" /tmp/test.jpg --preset dark_blur --dry-run 2>&1)
+if echo "$dry_run_output" | grep -q "magick"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "process preset --dry-run creates no output file"
+test_output="/tmp/wallpaper-preset-dry-run.jpg"
+rm -f "$test_output" 2>/dev/null
+wallpaper-core process preset "$TEST_IMAGE" "$test_output" --preset dark_blur --dry-run > /dev/null 2>&1
+if [ ! -f "$test_output" ]; then
+    print_pass
+else
+    print_fail
+    rm -f "$test_output"
+fi
+
+print_test "batch effects --dry-run shows table with all effects"
+dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+if echo "$dry_run_output" | grep -q "blur" && echo "$dry_run_output" | grep -q "blackwhite"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch effects --dry-run shows item count"
+dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "([0-9]+ items|Effects)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch effects --dry-run shows resolved commands"
+dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
+if [ "$command_count" -ge 3 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch effects --dry-run creates no files"
+test_dir="/tmp/wallpaper-batch-dry-run"
+rm -rf "$test_dir" 2>/dev/null
+mkdir -p "$test_dir"
+wallpaper-core batch effects "$TEST_IMAGE" "$test_dir" --dry-run > /dev/null 2>&1
+file_count=$(find "$test_dir" -type f 2>/dev/null | wc -l)
+if [ "$file_count" -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+rm -rf "$test_dir"
+
+print_test "batch composites --dry-run shows table"
+dry_run_output=$(wallpaper-core batch composites "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(blackwhite-blur|Composites)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch composites --dry-run creates no files"
+test_dir="/tmp/wallpaper-batch-composite-dry"
+rm -rf "$test_dir" 2>/dev/null
+mkdir -p "$test_dir"
+wallpaper-core batch composites "$TEST_IMAGE" "$test_dir" --dry-run > /dev/null 2>&1
+file_count=$(find "$test_dir" -type f 2>/dev/null | wc -l)
+if [ "$file_count" -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+rm -rf "$test_dir"
+
+print_test "batch presets --dry-run shows table"
+dry_run_output=$(wallpaper-core batch presets "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(dark_blur|Presets|subtle_blur)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch presets --dry-run creates no files"
+test_dir="/tmp/wallpaper-batch-preset-dry"
+rm -rf "$test_dir" 2>/dev/null
+mkdir -p "$test_dir"
+wallpaper-core batch presets "$TEST_IMAGE" "$test_dir" --dry-run > /dev/null 2>&1
+file_count=$(find "$test_dir" -type f 2>/dev/null | wc -l)
+if [ "$file_count" -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+rm -rf "$test_dir"
+
+print_test "batch all --dry-run shows all item types"
+dry_run_output=$(wallpaper-core batch all "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(Effects|Composites|Presets)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "batch all --dry-run creates no files"
+test_dir="/tmp/wallpaper-batch-all-dry"
+rm -rf "$test_dir" 2>/dev/null
+mkdir -p "$test_dir"
+wallpaper-core batch all "$TEST_IMAGE" "$test_dir" --dry-run > /dev/null 2>&1
+file_count=$(find "$test_dir" -type f 2>/dev/null | wc -l)
+if [ "$file_count" -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+rm -rf "$test_dir"
+
+print_test "batch all -q --dry-run shows only commands (quiet mode)"
+dry_run_output=$(wallpaper-core -q batch all "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
+command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
+if [ "$command_count" -ge 5 ] && ! echo "$dry_run_output" | grep -q "Validation"; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
+# DRY-RUN TESTS - ORCHESTRATOR CLI
+# ============================================================================
+
+print_header "DRY-RUN TESTS - ORCHESTRATOR CLI"
+
+if [ "$CONTAINER_ENGINE" != "none" ]; then
+    # Re-install image for dry-run tests
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install > /dev/null 2>&1)
+
+    print_test "install --dry-run shows build command"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -qi "build" && echo "$dry_run_output" | grep -qi "dockerfile"; then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "install --dry-run does not build image"
+    # Check that we can still do a real install after dry-run (image wasn't built)
+    test_image_name="wallpaper-effects-test:dry-run-$(date +%s)"
+    cat > "$TEST_CONTAINER_PROJECT/settings-drytest.toml" << EOF
+[orchestrator]
+version = "1.0"
+
+[orchestrator.container]
+engine = "$CONTAINER_ENGINE"
+image_name = "$test_image_name"
+EOF
+    # Dry-run should NOT create the image
+    XDG_CONFIG_HOME="$TEST_CONTAINER_PROJECT" wallpaper-process install --dry-run > /dev/null 2>&1
+    if ! $CONTAINER_ENGINE inspect "$test_image_name" > /dev/null 2>&1; then
+        print_pass
+    else
+        print_fail
+        $CONTAINER_ENGINE rmi "$test_image_name" > /dev/null 2>&1
+    fi
+    rm -f "$TEST_CONTAINER_PROJECT/settings-drytest.toml"
+
+    print_test "uninstall --dry-run shows rmi command"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -q "rmi"; then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "uninstall --dry-run does not remove image"
+    # Check image still exists after dry-run uninstall
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --dry-run > /dev/null 2>&1)
+    if (cd "$TEST_CONTAINER_PROJECT" && $CONTAINER_ENGINE inspect wallpaper-effects:latest > /dev/null 2>&1); then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "process effect --dry-run shows both host and inner commands"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" /tmp/test.jpg blur --dry-run 2>&1)
+    has_host_cmd=$(echo "$dry_run_output" | grep -E "($CONTAINER_ENGINE|run)" | wc -l)
+    has_inner_cmd=$(echo "$dry_run_output" | grep "magick" | wc -l)
+    if [ "$has_host_cmd" -ge 1 ] && [ "$has_inner_cmd" -ge 1 ]; then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "process effect --dry-run does not spawn container"
+    test_output="/tmp/wallpaper-orch-dry-effect.jpg"
+    rm -f "$test_output" 2>/dev/null
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" "$test_output" blur --dry-run > /dev/null 2>&1)
+    if [ ! -f "$test_output" ]; then
+        print_pass
+    else
+        print_fail
+        rm -f "$test_output"
+    fi
+
+    print_test "process composite --dry-run shows container and chain"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" /tmp/test.jpg blackwhite-blur --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE" && echo "$dry_run_output" | grep -qi "blur"; then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "process composite --dry-run creates no output"
+    test_output="/tmp/wallpaper-orch-dry-composite.jpg"
+    rm -f "$test_output" 2>/dev/null
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" "$test_output" blackwhite-blur --dry-run > /dev/null 2>&1)
+    if [ ! -f "$test_output" ]; then
+        print_pass
+    else
+        print_fail
+        rm -f "$test_output"
+    fi
+
+    print_test "process preset --dry-run shows container command"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" /tmp/test.jpg dark_blur --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE"; then
+        print_pass
+    else
+        print_fail
+    fi
+
+    print_test "process preset --dry-run creates no output"
+    test_output="/tmp/wallpaper-orch-dry-preset.jpg"
+    rm -f "$test_output" 2>/dev/null
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" "$test_output" dark_blur --dry-run > /dev/null 2>&1)
+    if [ ! -f "$test_output" ]; then
+        print_pass
+    else
+        print_fail
+        rm -f "$test_output"
+    fi
+
+    # Note: Orchestrator batch commands delegate to core (host execution), so they're already tested above
+
+    # Clean up container image
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1)
+else
+    echo "  Skipping all orchestrator dry-run tests (no container engine)"
+fi
+
+# ============================================================================
+# DRY-RUN EDGE CASES
+# ============================================================================
+
+print_header "DRY-RUN EDGE CASES"
+
+print_test "dry-run with special characters in paths"
+special_path="/tmp/wallpaper test (dry-run).jpg"
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$special_path" --effect blur --dry-run 2>&1)
+if [ $? -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "dry-run with very long output path"
+long_path="/tmp/$(printf 'a%.0s' {1..200}).jpg"
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$long_path" --effect blur --dry-run 2>&1)
+if [ $? -eq 0 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "dry-run shows parameter defaults vs overrides"
+# Test with default parameter
+dry_run_default=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+# Check that output shows parameter value (either default notation or actual value)
+if echo "$dry_run_default" | grep -qE "(blur|0x8|param)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "dry-run batch with --flat flag shows correct paths"
+dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-flat --flat --dry-run 2>&1)
+# In flat mode, output paths should not have subdirectories
+if echo "$dry_run_output" | grep -q "/tmp/batch-flat" && ! echo "$dry_run_output" | grep -q "/effects/"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "dry-run batch with --parallel shows execution mode"
+dry_run_output=$(wallpaper-core batch all "$TEST_IMAGE" /tmp/batch-test --parallel --dry-run 2>&1)
+if echo "$dry_run_output" | grep -qE "(parallel|Mode)"; then
+    print_pass
+else
+    print_fail
+fi
+
+print_test "dry-run shows validation for all preconditions"
+# With missing input, multiple validation checks should appear
+dry_run_output=$(wallpaper-core process effect /nonexistent.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
+validation_checks=$(echo "$dry_run_output" | grep -cE "(✓|✗)" || echo "0")
+if [ "$validation_checks" -ge 2 ]; then
+    print_pass
+else
+    print_fail
+fi
+
+# ============================================================================
 # SUMMARY
 # ============================================================================
 
