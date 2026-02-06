@@ -1,9 +1,6 @@
 """Project-level UnifiedConfig composing all schemas."""
 
-from typing import Any
-
-from layered_settings import SchemaRegistry
-from layered_settings.loader import FileLoader
+from layered_effects import load_effects
 from pydantic import BaseModel, ConfigDict, Field
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
@@ -12,21 +9,12 @@ from wallpaper_orchestrator.config.settings import OrchestratorSettings
 
 
 def _load_effects_defaults() -> EffectsConfig:
-    """Load EffectsConfig from registered defaults file.
+    """Load EffectsConfig via layered-effects system.
 
-    This is needed because EffectsConfig requires a version field
-    and cannot be instantiated with no arguments.
+    Uses the layered-effects package to load and merge effects
+    from package, project, and user layers.
     """
-    # Ensure effects schema is registered (trigger import)
-    import wallpaper_core.effects  # noqa: F401
-
-    reg = SchemaRegistry.get("effects")
-    if reg is None or reg.defaults_file is None:
-        # Fallback to minimal valid config if not registered
-        return EffectsConfig(version="1.0")
-
-    data: dict[str, Any] = FileLoader.load(reg.defaults_file)
-    return EffectsConfig(**data)
+    return load_effects()
 
 
 class UnifiedConfig(BaseModel):

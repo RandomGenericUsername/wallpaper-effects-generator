@@ -21,17 +21,24 @@ WORKDIR /app
 # Install uv for package management
 RUN pip install --no-cache-dir uv
 
-# Copy settings package (dependency of core)
+# Copy settings package (dependency of core and effects)
 COPY --chown=wallpaper:wallpaper packages/settings /app/wallpaper-settings
+
+# Copy effects package (dependency of core)
+COPY --chown=wallpaper:wallpaper packages/effects /app/wallpaper-effects
 
 # Copy wallpaper-core package
 COPY --chown=wallpaper:wallpaper packages/core /app/wallpaper-core
 
-# Install settings first, then core (use pip to avoid uv.sources issues)
+# Install packages in dependency order (use pip to avoid uv.sources issues)
+# Note: layered-effects declares wallpaper-core as a dependency (workspace ref),
+# so we install it with --no-deps since wallpaper-core is installed locally
 RUN cd /app/wallpaper-settings && \
     pip install --no-cache-dir . && \
     cd /app/wallpaper-core && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir . && \
+    cd /app/wallpaper-effects && \
+    pip install --no-cache-dir --no-deps .
 
 # Create mount points
 RUN mkdir -p /input /output && \
