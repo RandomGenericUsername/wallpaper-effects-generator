@@ -260,42 +260,42 @@ echo -e "${GREEN}✓ Output directory ready${NC}\n"
 
 print_header "CORE CLI TESTS (wallpaper-core)"
 
-print_test "Version command"
+print_test "wallpaper-core version displays version information"
 if wallpaper-core version > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Info command"
+print_test "wallpaper-core info displays system information"
 if wallpaper-core info > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show effects"
+print_test "wallpaper-core show effects lists all available effects"
 if wallpaper-core show effects > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show composites"
+print_test "wallpaper-core show composites lists all available composites"
 if wallpaper-core show composites > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show presets"
+print_test "wallpaper-core show presets lists all available presets"
 if wallpaper-core show presets > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Process single effect (blur)"
+print_test "wallpaper-core process effect (blur) creates output file"
 core_effect_out="$TEST_OUTPUT_DIR/core-effect-blur.jpg"
 if wallpaper-core process effect "$TEST_IMAGE" "$core_effect_out" --effect blur > /dev/null 2>&1 && [ -f "$core_effect_out" ]; then
     test_passed
@@ -303,7 +303,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Process composite (blackwhite-blur)"
+print_test "wallpaper-core process composite (blackwhite-blur) creates output file"
 core_composite_out="$TEST_OUTPUT_DIR/core-composite-blackwhite-blur.jpg"
 if wallpaper-core process composite "$TEST_IMAGE" "$core_composite_out" --composite blackwhite-blur > /dev/null 2>&1 && [ -f "$core_composite_out" ]; then
     test_passed
@@ -311,7 +311,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Process preset (dark_blur)"
+print_test "wallpaper-core process preset (dark_blur) creates output file"
 core_preset_out="$TEST_OUTPUT_DIR/core-preset-dark_blur.jpg"
 if wallpaper-core process preset "$TEST_IMAGE" "$core_preset_out" --preset dark_blur > /dev/null 2>&1 && [ -f "$core_preset_out" ]; then
     test_passed
@@ -319,7 +319,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Batch effects (all effects)"
+print_test "wallpaper-core batch effects generates all effect outputs"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
 mkdir -p "$core_batch_effect"
 if wallpaper-core batch effects "$TEST_IMAGE" "$core_batch_effect" > /dev/null 2>&1; then
@@ -334,7 +334,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Batch composites (all composites)"
+print_test "wallpaper-core batch composites generates all composite outputs"
 core_batch_composite="$TEST_OUTPUT_DIR/core-batch-composite"
 mkdir -p "$core_batch_composite"
 if wallpaper-core batch composites "$TEST_IMAGE" "$core_batch_composite" > /dev/null 2>&1; then
@@ -349,7 +349,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Batch presets (all presets)"
+print_test "wallpaper-core batch presets generates all preset outputs"
 core_batch_preset="$TEST_OUTPUT_DIR/core-batch-preset"
 mkdir -p "$core_batch_preset"
 if wallpaper-core batch presets "$TEST_IMAGE" "$core_batch_preset" > /dev/null 2>&1; then
@@ -364,7 +364,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Batch all (effects, composites, presets)"
+print_test "wallpaper-core batch all generates effects, composites, and presets"
 core_batch_all="$TEST_OUTPUT_DIR/core-batch-all"
 mkdir -p "$core_batch_all"
 if wallpaper-core batch all "$TEST_IMAGE" "$core_batch_all" > /dev/null 2>&1; then
@@ -424,7 +424,7 @@ effects:
     parameters: {}
 EOF
 
-print_test "User config custom effect loaded"
+print_test "Layered effects user layer loads custom effect"
 # Set XDG_CONFIG_HOME to use our test directory
 if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core show effects 2>&1 | grep -q "test_custom"; then
     test_passed
@@ -432,7 +432,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "User config effect override applied"
+print_test "Layered effects user layer overrides package defaults"
 # Check that blur effect description shows the override
 if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core show effects 2>&1 | grep "blur" | grep -q "Overridden blur"; then
     test_passed
@@ -440,7 +440,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Project-level effects loaded"
+print_test "Layered effects project layer loads project-specific effects"
 # Change to project directory to test project-level config
 (cd "$TEST_PROJECT_ROOT" && wallpaper-core show effects 2>&1 | grep -q "project_effect")
 if [ $? -eq 0 ]; then
@@ -449,7 +449,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "User custom effect can be processed"
+print_test "Layered effects user custom effect processes successfully"
 user_custom_out="$TEST_OUTPUT_DIR/user-custom-effect.jpg"
 if XDG_CONFIG_HOME="$TEST_USER_CONFIG" wallpaper-core process effect "$TEST_IMAGE" "$user_custom_out" --effect test_custom > /dev/null 2>&1 && [ -f "$user_custom_out" ]; then
     test_passed
@@ -457,7 +457,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Project effect can be processed"
+print_test "Layered effects project effect processes successfully"
 project_effect_out="$TEST_OUTPUT_DIR/project-effect.jpg"
 (cd "$TEST_PROJECT_ROOT" && wallpaper-core process effect "$TEST_IMAGE" "$project_effect_out" --effect project_effect > /dev/null 2>&1)
 if [ -f "$project_effect_out" ]; then
@@ -482,7 +482,7 @@ TEST_ERROR_PROJECT="$TEST_OUTPUT_DIR/error-project"
 mkdir -p "$TEST_ERROR_USER/wallpaper-effects-generator"
 mkdir -p "$TEST_ERROR_PROJECT"
 
-print_test "Invalid YAML in user config shows error"
+print_test "Layered effects invalid YAML in user config shows error"
 cat > "$TEST_ERROR_USER/wallpaper-effects-generator/effects.yaml" << 'EOF'
 invalid: yaml: content:
   bad: structure
@@ -494,7 +494,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Invalid YAML in project config shows error"
+print_test "Layered effects invalid YAML in project config shows error"
 cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
 malformed yaml without proper structure
   missing: colons
@@ -506,7 +506,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Missing required field shows validation error"
+print_test "Layered effects missing required field shows validation error"
 cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
 version: "1.0"
 effects:
@@ -521,7 +521,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Well-formed but empty effects.yaml works"
+print_test "Layered effects empty effects.yaml loads successfully"
 cat > "$TEST_ERROR_PROJECT/effects.yaml" << 'EOF'
 version: "1.0"
 EOF
@@ -568,7 +568,7 @@ effects:
     parameters: {}
 EOF
 
-print_test "3-layer merge: all effects present"
+print_test "Layered effects 3-layer merge includes all effects from all layers"
 # Should have: package effects + project_effect + user_effect + user-overridden blur
 (cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep -q "user_effect") && \
 (cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep -q "project_effect")
@@ -578,7 +578,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "3-layer merge: user override takes precedence"
+print_test "Layered effects 3-layer merge user override takes precedence"
 (cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core show effects 2>&1 | grep "blur" | grep -q "User-overridden")
 if [ $? -eq 0 ]; then
     test_passed
@@ -586,7 +586,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "3-layer merge: process user effect"
+print_test "Layered effects 3-layer merge user effect processes successfully"
 threelayer_out="$TEST_OUTPUT_DIR/3layer-user-effect.jpg"
 (cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core process effect "$TEST_IMAGE" "$threelayer_out" --effect user_effect > /dev/null 2>&1)
 if [ -f "$threelayer_out" ]; then
@@ -595,7 +595,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "3-layer merge: process project effect"
+print_test "Layered effects 3-layer merge project effect processes successfully"
 threelayer_project_out="$TEST_OUTPUT_DIR/3layer-project-effect.jpg"
 (cd "$TEST_3LAYER_PROJECT" && XDG_CONFIG_HOME="$TEST_3LAYER_USER" wallpaper-core process effect "$TEST_IMAGE" "$threelayer_project_out" --effect project_effect > /dev/null 2>&1)
 if [ -f "$threelayer_project_out" ]; then
@@ -646,7 +646,7 @@ effects:
         type_ref: blur_geometry
 EOF
 
-print_test "Parameter types merge across layers"
+print_test "Layered effects parameter types merge across all layers"
 # Verify both effects are present and can be listed (meaning parameter type merging worked)
 (cd "$TEST_PARAMS_PROJECT" && XDG_CONFIG_HOME="$TEST_PARAMS_USER" wallpaper-core show effects 2>&1 | grep -q "user_effect_with_param") && \
 (cd "$TEST_PARAMS_PROJECT" && XDG_CONFIG_HOME="$TEST_PARAMS_USER" wallpaper-core show effects 2>&1 | grep -q "project_effect_with_package_param")
@@ -691,7 +691,7 @@ presets:
     effect: blur
 EOF
 
-print_test "User composite is loaded"
+print_test "Layered effects user composite is loaded"
 (cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show composites 2>&1 | grep -q "user_composite")
 if [ $? -eq 0 ]; then
     test_passed
@@ -699,7 +699,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "User preset is loaded"
+print_test "Layered effects user preset is loaded"
 (cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show presets 2>&1 | grep -q "user_preset")
 if [ $? -eq 0 ]; then
     test_passed
@@ -707,7 +707,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Project preset is loaded"
+print_test "Layered effects project preset is loaded"
 (cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core show presets 2>&1 | grep -q "project_preset")
 if [ $? -eq 0 ]; then
     test_passed
@@ -715,7 +715,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "User composite can be processed"
+print_test "Layered effects user composite processes successfully"
 user_comp_out="$TEST_OUTPUT_DIR/user-composite.jpg"
 (cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core process composite "$TEST_IMAGE" "$user_comp_out" --composite user_composite > /dev/null 2>&1)
 if [ -f "$user_comp_out" ]; then
@@ -724,7 +724,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "User preset can be processed"
+print_test "Layered effects user preset processes successfully"
 user_preset_out="$TEST_OUTPUT_DIR/user-preset.jpg"
 (cd "$TEST_COMP_PROJECT" && XDG_CONFIG_HOME="$TEST_COMP_USER" wallpaper-core process preset "$TEST_IMAGE" "$user_preset_out" --preset user_preset > /dev/null 2>&1)
 if [ -f "$user_preset_out" ]; then
@@ -757,7 +757,7 @@ cat > "$TEST_SETTINGS_PROJECT/settings.toml" << 'EOF'
 default_format = "webp"
 EOF
 
-print_test "Settings load without errors"
+print_test "Layered settings load without errors"
 (cd "$TEST_SETTINGS_PROJECT" && XDG_CONFIG_HOME="$TEST_SETTINGS_USER" wallpaper-core info > /dev/null 2>&1)
 if [ $? -eq 0 ]; then
     test_passed
@@ -774,7 +774,7 @@ print_header "EDGE CASES"
 TEST_EDGE="$TEST_OUTPUT_DIR/edge-cases"
 mkdir -p "$TEST_EDGE/wallpaper-effects-generator"
 
-print_test "Very long effect name"
+print_test "Edge case very long effect name loads successfully"
 cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
 version: "1.0"
 effects:
@@ -790,7 +790,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Effect name with underscores and numbers"
+print_test "Edge case effect name with underscores and numbers loads successfully"
 cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
 version: "1.0"
 effects:
@@ -806,7 +806,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Empty effects section"
+print_test "Edge case empty effects section loads successfully"
 cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
 version: "1.0"
 effects: {}
@@ -818,7 +818,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "Only version field (minimal valid file)"
+print_test "Edge case minimal valid file with only version field loads successfully"
 cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
 version: "1.0"
 EOF
@@ -835,35 +835,35 @@ fi
 
 print_header "ORCHESTRATOR CLI TESTS (wallpaper-process)"
 
-print_test "Version command"
+print_test "wallpaper-process version displays version information"
 if wallpaper-process version > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Info command"
+print_test "wallpaper-process info displays system information"
 if wallpaper-process info > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show effects"
+print_test "wallpaper-process show effects lists all available effects"
 if wallpaper-process show effects > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show composites"
+print_test "wallpaper-process show composites lists all available composites"
 if wallpaper-process show composites > /dev/null 2>&1; then
     test_passed
 else
     test_failed "command failed"
 fi
 
-print_test "Show presets"
+print_test "wallpaper-process show presets lists all available presets"
 if wallpaper-process show presets > /dev/null 2>&1; then
     test_passed
 else
@@ -901,7 +901,7 @@ image_name = "wallpaper-effects:latest"
 EOF
 fi
 
-print_test "Install container image"
+print_test "wallpaper-process install builds container image"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
     test_skipped "container engine not found" \
         "command -v docker && command -v podman" \
@@ -915,7 +915,7 @@ else
     test_failed "Container build failed"
 fi
 
-print_test "Process effect (containerized - blur)"
+print_test "wallpaper-process process effect (blur) creates output file via container"
 orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
     test_skipped "container engine not found" "" "" "Install Docker or Podman first"
@@ -927,7 +927,7 @@ else
     test_failed "Containerized effect processing failed"
 fi
 
-print_test "Process composite (containerized - blackwhite-blur)"
+print_test "wallpaper-process process composite (blackwhite-blur) creates output file via container"
 orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
     test_skipped "container engine not found" "" "" "Install Docker or Podman first"
@@ -939,7 +939,7 @@ else
     test_failed "Containerized composite processing failed"
 fi
 
-print_test "Process preset (containerized - dark_blur)"
+print_test "wallpaper-process process preset (dark_blur) creates output file via container"
 orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
     test_skipped "container engine not found" "" "" "Install Docker or Podman first"
@@ -951,7 +951,7 @@ else
     test_failed "Containerized preset processing failed"
 fi
 
-print_test "Batch effects (host execution - all effects)"
+print_test "wallpaper-process batch effects generates all effect outputs on host"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
@@ -969,7 +969,7 @@ else
     test_failed "Batch effects command failed"
 fi
 
-print_test "Batch all (host execution)"
+print_test "wallpaper-process batch all generates all outputs on host"
 orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
 mkdir -p "$orch_batch_all"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
@@ -986,7 +986,7 @@ else
     test_failed "Batch all command failed"
 fi
 
-print_test "Uninstall container image"
+print_test "wallpaper-process uninstall removes container image"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
     test_skipped "container engine not found" "" "" "Install Docker or Podman first"
 elif (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1); then
@@ -1002,7 +1002,7 @@ fi
 
 print_header "DRY-RUN TESTS - CORE CLI"
 
-print_test "process effect --dry-run shows command without executing"
+print_test "wallpaper-core process effect --dry-run shows ImageMagick command without executing"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/dry-run-test.jpg --effect blur --dry-run 2>&1)
 exit_code=$?
 if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
@@ -1011,7 +1011,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process effect --dry-run creates no output file"
+print_test "wallpaper-core process effect --dry-run creates no output file"
 test_output="/tmp/wallpaper-dry-run-should-not-exist.jpg"
 rm -f "$test_output" 2>/dev/null
 wallpaper-core process effect "$TEST_IMAGE" "$test_output" --effect blur --dry-run > /dev/null 2>&1
@@ -1022,7 +1022,7 @@ else
     rm -f "$test_output"
 fi
 
-print_test "process effect --dry-run shows validation checks"
+print_test "wallpaper-core process effect --dry-run shows validation checks"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(Validation|✓|✗)"; then
     test_passed
@@ -1030,7 +1030,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process effect --dry-run with missing input shows warning"
+print_test "wallpaper-core process effect --dry-run with missing input shows warning"
 dry_run_output=$(wallpaper-core process effect /nonexistent/file.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
     test_passed
@@ -1038,7 +1038,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process effect --dry-run with unknown effect shows warning"
+print_test "wallpaper-core process effect --dry-run with unknown effect shows warning"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect nonexistent_effect --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
     test_passed
@@ -1046,7 +1046,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process effect -q --dry-run shows only command (quiet mode)"
+print_test "wallpaper-core process effect -q --dry-run shows only command in quiet mode"
 dry_run_output=$(wallpaper-core -q process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
 if echo "$dry_run_output" | grep -q "magick" && ! echo "$dry_run_output" | grep -q "Validation"; then
     test_passed
@@ -1054,7 +1054,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process composite --dry-run shows chain commands"
+print_test "wallpaper-core process composite --dry-run shows chain commands"
 dry_run_output=$(wallpaper-core process composite "$TEST_IMAGE" /tmp/test.jpg --composite blackwhite-blur --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qi "blur" && echo "$dry_run_output" | grep -qi "blackwhite"; then
     test_passed
@@ -1062,7 +1062,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process composite --dry-run creates no output file"
+print_test "wallpaper-core process composite --dry-run creates no output file"
 test_output="/tmp/wallpaper-composite-dry-run.jpg"
 rm -f "$test_output" 2>/dev/null
 wallpaper-core process composite "$TEST_IMAGE" "$test_output" --composite blackwhite-blur --dry-run > /dev/null 2>&1
@@ -1073,7 +1073,7 @@ else
     rm -f "$test_output"
 fi
 
-print_test "process preset --dry-run shows resolved command"
+print_test "wallpaper-core process preset --dry-run shows resolved command"
 dry_run_output=$(wallpaper-core process preset "$TEST_IMAGE" /tmp/test.jpg --preset dark_blur --dry-run 2>&1)
 if echo "$dry_run_output" | grep -q "magick"; then
     test_passed
@@ -1081,7 +1081,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "process preset --dry-run creates no output file"
+print_test "wallpaper-core process preset --dry-run creates no output file"
 test_output="/tmp/wallpaper-preset-dry-run.jpg"
 rm -f "$test_output" 2>/dev/null
 wallpaper-core process preset "$TEST_IMAGE" "$test_output" --preset dark_blur --dry-run > /dev/null 2>&1
@@ -1092,7 +1092,7 @@ else
     rm -f "$test_output"
 fi
 
-print_test "batch effects --dry-run shows table with all effects"
+print_test "wallpaper-core batch effects --dry-run shows table with all effects"
 dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 if echo "$dry_run_output" | grep -q "blur" && echo "$dry_run_output" | grep -q "blackwhite"; then
     test_passed
@@ -1100,7 +1100,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch effects --dry-run shows item count"
+print_test "wallpaper-core batch effects --dry-run shows item count"
 dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "([0-9]+ items|Effects)"; then
     test_passed
@@ -1108,7 +1108,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch effects --dry-run shows resolved commands"
+print_test "wallpaper-core batch effects --dry-run shows resolved commands"
 dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
 if [ "$command_count" -ge 3 ]; then
@@ -1117,7 +1117,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch effects --dry-run creates no files"
+print_test "wallpaper-core batch effects --dry-run creates no files"
 test_dir="/tmp/wallpaper-batch-dry-run"
 rm -rf "$test_dir" 2>/dev/null
 mkdir -p "$test_dir"
@@ -1130,7 +1130,7 @@ else
 fi
 rm -rf "$test_dir"
 
-print_test "batch composites --dry-run shows table"
+print_test "wallpaper-core batch composites --dry-run shows table"
 dry_run_output=$(wallpaper-core batch composites "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(blackwhite-blur|Composites)"; then
     test_passed
@@ -1138,7 +1138,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch composites --dry-run creates no files"
+print_test "wallpaper-core batch composites --dry-run creates no files"
 test_dir="/tmp/wallpaper-batch-composite-dry"
 rm -rf "$test_dir" 2>/dev/null
 mkdir -p "$test_dir"
@@ -1151,7 +1151,7 @@ else
 fi
 rm -rf "$test_dir"
 
-print_test "batch presets --dry-run shows table"
+print_test "wallpaper-core batch presets --dry-run shows table"
 dry_run_output=$(wallpaper-core batch presets "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(dark_blur|Presets|subtle_blur)"; then
     test_passed
@@ -1159,7 +1159,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch presets --dry-run creates no files"
+print_test "wallpaper-core batch presets --dry-run creates no files"
 test_dir="/tmp/wallpaper-batch-preset-dry"
 rm -rf "$test_dir" 2>/dev/null
 mkdir -p "$test_dir"
@@ -1172,7 +1172,7 @@ else
 fi
 rm -rf "$test_dir"
 
-print_test "batch all --dry-run shows all item types"
+print_test "wallpaper-core batch all --dry-run shows all item types"
 dry_run_output=$(wallpaper-core batch all "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(Effects|Composites|Presets)"; then
     test_passed
@@ -1180,7 +1180,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "batch all --dry-run creates no files"
+print_test "wallpaper-core batch all --dry-run creates no files"
 test_dir="/tmp/wallpaper-batch-all-dry"
 rm -rf "$test_dir" 2>/dev/null
 mkdir -p "$test_dir"
@@ -1193,7 +1193,7 @@ else
 fi
 rm -rf "$test_dir"
 
-print_test "batch all -q --dry-run shows only commands (quiet mode)"
+print_test "wallpaper-core batch all -q --dry-run shows only commands in quiet mode"
 dry_run_output=$(wallpaper-core -q batch all "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
 command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
 if [ "$command_count" -ge 5 ] && ! echo "$dry_run_output" | grep -q "Validation"; then
@@ -1212,7 +1212,7 @@ if [ "$CONTAINER_ENGINE" != "none" ]; then
     # Re-install image for dry-run tests
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install > /dev/null 2>&1)
 
-    print_test "install --dry-run shows build command"
+    print_test "wallpaper-process install --dry-run shows build command without executing"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process install --dry-run 2>&1)
     if echo "$dry_run_output" | grep -qi "build" && echo "$dry_run_output" | grep -qi "dockerfile"; then
         test_passed
@@ -1220,7 +1220,7 @@ if [ "$CONTAINER_ENGINE" != "none" ]; then
         test_failed "command failed"
     fi
 
-    print_test "install --dry-run does not build image"
+    print_test "wallpaper-process install --dry-run does not build image"
     # Check that we can still do a real install after dry-run (image wasn't built)
     test_image_name="wallpaper-effects-test:dry-run-$(date +%s)"
     cat > "$TEST_CONTAINER_PROJECT/settings-drytest.toml" << EOF
@@ -1241,7 +1241,7 @@ EOF
     fi
     rm -f "$TEST_CONTAINER_PROJECT/settings-drytest.toml"
 
-    print_test "uninstall --dry-run shows rmi command"
+    print_test "wallpaper-process uninstall --dry-run shows rmi command without executing"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --dry-run 2>&1)
     if echo "$dry_run_output" | grep -q "rmi"; then
         test_passed
@@ -1249,7 +1249,7 @@ EOF
         test_failed "command failed"
     fi
 
-    print_test "uninstall --dry-run does not remove image"
+    print_test "wallpaper-process uninstall --dry-run does not remove image"
     # Check image still exists after dry-run uninstall
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --dry-run > /dev/null 2>&1)
     if (cd "$TEST_CONTAINER_PROJECT" && $CONTAINER_ENGINE inspect wallpaper-effects:latest > /dev/null 2>&1); then
@@ -1258,7 +1258,7 @@ EOF
         test_failed "command failed"
     fi
 
-    print_test "process effect --dry-run shows both host and inner commands"
+    print_test "wallpaper-process process effect --dry-run shows both host and inner commands"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" /tmp/test.jpg blur --dry-run 2>&1)
     has_host_cmd=$(echo "$dry_run_output" | grep -E "($CONTAINER_ENGINE|run)" | wc -l)
     has_inner_cmd=$(echo "$dry_run_output" | grep "magick" | wc -l)
@@ -1268,7 +1268,7 @@ EOF
         test_failed "command failed"
     fi
 
-    print_test "process effect --dry-run does not spawn container"
+    print_test "wallpaper-process process effect --dry-run does not spawn container"
     test_output="/tmp/wallpaper-orch-dry-effect.jpg"
     rm -f "$test_output" 2>/dev/null
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" "$test_output" blur --dry-run > /dev/null 2>&1)
@@ -1279,7 +1279,7 @@ EOF
         rm -f "$test_output"
     fi
 
-    print_test "process composite --dry-run shows container and chain"
+    print_test "wallpaper-process process composite --dry-run shows container and chain commands"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" /tmp/test.jpg blackwhite-blur --dry-run 2>&1)
     if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE" && echo "$dry_run_output" | grep -qi "blur"; then
         test_passed
@@ -1287,7 +1287,7 @@ EOF
         test_failed "command failed"
     fi
 
-    print_test "process composite --dry-run creates no output"
+    print_test "wallpaper-process process composite --dry-run creates no output"
     test_output="/tmp/wallpaper-orch-dry-composite.jpg"
     rm -f "$test_output" 2>/dev/null
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process composite "$TEST_IMAGE" "$test_output" blackwhite-blur --dry-run > /dev/null 2>&1)
@@ -1298,7 +1298,7 @@ EOF
         rm -f "$test_output"
     fi
 
-    print_test "process preset --dry-run shows container command"
+    print_test "wallpaper-process process preset --dry-run shows container command"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" /tmp/test.jpg dark_blur --dry-run 2>&1)
     if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE"; then
         test_passed
@@ -1306,7 +1306,7 @@ EOF
         test_failed "command failed"
     fi
 
-    print_test "process preset --dry-run creates no output"
+    print_test "wallpaper-process process preset --dry-run creates no output"
     test_output="/tmp/wallpaper-orch-dry-preset.jpg"
     rm -f "$test_output" 2>/dev/null
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process preset "$TEST_IMAGE" "$test_output" dark_blur --dry-run > /dev/null 2>&1)
@@ -1331,7 +1331,7 @@ fi
 
 print_header "DRY-RUN EDGE CASES"
 
-print_test "dry-run with special characters in paths"
+print_test "Dry-run edge case special characters in paths handled correctly"
 special_path="/tmp/wallpaper test (dry-run).jpg"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$special_path" --effect blur --dry-run 2>&1)
 if [ $? -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
@@ -1340,7 +1340,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "dry-run with very long output path"
+print_test "Dry-run edge case very long output path handled correctly"
 long_path="/tmp/$(printf 'a%.0s' {1..200}).jpg"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$long_path" --effect blur --dry-run 2>&1)
 if [ $? -eq 0 ]; then
@@ -1349,7 +1349,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "dry-run shows parameter defaults vs overrides"
+print_test "Dry-run edge case parameter defaults and overrides displayed correctly"
 # Test with default parameter
 dry_run_default=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
 # Check that output shows parameter value (either default notation or actual value)
@@ -1359,7 +1359,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "dry-run batch with --flat flag shows correct paths"
+print_test "Dry-run edge case batch with --flat flag shows correct paths"
 dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-flat --flat --dry-run 2>&1)
 # In flat mode, output paths should not have subdirectories
 if echo "$dry_run_output" | grep -q "/tmp/batch-flat" && ! echo "$dry_run_output" | grep -q "/effects/"; then
@@ -1368,7 +1368,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "dry-run batch with --parallel shows execution mode"
+print_test "Dry-run edge case batch with --parallel shows execution mode"
 dry_run_output=$(wallpaper-core batch all "$TEST_IMAGE" /tmp/batch-test --parallel --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(parallel|Mode)"; then
     test_passed
@@ -1376,7 +1376,7 @@ else
     test_failed "command failed"
 fi
 
-print_test "dry-run shows validation for all preconditions"
+print_test "Dry-run edge case validation for all preconditions displayed"
 # With missing input, multiple validation checks should appear
 dry_run_output=$(wallpaper-core process effect /nonexistent.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
 validation_checks=$(echo "$dry_run_output" | grep -cE "(✓|✗)" || echo "0")
