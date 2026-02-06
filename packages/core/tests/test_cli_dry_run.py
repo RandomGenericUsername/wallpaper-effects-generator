@@ -112,3 +112,71 @@ class TestProcessPresetDryRun:
         ])
         assert result.exit_code == 0
         assert "subtle_blur" in result.stdout
+
+
+class TestBatchEffectsDryRun:
+    def test_dry_run_shows_table(self, test_image_file, tmp_path):
+        result = runner.invoke(app, [
+            "batch", "effects",
+            str(test_image_file), str(tmp_path / "output"),
+            "--dry-run",
+        ])
+        assert result.exit_code == 0
+        assert "blur" in result.stdout
+        assert "blackwhite" in result.stdout
+
+    def test_dry_run_no_files_created(self, test_image_file, tmp_path):
+        output_dir = tmp_path / "output"
+        runner.invoke(app, [
+            "batch", "effects",
+            str(test_image_file), str(output_dir),
+            "--dry-run",
+        ])
+        assert not output_dir.exists()
+
+    def test_dry_run_shows_commands(self, test_image_file, tmp_path):
+        result = runner.invoke(app, [
+            "batch", "effects",
+            str(test_image_file), str(tmp_path / "output"),
+            "--dry-run",
+        ])
+        assert "magick" in result.stdout
+
+    def test_dry_run_shows_item_count(self, test_image_file, tmp_path):
+        result = runner.invoke(app, [
+            "batch", "effects",
+            str(test_image_file), str(tmp_path / "output"),
+            "--dry-run",
+        ])
+        assert "items" in result.stdout.lower() or "9" in result.stdout
+
+
+class TestBatchAllDryRun:
+    def test_dry_run_shows_all_types(self, test_image_file, tmp_path):
+        result = runner.invoke(app, [
+            "batch", "all",
+            str(test_image_file), str(tmp_path / "output"),
+            "--dry-run",
+        ])
+        assert result.exit_code == 0
+        assert "blur" in result.stdout
+        assert "dark_blur" in result.stdout or "preset" in result.stdout.lower()
+
+    def test_dry_run_no_files_created(self, test_image_file, tmp_path):
+        output_dir = tmp_path / "output"
+        runner.invoke(app, [
+            "batch", "all",
+            str(test_image_file), str(output_dir),
+            "--dry-run",
+        ])
+        assert not output_dir.exists()
+
+    def test_dry_run_quiet_shows_only_commands(self, test_image_file, tmp_path):
+        result = runner.invoke(app, [
+            "-q", "batch", "effects",
+            str(test_image_file), str(tmp_path / "output"),
+            "--dry-run",
+        ])
+        assert result.exit_code == 0
+        assert "magick" in result.stdout
+        assert "Validation" not in result.stdout
