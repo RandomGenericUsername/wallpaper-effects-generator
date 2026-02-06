@@ -35,6 +35,7 @@ from layered_settings.constants import (
     EFFECTS_FILENAME,
     SETTINGS_FILENAME,
 )
+from layered_settings.dry_run import DryRunBase, ValidationCheck
 from layered_settings.layers import LayerDiscovery
 from layered_settings.paths import (
     USER_CONFIG_DIR,
@@ -164,4 +165,7 @@ __all__ = [
     "USER_EFFECTS_FILE",
     "get_project_settings_file",
     "get_project_effects_file",
+    # Dry-run utilities
+    "DryRunBase",
+    "ValidationCheck",
 ]
