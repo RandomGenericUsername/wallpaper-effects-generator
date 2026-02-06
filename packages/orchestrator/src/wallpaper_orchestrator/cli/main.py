@@ -5,15 +5,26 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+from layered_effects import configure as configure_effects
+from layered_effects import load_effects
 from layered_settings import configure, get_config
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
+from wallpaper_core.dry_run import CoreDryRun
+from wallpaper_core.effects import get_package_effects_file
 from wallpaper_orchestrator.cli.commands import install, uninstall
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 # Configure layered_settings at module import
 configure(UnifiedConfig, app_name="wallpaper-effects")
+
+# Configure layered_effects for effects discovery
+configure_effects(
+    package_effects_file=get_package_effects_file(),
+    project_root=Path.cwd(),
+)
 
 # Create console for rich output
 console = Console()
@@ -46,6 +57,7 @@ def process_effect(
         ..., help="Output image file"
     ),
     effect: str = typer.Argument(..., help="Effect name to apply"),  # noqa: B008
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Apply single effect to image (runs in container).
 
@@ -56,6 +68,60 @@ def process_effect(
     try:
         config = get_config()
         manager = ContainerManager(config)
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            image_name = manager.get_image_name()
+
+            # Build host command string
+            abs_input = input_file.absolute()
+            abs_output_dir = output_file.parent.absolute()
+            cmd_parts = [manager.engine, "run", "--rm"]
+            if manager.engine == "podman":
+                cmd_parts.append("--userns=keep-id")
+            cmd_parts.extend([
+                "-v", f"{abs_input}:/input/image.jpg:ro",
+                "-v", f"{abs_output_dir}:/output:rw",
+                image_name, "process", "effect",
+                "/input/image.jpg", f"/output/{output_file.name}",
+                "--effect", effect,
+            ])
+            host_command = " ".join(cmd_parts)
+
+            # Resolve inner ImageMagick command
+            effects_config = load_effects()
+            effect_def = effects_config.effects.get(effect)
+            if effect_def:
+                from wallpaper_core.cli.process import _resolve_command
+                from wallpaper_core.engine.chain import ChainExecutor
+                chain_exec = ChainExecutor(effects_config)
+                params = chain_exec._get_params_with_defaults(effect, {})
+                inner_command = _resolve_command(
+                    effect_def.command,
+                    Path("/input/image.jpg"),
+                    Path(f"/output/{output_file.name}"),
+                    params,
+                )
+            else:
+                inner_command = f"<effect '{effect}' not found in config>"
+
+            renderer.render_container_process(
+                item_name=effect, item_type="effect",
+                input_path=input_file, output_path=output_file,
+                engine=manager.engine, image_name=image_name,
+                host_command=host_command, inner_command=inner_command,
+            )
+
+            # Validation
+            core_checks = CoreDryRun(console=console).validate_core(
+                input_path=input_file, output_path=output_file,
+                item_name=effect, item_type="effect", config=effects_config,
+            )
+            container_checks = renderer.validate_container(
+                engine=manager.engine, image_name=image_name,
+            )
+            renderer.render_validation(core_checks + container_checks)
+            raise typer.Exit(0)
 
         # Validate container image
         if not manager.is_image_available():
@@ -83,6 +149,8 @@ def process_effect(
             f"[green]✓ Output written to:[/green] {output_file}"
         )
 
+    except typer.Exit:
+        raise
     except (RuntimeError, FileNotFoundError, PermissionError) as e:
         console.print(f"[red]Error:[/red] {str(e)}")
         raise typer.Exit(1) from None
@@ -102,6 +170,7 @@ def process_composite(
     composite: str = typer.Argument(  # noqa: B008
         ..., help="Composite name to apply"
     ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Apply composite effect to image (runs in container).
 
@@ -111,6 +180,58 @@ def process_composite(
     try:
         config = get_config()
         manager = ContainerManager(config)
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            image_name = manager.get_image_name()
+
+            # Build host command string
+            abs_input = input_file.absolute()
+            abs_output_dir = output_file.parent.absolute()
+            cmd_parts = [manager.engine, "run", "--rm"]
+            if manager.engine == "podman":
+                cmd_parts.append("--userns=keep-id")
+            cmd_parts.extend([
+                "-v", f"{abs_input}:/input/image.jpg:ro",
+                "-v", f"{abs_output_dir}:/output:rw",
+                image_name, "process", "composite",
+                "/input/image.jpg", f"/output/{output_file.name}",
+                "--composite", composite,
+            ])
+            host_command = " ".join(cmd_parts)
+
+            # Resolve inner commands (composite is a chain)
+            effects_config = load_effects()
+            composite_def = effects_config.composites.get(composite)
+            if composite_def:
+                from wallpaper_core.cli.process import _resolve_chain_commands
+                inner_commands = _resolve_chain_commands(
+                    composite_def.chain,
+                    effects_config,
+                    Path("/input/image.jpg"),
+                    Path(f"/output/{output_file.name}"),
+                )
+                inner_command = " && ".join(inner_commands) if inner_commands else "<empty chain>"
+            else:
+                inner_command = f"<composite '{composite}' not found in config>"
+
+            renderer.render_container_process(
+                item_name=composite, item_type="composite",
+                input_path=input_file, output_path=output_file,
+                engine=manager.engine, image_name=image_name,
+                host_command=host_command, inner_command=inner_command,
+            )
+
+            # Validation
+            core_checks = CoreDryRun(console=console).validate_core(
+                input_path=input_file, output_path=output_file,
+                item_name=composite, item_type="composite", config=effects_config,
+            )
+            container_checks = renderer.validate_container(
+                engine=manager.engine, image_name=image_name,
+            )
+            renderer.render_validation(core_checks + container_checks)
+            raise typer.Exit(0)
 
         if not manager.is_image_available():
             console.print(
@@ -140,6 +261,8 @@ def process_composite(
             f"[green]✓ Output written to:[/green] {output_file}"
         )
 
+    except typer.Exit:
+        raise
     except (RuntimeError, FileNotFoundError, PermissionError) as e:
         console.print(f"[red]Error:[/red] {str(e)}")
         raise typer.Exit(1) from None
@@ -157,6 +280,7 @@ def process_preset(
         ..., help="Output image file"
     ),
     preset: str = typer.Argument(..., help="Preset name to apply"),  # noqa: B008
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Apply preset to image (runs in container).
 
@@ -166,6 +290,80 @@ def process_preset(
     try:
         config = get_config()
         manager = ContainerManager(config)
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            image_name = manager.get_image_name()
+
+            # Build host command string
+            abs_input = input_file.absolute()
+            abs_output_dir = output_file.parent.absolute()
+            cmd_parts = [manager.engine, "run", "--rm"]
+            if manager.engine == "podman":
+                cmd_parts.append("--userns=keep-id")
+            cmd_parts.extend([
+                "-v", f"{abs_input}:/input/image.jpg:ro",
+                "-v", f"{abs_output_dir}:/output:rw",
+                image_name, "process", "preset",
+                "/input/image.jpg", f"/output/{output_file.name}",
+                "--preset", preset,
+            ])
+            host_command = " ".join(cmd_parts)
+
+            # Resolve inner command (preset points to effect or composite)
+            effects_config = load_effects()
+            preset_def = effects_config.presets.get(preset)
+            if preset_def:
+                if preset_def.effect:
+                    effect_def = effects_config.effects.get(preset_def.effect)
+                    if effect_def:
+                        from wallpaper_core.cli.process import _resolve_command
+                        from wallpaper_core.engine.chain import ChainExecutor
+                        chain_exec = ChainExecutor(effects_config)
+                        params = chain_exec._get_params_with_defaults(preset_def.effect, preset_def.params or {})
+                        inner_command = _resolve_command(
+                            effect_def.command,
+                            Path("/input/image.jpg"),
+                            Path(f"/output/{output_file.name}"),
+                            params,
+                        )
+                    else:
+                        inner_command = f"<effect '{preset_def.effect}' not found>"
+                elif preset_def.composite:
+                    composite_def = effects_config.composites.get(preset_def.composite)
+                    if composite_def:
+                        from wallpaper_core.cli.process import _resolve_chain_commands
+                        inner_commands = _resolve_chain_commands(
+                            composite_def.chain,
+                            effects_config,
+                            Path("/input/image.jpg"),
+                            Path(f"/output/{output_file.name}"),
+                        )
+                        inner_command = " && ".join(inner_commands) if inner_commands else "<empty chain>"
+                    else:
+                        inner_command = f"<composite '{preset_def.composite}' not found>"
+                else:
+                    inner_command = "<preset has neither effect nor composite>"
+            else:
+                inner_command = f"<preset '{preset}' not found in config>"
+
+            renderer.render_container_process(
+                item_name=preset, item_type="preset",
+                input_path=input_file, output_path=output_file,
+                engine=manager.engine, image_name=image_name,
+                host_command=host_command, inner_command=inner_command,
+            )
+
+            # Validation
+            core_checks = CoreDryRun(console=console).validate_core(
+                input_path=input_file, output_path=output_file,
+                item_name=preset, item_type="preset", config=effects_config,
+            )
+            container_checks = renderer.validate_container(
+                engine=manager.engine, image_name=image_name,
+            )
+            renderer.render_validation(core_checks + container_checks)
+            raise typer.Exit(0)
 
         if not manager.is_image_available():
             console.print(
@@ -191,6 +389,8 @@ def process_preset(
             f"[green]✓ Output written to:[/green] {output_file}"
         )
 
+    except typer.Exit:
+        raise
     except (RuntimeError, FileNotFoundError, PermissionError) as e:
         console.print(f"[red]Error:[/red] {str(e)}")
         raise typer.Exit(1) from None
