@@ -1776,7 +1776,11 @@ EOF
     # Clean up container image
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1)
 else
-    echo "  Skipping all orchestrator dry-run tests (no container engine)"
+    print_test "orchestrator dry-run tests (all)"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 fi
 
 # ============================================================================
