@@ -1059,7 +1059,7 @@ effects:
     command: "convert $INPUT -brightness-contrast {user_strength} $OUTPUT"
     parameters:
       user_strength:
-        type_ref: user_strength
+        type: user_strength
 EOF
 
 # Project adds different parameter type and effect using package parameter type
@@ -1071,13 +1071,13 @@ effects:
     command: "convert $INPUT -blur {blur_geometry} $OUTPUT"
     parameters:
       blur:
-        type_ref: blur_geometry
+        type: blur_geometry
 EOF
 
 print_test "Layered effects parameter types merge across all layers"
 # Verify both effects are present and can be listed (meaning parameter type merging worked)
 if run_cmd "cd \"$TEST_PARAMS_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_PARAMS_USER\" wallpaper-core show effects 2>&1" && \
-   echo "$LAST_OUTPUT" | grep -q "user_effect_with_param" && echo "$LAST_OUTPUT" | grep -q "project_effect_with_package_param"; then
+   echo "$LAST_OUTPUT" | grep -q "user_effect_with_param" && echo "$LAST_OUTPUT" | grep -q "project_effect_with_package"; then
     add_detail "• User layer: Defines custom parameter type 'user_strength'"
     add_detail "• Project layer: Uses package parameter type 'blur_geometry'"
     add_detail "• Result: Both effects loaded, parameter types merged successfully"
