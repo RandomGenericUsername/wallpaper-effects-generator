@@ -1128,7 +1128,10 @@ fi
 print_test "wallpaper-process process effect (blur) creates output file via container"
 orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process effect \"$TEST_IMAGE\" \"$orch_effect_out\" blur 2>&1" && [ -f "$orch_effect_out" ]; then
     file_size=$(stat -f%z "$orch_effect_out" 2>/dev/null || stat -c%s "$orch_effect_out" 2>/dev/null)
     add_detail "• Command: wallpaper-process process effect <image> <output> blur"
@@ -1147,7 +1150,10 @@ fi
 print_test "wallpaper-process process composite (blackwhite-blur) creates output file via container"
 orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process composite \"$TEST_IMAGE\" \"$orch_composite_out\" blackwhite-blur 2>&1" && [ -f "$orch_composite_out" ]; then
     file_size=$(stat -f%z "$orch_composite_out" 2>/dev/null || stat -c%s "$orch_composite_out" 2>/dev/null)
     add_detail "• Command: wallpaper-process process composite <image> <output> blackwhite-blur"
@@ -1166,7 +1172,10 @@ fi
 print_test "wallpaper-process process preset (dark_blur) creates output file via container"
 orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process preset \"$TEST_IMAGE\" \"$orch_preset_out\" dark_blur 2>&1" && [ -f "$orch_preset_out" ]; then
     file_size=$(stat -f%z "$orch_preset_out" 2>/dev/null || stat -c%s "$orch_preset_out" 2>/dev/null)
     add_detail "• Command: wallpaper-process process preset <image> <output> dark_blur"
@@ -1186,7 +1195,10 @@ print_test "wallpaper-process batch effects generates all effect outputs on host
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects \"$TEST_IMAGE\" \"$orch_batch_effect\" 2>&1"; then
     # Should generate 9 effects
     output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
@@ -1213,7 +1225,10 @@ print_test "wallpaper-process batch all generates all outputs on host"
 orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
 mkdir -p "$orch_batch_all"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch all \"$TEST_IMAGE\" \"$orch_batch_all\" 2>&1"; then
     output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -gt 15 ]; then
@@ -1237,7 +1252,10 @@ fi
 
 print_test "wallpaper-process uninstall removes container image"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" "" "" "Install Docker or Podman first"
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process uninstall --yes 2>&1"; then
     add_detail "• Command: wallpaper-process uninstall --yes"
     add_detail "• Container engine: $CONTAINER_ENGINE"
