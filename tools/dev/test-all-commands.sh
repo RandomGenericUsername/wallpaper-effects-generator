@@ -249,6 +249,12 @@ if [ "$VERBOSE" = true ]; then
 fi
 echo ""
 
+# ============================================================================
+# Initializing Test Environment
+# ============================================================================
+
+print_header "Initializing Test Environment"
+
 echo -e "${BLUE}Checking prerequisites...${NC}"
 echo -e "${GREEN}✓ Test image:${NC} $TEST_IMAGE"
 mkdir -p "$TEST_OUTPUT_DIR"
@@ -739,6 +745,10 @@ fi
 # ============================================================================
 
 print_header "Testing Layered Effects Configuration"
+
+# ============================================================================
+# LAYERED EFFECTS CONFIGURATION TESTS (Basic Tests)
+# ============================================================================
 
 print_header "LAYERED EFFECTS CONFIGURATION TESTS"
 
