@@ -255,10 +255,10 @@ mkdir -p "$TEST_OUTPUT_DIR"
 echo -e "${GREEN}✓ Output directory ready${NC}\n"
 
 # ============================================================================
-# CORE CLI TESTS (wallpaper-core)
+# Testing Core CLI Basic Commands
 # ============================================================================
 
-print_header "CORE CLI TESTS (wallpaper-core)"
+print_header "Testing Core CLI Basic Commands"
 
 print_test "wallpaper-core version displays version information"
 if run_cmd "wallpaper-core version"; then
@@ -318,6 +318,12 @@ else
     test_failed "show presets command failed" "$LAST_CMD" "$LAST_OUTPUT"
 fi
 
+# ============================================================================
+# Testing Core Process Commands
+# ============================================================================
+
+print_header "Testing Core Process Commands"
+
 print_test "wallpaper-core process effect (blur) creates output file"
 core_effect_out="$TEST_OUTPUT_DIR/core-effect-blur.jpg"
 if run_cmd "wallpaper-core process effect \"$TEST_IMAGE\" \"$core_effect_out\" --effect blur" && [ -f "$core_effect_out" ]; then
@@ -365,6 +371,12 @@ else
         "$LAST_CMD" \
         "$LAST_OUTPUT"
 fi
+
+# ============================================================================
+# Testing Core Batch Commands
+# ============================================================================
+
+print_header "Testing Core Batch Commands"
 
 print_test "wallpaper-core batch effects generates all effect outputs"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
@@ -457,6 +469,276 @@ fi
 # ============================================================================
 # LAYERED EFFECTS CONFIGURATION TESTS
 # ============================================================================
+
+# ============================================================================
+# Testing Orchestrator CLI Basic Commands
+# ============================================================================
+
+print_header "Testing Orchestrator CLI Basic Commands"
+
+print_test "wallpaper-process version displays version information"
+if run_cmd "wallpaper-process version"; then
+    version_output=$(echo "$LAST_OUTPUT" | head -1)
+    add_detail "• Command: wallpaper-process version"
+    add_detail "• Output: $version_output"
+    test_passed
+else
+    test_failed "wallpaper-process version command failed" "$LAST_CMD" "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process info displays system information"
+if run_cmd "wallpaper-process info"; then
+    line_count=$(echo "$LAST_OUTPUT" | wc -l)
+    sample_line=$(echo "$LAST_OUTPUT" | head -1)
+    add_detail "• Command: wallpaper-process info"
+    add_detail "• Output lines: $line_count"
+    add_detail "• Sample: $sample_line"
+    test_passed
+else
+    test_failed "wallpaper-process info command failed" "$LAST_CMD" "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process show effects lists all available effects"
+if run_cmd "wallpaper-process show effects"; then
+    effect_count=$(echo "$LAST_OUTPUT" | grep -c "blur\|brightness\|blackwhite" || echo "0")
+    sample_effects=$(echo "$LAST_OUTPUT" | grep -o "blur\|brightness\|blackwhite" | head -3 | tr '\n' ', ' | sed 's/,$//')
+    add_detail "• Command: wallpaper-process show effects"
+    add_detail "• Effects listed: $effect_count+"
+    add_detail "• Samples: $sample_effects"
+    test_passed
+else
+    test_failed "wallpaper-process show effects command failed" "$LAST_CMD" "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process show composites lists all available composites"
+if run_cmd "wallpaper-process show composites"; then
+    composite_count=$(echo "$LAST_OUTPUT" | grep -c "blackwhite-blur\|blur-brightness" || echo "0")
+    sample_composites=$(echo "$LAST_OUTPUT" | grep -o "blackwhite-blur\|blur-brightness" | head -2 | tr '\n' ', ' | sed 's/,$//')
+    add_detail "• Command: wallpaper-process show composites"
+    add_detail "• Composites listed: $composite_count+"
+    add_detail "• Samples: $sample_composites"
+    test_passed
+else
+    test_failed "wallpaper-process show composites command failed" "$LAST_CMD" "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process show presets lists all available presets"
+if run_cmd "wallpaper-process show presets"; then
+    preset_count=$(echo "$LAST_OUTPUT" | grep -c "dark_blur\|subtle_blur" || echo "0")
+    sample_presets=$(echo "$LAST_OUTPUT" | grep -o "dark_blur\|subtle_blur" | head -2 | tr '\n' ', ' | sed 's/,$//')
+    add_detail "• Command: wallpaper-process show presets"
+    add_detail "• Presets listed: $preset_count+"
+    add_detail "• Samples: $sample_presets"
+    test_passed
+else
+    test_failed "wallpaper-process show presets command failed" "$LAST_CMD" "$LAST_OUTPUT"
+fi
+
+# ============================================================================
+# CONTAINER MANAGEMENT TESTS
+# ============================================================================
+
+# ============================================================================
+# Testing Orchestrator Container Workflow
+# ============================================================================
+
+print_header "Testing Orchestrator Container Workflow"
+
+# Detect container engine
+if command -v podman > /dev/null 2>&1; then
+    CONTAINER_ENGINE="podman"
+elif command -v docker > /dev/null 2>&1; then
+    CONTAINER_ENGINE="docker"
+else
+    echo "Warning: No container engine found, skipping container tests"
+    CONTAINER_ENGINE="none"
+fi
+
+# Create a project directory with settings.toml for container engine config
+# Note: layered_settings discovers project-level config from cwd/settings.toml
+TEST_CONTAINER_PROJECT="$TEST_OUTPUT_DIR/container-project"
+mkdir -p "$TEST_CONTAINER_PROJECT"
+if [ "$CONTAINER_ENGINE" != "none" ]; then
+    cat > "$TEST_CONTAINER_PROJECT/settings.toml" << EOF
+[orchestrator]
+version = "1.0"
+
+[orchestrator.container]
+engine = "$CONTAINER_ENGINE"
+image_name = "wallpaper-effects:latest"
+EOF
+fi
+
+print_test "wallpaper-process install builds container image"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process install 2>&1"; then
+    add_detail "• Command: wallpaper-process install"
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Image built: wallpaper-effects:latest"
+    add_detail "• Build location: $TEST_CONTAINER_PROJECT"
+    test_passed
+else
+    test_failed "container image build failed (wallpaper-effects:latest)" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process install" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process process effect (blur) creates output file via container"
+orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process effect \"$TEST_IMAGE\" \"$orch_effect_out\" blur 2>&1" && [ -f "$orch_effect_out" ]; then
+    file_size=$(stat -f%z "$orch_effect_out" 2>/dev/null || stat -c%s "$orch_effect_out" 2>/dev/null)
+    add_detail "• Command: wallpaper-process process effect <image> <output> blur"
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Input: $TEST_IMAGE"
+    add_detail "• Output: $orch_effect_out"
+    add_detail "• File size: $file_size bytes"
+    add_detail "• Effect: blur (containerized execution)"
+    test_passed
+else
+    test_failed "containerized effect processing failed or output not created (expected: $orch_effect_out)" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process effect ... blur" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process process composite (blackwhite-blur) creates output file via container"
+orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process composite \"$TEST_IMAGE\" \"$orch_composite_out\" blackwhite-blur 2>&1" && [ -f "$orch_composite_out" ]; then
+    file_size=$(stat -f%z "$orch_composite_out" 2>/dev/null || stat -c%s "$orch_composite_out" 2>/dev/null)
+    add_detail "• Command: wallpaper-process process composite <image> <output> blackwhite-blur"
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Input: $TEST_IMAGE"
+    add_detail "• Output: $orch_composite_out"
+    add_detail "• File size: $file_size bytes"
+    add_detail "• Composite: blackwhite-blur (2-effect chain, containerized)"
+    test_passed
+else
+    test_failed "containerized composite processing failed or output not created (expected: $orch_composite_out)" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process composite ... blackwhite-blur" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process process preset (dark_blur) creates output file via container"
+orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process preset \"$TEST_IMAGE\" \"$orch_preset_out\" dark_blur 2>&1" && [ -f "$orch_preset_out" ]; then
+    file_size=$(stat -f%z "$orch_preset_out" 2>/dev/null || stat -c%s "$orch_preset_out" 2>/dev/null)
+    add_detail "• Command: wallpaper-process process preset <image> <output> dark_blur"
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Input: $TEST_IMAGE"
+    add_detail "• Output: $orch_preset_out"
+    add_detail "• File size: $file_size bytes"
+    add_detail "• Preset: dark_blur (containerized execution)"
+    test_passed
+else
+    test_failed "containerized preset processing failed or output not created (expected: $orch_preset_out)" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process preset ... dark_blur" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process batch effects generates all effect outputs on host"
+orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
+mkdir -p "$orch_batch_effect"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects \"$TEST_IMAGE\" \"$orch_batch_effect\" 2>&1"; then
+    # Should generate 9 effects
+    output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -ge 9 ]; then
+        output_files=$(find "$orch_batch_effect" -type f -name "*.jpg" -exec basename {} \; | head -3 | tr '\n' ', ' | sed 's/,$//')
+        add_detail "• Command: wallpaper-process batch effects <image> <output-dir>"
+        add_detail "• Output directory: $orch_batch_effect"
+        add_detail "• Effects generated: $output_count"
+        add_detail "• Sample files: $output_files..."
+        add_detail "• Execution: Host-side (delegates to core)"
+        test_passed
+    else
+        test_failed "orchestrator batch effects: insufficient outputs (expected ≥9, got $output_count)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ..." \
+            "Found files: $(ls -1 "$orch_batch_effect" 2>/dev/null | head -10 | tr '\n' ' ')"
+    fi
+else
+    test_failed "orchestrator batch effects command failed" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ..." \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process batch all generates all outputs on host"
+orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
+mkdir -p "$orch_batch_all"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch all \"$TEST_IMAGE\" \"$orch_batch_all\" 2>&1"; then
+    output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
+    if [ "$output_count" -gt 15 ]; then
+        effects_count=$(find "$orch_batch_all" -type f -name "*blur*.jpg" 2>/dev/null | wc -l)
+        add_detail "• Command: wallpaper-process batch all <image> <output-dir>"
+        add_detail "• Output directory: $orch_batch_all"
+        add_detail "• Total files: $output_count (effects + composites + presets)"
+        add_detail "• Effects subset: $effects_count files"
+        add_detail "• Execution: Host-side (delegates to core)"
+        test_passed
+    else
+        test_failed "orchestrator batch all: insufficient outputs (expected >15, got $output_count)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch all ..." \
+            "Found files: $(ls -1 "$orch_batch_all" 2>/dev/null | head -10 | tr '\n' ' ')"
+    fi
+else
+    test_failed "orchestrator batch all command failed" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch all ..." \
+        "$LAST_OUTPUT"
+fi
+
+print_test "wallpaper-process uninstall removes container image"
+if [ "$CONTAINER_ENGINE" = "none" ]; then
+    test_skipped "container engine not found" \
+        "command -v docker && command -v podman" \
+        "Neither docker nor podman found" \
+        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process uninstall --yes 2>&1"; then
+    add_detail "• Command: wallpaper-process uninstall --yes"
+    add_detail "• Container engine: $CONTAINER_ENGINE"
+    add_detail "• Image removed: wallpaper-effects:latest"
+    test_passed
+else
+    test_failed "container uninstall failed (wallpaper-effects:latest)" \
+        "cd $TEST_CONTAINER_PROJECT && wallpaper-process uninstall --yes" \
+        "$LAST_OUTPUT"
+fi
+
+# ============================================================================
+# DRY-RUN TESTS - CORE CLI
+# ============================================================================
+
+
+# ============================================================================
+# Testing Layered Effects Configuration
+# ============================================================================
+
+print_header "Testing Layered Effects Configuration"
 
 print_header "LAYERED EFFECTS CONFIGURATION TESTS"
 
@@ -940,338 +1222,11 @@ fi
 # EDGE CASES
 # ============================================================================
 
-print_header "EDGE CASES"
-
-TEST_EDGE="$TEST_OUTPUT_DIR/edge-cases"
-mkdir -p "$TEST_EDGE/wallpaper-effects-generator"
-
-print_test "Edge case very long effect name loads successfully"
-cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
-version: "1.0"
-effects:
-  this_is_a_very_long_effect_name_that_tests_the_limits_of_identifier_length:
-    description: "Effect with very long name"
-    command: "convert $INPUT -blur 0x10 $OUTPUT"
-    parameters: {}
-EOF
-if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1" && echo "$LAST_OUTPUT" | grep -q "this_is_a_very_long"; then
-    add_detail "• Test: Effect name with 73 characters"
-    add_detail "• Result: Long identifier handled correctly"
-    test_passed
-else
-    test_failed "very long effect name failed to load (this_is_a_very_long...)" \
-        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "Edge case effect name with underscores and numbers loads successfully"
-cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
-version: "1.0"
-effects:
-  effect_123_test:
-    description: "Effect with numbers"
-    command: "convert $INPUT -blur 0x10 $OUTPUT"
-    parameters: {}
-EOF
-if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1" && echo "$LAST_OUTPUT" | grep -q "effect_123_test"; then
-    add_detail "• Test: Effect name 'effect_123_test' (underscores + numbers)"
-    add_detail "• Result: Mixed alphanumeric identifier accepted"
-    test_passed
-else
-    test_failed "effect name with underscores and numbers failed to load (effect_123_test)" \
-        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "Edge case empty effects section loads successfully"
-cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
-version: "1.0"
-effects: {}
-EOF
-if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1"; then
-    add_detail "• Test: Empty effects section (effects: {})"
-    add_detail "• Result: Valid YAML, falls back to package defaults"
-    test_passed
-else
-    test_failed "empty effects section failed to load" \
-        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "Edge case minimal valid file with only version field loads successfully"
-cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
-version: "1.0"
-EOF
-if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1"; then
-    add_detail "• Test: Minimal effects.yaml (version field only)"
-    add_detail "• Result: Valid config, uses package defaults"
-    test_passed
-else
-    test_failed "minimal effects.yaml (version only) failed to load" \
-        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
-        "$LAST_OUTPUT"
-fi
-
 # ============================================================================
-# ORCHESTRATOR CLI TESTS (wallpaper-process)
+# Testing Core CLI Dry-Run Commands
 # ============================================================================
 
-print_header "ORCHESTRATOR CLI TESTS (wallpaper-process)"
-
-print_test "wallpaper-process version displays version information"
-if run_cmd "wallpaper-process version"; then
-    version_output=$(echo "$LAST_OUTPUT" | head -1)
-    add_detail "• Command: wallpaper-process version"
-    add_detail "• Output: $version_output"
-    test_passed
-else
-    test_failed "wallpaper-process version command failed" "$LAST_CMD" "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process info displays system information"
-if run_cmd "wallpaper-process info"; then
-    line_count=$(echo "$LAST_OUTPUT" | wc -l)
-    sample_line=$(echo "$LAST_OUTPUT" | head -1)
-    add_detail "• Command: wallpaper-process info"
-    add_detail "• Output lines: $line_count"
-    add_detail "• Sample: $sample_line"
-    test_passed
-else
-    test_failed "wallpaper-process info command failed" "$LAST_CMD" "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process show effects lists all available effects"
-if run_cmd "wallpaper-process show effects"; then
-    effect_count=$(echo "$LAST_OUTPUT" | grep -c "blur\|brightness\|blackwhite" || echo "0")
-    sample_effects=$(echo "$LAST_OUTPUT" | grep -o "blur\|brightness\|blackwhite" | head -3 | tr '\n' ', ' | sed 's/,$//')
-    add_detail "• Command: wallpaper-process show effects"
-    add_detail "• Effects listed: $effect_count+"
-    add_detail "• Samples: $sample_effects"
-    test_passed
-else
-    test_failed "wallpaper-process show effects command failed" "$LAST_CMD" "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process show composites lists all available composites"
-if run_cmd "wallpaper-process show composites"; then
-    composite_count=$(echo "$LAST_OUTPUT" | grep -c "blackwhite-blur\|blur-brightness" || echo "0")
-    sample_composites=$(echo "$LAST_OUTPUT" | grep -o "blackwhite-blur\|blur-brightness" | head -2 | tr '\n' ', ' | sed 's/,$//')
-    add_detail "• Command: wallpaper-process show composites"
-    add_detail "• Composites listed: $composite_count+"
-    add_detail "• Samples: $sample_composites"
-    test_passed
-else
-    test_failed "wallpaper-process show composites command failed" "$LAST_CMD" "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process show presets lists all available presets"
-if run_cmd "wallpaper-process show presets"; then
-    preset_count=$(echo "$LAST_OUTPUT" | grep -c "dark_blur\|subtle_blur" || echo "0")
-    sample_presets=$(echo "$LAST_OUTPUT" | grep -o "dark_blur\|subtle_blur" | head -2 | tr '\n' ', ' | sed 's/,$//')
-    add_detail "• Command: wallpaper-process show presets"
-    add_detail "• Presets listed: $preset_count+"
-    add_detail "• Samples: $sample_presets"
-    test_passed
-else
-    test_failed "wallpaper-process show presets command failed" "$LAST_CMD" "$LAST_OUTPUT"
-fi
-
-# ============================================================================
-# CONTAINER MANAGEMENT TESTS
-# ============================================================================
-
-print_header "CONTAINER MANAGEMENT TESTS"
-
-# Detect container engine
-if command -v podman > /dev/null 2>&1; then
-    CONTAINER_ENGINE="podman"
-elif command -v docker > /dev/null 2>&1; then
-    CONTAINER_ENGINE="docker"
-else
-    echo "Warning: No container engine found, skipping container tests"
-    CONTAINER_ENGINE="none"
-fi
-
-# Create a project directory with settings.toml for container engine config
-# Note: layered_settings discovers project-level config from cwd/settings.toml
-TEST_CONTAINER_PROJECT="$TEST_OUTPUT_DIR/container-project"
-mkdir -p "$TEST_CONTAINER_PROJECT"
-if [ "$CONTAINER_ENGINE" != "none" ]; then
-    cat > "$TEST_CONTAINER_PROJECT/settings.toml" << EOF
-[orchestrator]
-version = "1.0"
-
-[orchestrator.container]
-engine = "$CONTAINER_ENGINE"
-image_name = "wallpaper-effects:latest"
-EOF
-fi
-
-print_test "wallpaper-process install builds container image"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process install 2>&1"; then
-    add_detail "• Command: wallpaper-process install"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Image built: wallpaper-effects:latest"
-    add_detail "• Build location: $TEST_CONTAINER_PROJECT"
-    test_passed
-else
-    test_failed "container image build failed (wallpaper-effects:latest)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process install" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process process effect (blur) creates output file via container"
-orch_effect_out="$TEST_OUTPUT_DIR/orch-effect-blur.jpg"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process effect \"$TEST_IMAGE\" \"$orch_effect_out\" blur 2>&1" && [ -f "$orch_effect_out" ]; then
-    file_size=$(stat -f%z "$orch_effect_out" 2>/dev/null || stat -c%s "$orch_effect_out" 2>/dev/null)
-    add_detail "• Command: wallpaper-process process effect <image> <output> blur"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Input: $TEST_IMAGE"
-    add_detail "• Output: $orch_effect_out"
-    add_detail "• File size: $file_size bytes"
-    add_detail "• Effect: blur (containerized execution)"
-    test_passed
-else
-    test_failed "containerized effect processing failed or output not created (expected: $orch_effect_out)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process effect ... blur" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process process composite (blackwhite-blur) creates output file via container"
-orch_composite_out="$TEST_OUTPUT_DIR/orch-composite-blackwhite-blur.jpg"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process composite \"$TEST_IMAGE\" \"$orch_composite_out\" blackwhite-blur 2>&1" && [ -f "$orch_composite_out" ]; then
-    file_size=$(stat -f%z "$orch_composite_out" 2>/dev/null || stat -c%s "$orch_composite_out" 2>/dev/null)
-    add_detail "• Command: wallpaper-process process composite <image> <output> blackwhite-blur"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Input: $TEST_IMAGE"
-    add_detail "• Output: $orch_composite_out"
-    add_detail "• File size: $file_size bytes"
-    add_detail "• Composite: blackwhite-blur (2-effect chain, containerized)"
-    test_passed
-else
-    test_failed "containerized composite processing failed or output not created (expected: $orch_composite_out)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process composite ... blackwhite-blur" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process process preset (dark_blur) creates output file via container"
-orch_preset_out="$TEST_OUTPUT_DIR/orch-preset-dark_blur.jpg"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process preset \"$TEST_IMAGE\" \"$orch_preset_out\" dark_blur 2>&1" && [ -f "$orch_preset_out" ]; then
-    file_size=$(stat -f%z "$orch_preset_out" 2>/dev/null || stat -c%s "$orch_preset_out" 2>/dev/null)
-    add_detail "• Command: wallpaper-process process preset <image> <output> dark_blur"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Input: $TEST_IMAGE"
-    add_detail "• Output: $orch_preset_out"
-    add_detail "• File size: $file_size bytes"
-    add_detail "• Preset: dark_blur (containerized execution)"
-    test_passed
-else
-    test_failed "containerized preset processing failed or output not created (expected: $orch_preset_out)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process preset ... dark_blur" \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process batch effects generates all effect outputs on host"
-orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
-mkdir -p "$orch_batch_effect"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects \"$TEST_IMAGE\" \"$orch_batch_effect\" 2>&1"; then
-    # Should generate 9 effects
-    output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
-    if [ "$output_count" -ge 9 ]; then
-        output_files=$(find "$orch_batch_effect" -type f -name "*.jpg" -exec basename {} \; | head -3 | tr '\n' ', ' | sed 's/,$//')
-        add_detail "• Command: wallpaper-process batch effects <image> <output-dir>"
-        add_detail "• Output directory: $orch_batch_effect"
-        add_detail "• Effects generated: $output_count"
-        add_detail "• Sample files: $output_files..."
-        add_detail "• Execution: Host-side (delegates to core)"
-        test_passed
-    else
-        test_failed "orchestrator batch effects: insufficient outputs (expected ≥9, got $output_count)" \
-            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ..." \
-            "Found files: $(ls -1 "$orch_batch_effect" 2>/dev/null | head -10 | tr '\n' ' ')"
-    fi
-else
-    test_failed "orchestrator batch effects command failed" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ..." \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process batch all generates all outputs on host"
-orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
-mkdir -p "$orch_batch_all"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch all \"$TEST_IMAGE\" \"$orch_batch_all\" 2>&1"; then
-    output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
-    if [ "$output_count" -gt 15 ]; then
-        effects_count=$(find "$orch_batch_all" -type f -name "*blur*.jpg" 2>/dev/null | wc -l)
-        add_detail "• Command: wallpaper-process batch all <image> <output-dir>"
-        add_detail "• Output directory: $orch_batch_all"
-        add_detail "• Total files: $output_count (effects + composites + presets)"
-        add_detail "• Effects subset: $effects_count files"
-        add_detail "• Execution: Host-side (delegates to core)"
-        test_passed
-    else
-        test_failed "orchestrator batch all: insufficient outputs (expected >15, got $output_count)" \
-            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch all ..." \
-            "Found files: $(ls -1 "$orch_batch_all" 2>/dev/null | head -10 | tr '\n' ' ')"
-    fi
-else
-    test_failed "orchestrator batch all command failed" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch all ..." \
-        "$LAST_OUTPUT"
-fi
-
-print_test "wallpaper-process uninstall removes container image"
-if [ "$CONTAINER_ENGINE" = "none" ]; then
-    test_skipped "container engine not found" \
-        "command -v docker && command -v podman" \
-        "Neither docker nor podman found" \
-        "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process uninstall --yes 2>&1"; then
-    add_detail "• Command: wallpaper-process uninstall --yes"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Image removed: wallpaper-effects:latest"
-    test_passed
-else
-    test_failed "container uninstall failed (wallpaper-effects:latest)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process uninstall --yes" \
-        "$LAST_OUTPUT"
-fi
-
-# ============================================================================
-# DRY-RUN TESTS - CORE CLI
-# ============================================================================
-
-print_header "DRY-RUN TESTS - CORE CLI"
+print_header "Testing Core CLI Dry-Run Commands"
 
 print_test "wallpaper-core process effect --dry-run shows ImageMagick command without executing"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/dry-run-test.jpg --effect blur --dry-run 2>&1)
@@ -1592,7 +1547,12 @@ fi
 # DRY-RUN TESTS - ORCHESTRATOR CLI
 # ============================================================================
 
-print_header "DRY-RUN TESTS - ORCHESTRATOR CLI"
+
+# ============================================================================
+# Testing Orchestrator CLI Dry-Run Commands
+# ============================================================================
+
+print_header "Testing Orchestrator CLI Dry-Run Commands"
 
 if [ "$CONTAINER_ENGINE" != "none" ]; then
     # Re-install image for dry-run tests
@@ -1787,8 +1747,86 @@ fi
 # DRY-RUN EDGE CASES
 # ============================================================================
 
-print_header "DRY-RUN EDGE CASES"
 
+# ============================================================================
+# Testing Edge Cases and Error Handling
+# ============================================================================
+
+print_header "Testing Edge Cases and Error Handling"
+
+TEST_EDGE="$TEST_OUTPUT_DIR/edge-cases"
+mkdir -p "$TEST_EDGE/wallpaper-effects-generator"
+
+print_test "Edge case very long effect name loads successfully"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  this_is_a_very_long_effect_name_that_tests_the_limits_of_identifier_length:
+    description: "Effect with very long name"
+    command: "convert $INPUT -blur 0x10 $OUTPUT"
+    parameters: {}
+EOF
+if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1" && echo "$LAST_OUTPUT" | grep -q "this_is_a_very_long"; then
+    add_detail "• Test: Effect name with 73 characters"
+    add_detail "• Result: Long identifier handled correctly"
+    test_passed
+else
+    test_failed "very long effect name failed to load (this_is_a_very_long...)" \
+        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "Edge case effect name with underscores and numbers loads successfully"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects:
+  effect_123_test:
+    description: "Effect with numbers"
+    command: "convert $INPUT -blur 0x10 $OUTPUT"
+    parameters: {}
+EOF
+if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1" && echo "$LAST_OUTPUT" | grep -q "effect_123_test"; then
+    add_detail "• Test: Effect name 'effect_123_test' (underscores + numbers)"
+    add_detail "• Result: Mixed alphanumeric identifier accepted"
+    test_passed
+else
+    test_failed "effect name with underscores and numbers failed to load (effect_123_test)" \
+        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "Edge case empty effects section loads successfully"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+effects: {}
+EOF
+if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1"; then
+    add_detail "• Test: Empty effects section (effects: {})"
+    add_detail "• Result: Valid YAML, falls back to package defaults"
+    test_passed
+else
+    test_failed "empty effects section failed to load" \
+        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
+        "$LAST_OUTPUT"
+fi
+
+print_test "Edge case minimal valid file with only version field loads successfully"
+cat > "$TEST_EDGE/wallpaper-effects-generator/effects.yaml" << 'EOF'
+version: "1.0"
+EOF
+if run_cmd "XDG_CONFIG_HOME=\"$TEST_EDGE\" wallpaper-core show effects 2>&1"; then
+    add_detail "• Test: Minimal effects.yaml (version field only)"
+    add_detail "• Result: Valid config, uses package defaults"
+    test_passed
+else
+    test_failed "minimal effects.yaml (version only) failed to load" \
+        "XDG_CONFIG_HOME=$TEST_EDGE wallpaper-core show effects" \
+        "$LAST_OUTPUT"
+fi
+
+# ============================================================================
+# ORCHESTRATOR CLI TESTS (wallpaper-process)
+# ============================================================================
 print_test "Dry-run edge case special characters in paths handled correctly"
 special_path="/tmp/wallpaper test (dry-run).jpg"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$special_path" --effect blur --dry-run 2>&1)
