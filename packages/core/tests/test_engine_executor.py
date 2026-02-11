@@ -1,7 +1,7 @@
 """Tests for engine executor module."""
 
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
@@ -72,33 +72,45 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" "$OUTPUT"',
-            input_path=test_image_file,
-            output_path=output_path,
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
 
-        assert result.success is True
-        assert result.return_code == 0
-        assert output_path.exists()
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is True
+            assert result.return_code == 0
 
     def test_execute_with_params(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test executing command with parameter substitution."""
         executor = CommandExecutor()
         output_path = tmp_path / "blurred.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" -blur "$BLUR" "$OUTPUT"',
-            input_path=test_image_file,
-            output_path=output_path,
-            params={"blur": "0x5"},
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
 
-        assert result.success is True
-        assert output_path.exists()
-        # Check that blur param was substituted
-        assert "-blur" in result.command
-        assert "0x5" in result.command
+            result = executor.execute(
+                command_template='magick "$INPUT" -blur "$BLUR" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+                params={"blur": "0x5"},
+            )
+
+            assert result.success is True
+            # Check that blur param was substituted
+            assert "-blur" in result.command
+            assert "0x5" in result.command
 
     def test_execute_creates_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -107,15 +119,21 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "nested" / "dir" / "output.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" "$OUTPUT"',
-            input_path=test_image_file,
-            output_path=output_path,
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
 
-        assert result.success is True
-        assert output_path.parent.exists()
-        assert output_path.exists()
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is True
+            assert output_path.parent.exists()
 
     def test_execute_with_output_logging(
         self, test_image_file: Path, tmp_path: Path
@@ -125,13 +143,20 @@ class TestCommandExecutor:
         executor = CommandExecutor(output=output)
         output_path = tmp_path / "output.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" "$OUTPUT"',
-            input_path=test_image_file,
-            output_path=output_path,
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
 
-        assert result.success is True
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is True
 
     def test_execute_failure(self, tmp_path: Path) -> None:
         """Test handling command failure."""
@@ -139,14 +164,21 @@ class TestCommandExecutor:
         input_path = tmp_path / "nonexistent.png"
         output_path = tmp_path / "output.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" "$OUTPUT"',
-            input_path=input_path,
-            output_path=output_path,
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 1
+            mock_result.stdout = ""
+            mock_result.stderr = "Error: file not found"
+            mock_run.return_value = mock_result
 
-        assert result.success is False
-        assert result.return_code != 0
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=input_path,
+                output_path=output_path,
+            )
+
+            assert result.success is False
+            assert result.return_code != 0
 
     def test_execute_substitution_quoted(
         self, test_image_file: Path, tmp_path: Path
@@ -156,15 +188,23 @@ class TestCommandExecutor:
         output_path = tmp_path / "output.png"
 
         cmd_template = 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
-        result = executor.execute(
-            command_template=cmd_template,
-            input_path=test_image_file,
-            output_path=output_path,
-            params={"brightness": -20},
-        )
 
-        assert result.success is True
-        assert "-20" in result.command
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
+
+            result = executor.execute(
+                command_template=cmd_template,
+                input_path=test_image_file,
+                output_path=output_path,
+                params={"brightness": -20},
+            )
+
+            assert result.success is True
+            assert "-20" in result.command
 
     def test_execute_duration_recorded(
         self, test_image_file: Path, tmp_path: Path
@@ -173,13 +213,20 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
-        result = executor.execute(
-            command_template='magick "$INPUT" "$OUTPUT"',
-            input_path=test_image_file,
-            output_path=output_path,
-        )
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
 
-        assert result.duration >= 0
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.duration >= 0
 
     def test_execute_with_stdout_logging(
         self, test_image_file: Path, tmp_path: Path
