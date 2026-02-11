@@ -663,3 +663,31 @@ class TestDryRunErrorCases:
             "cannot resolve" in result.stdout.lower()
             or "unknown" in result.stdout.lower()
         )
+
+
+class TestCLIExceptionHandlers:
+    """Tests for CLI exception handlers in bootstrap."""
+
+    def test_effects_validation_error_handler(self) -> None:
+        """Test EffectsValidationError exception handler."""
+        from unittest.mock import patch
+
+        from layered_effects.errors import EffectsValidationError
+
+        with patch("wallpaper_core.cli.main.load_effects") as mock_load:
+            mock_load.side_effect = EffectsValidationError(
+                layer="merged", message="Invalid effect definition"
+            )
+            result = runner.invoke(app, ["show", "effects"])
+            assert result.exit_code == 1
+
+    def test_effects_error_handler(self) -> None:
+        """Test generic EffectsError exception handler."""
+        from unittest.mock import patch
+
+        from layered_effects.errors import EffectsError
+
+        with patch("wallpaper_core.cli.main.load_effects") as mock_load:
+            mock_load.side_effect = EffectsError("Generic effects error")
+            result = runner.invoke(app, ["show", "effects"])
+            assert result.exit_code == 1

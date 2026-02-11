@@ -68,3 +68,31 @@ def test_install_invalid_engine() -> None:
         install(engine="invalid", dry_run=False)
 
     assert exc_info.value.exit_code == 1
+
+
+def test_install_subprocess_error() -> None:
+    """Test install handles subprocess error."""
+    import subprocess
+
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.subprocess.run"
+    ) as mock_run:
+        mock_run.side_effect = subprocess.SubprocessError("Subprocess failed")
+
+        with pytest.raises(Exit) as exc_info:
+            install(engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1
+
+
+def test_install_generic_exception() -> None:
+    """Test install handles generic exception."""
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.subprocess.run"
+    ) as mock_run:
+        mock_run.side_effect = Exception("Unexpected error")
+
+        with pytest.raises(Exit) as exc_info:
+            install(engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1

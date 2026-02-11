@@ -85,3 +85,31 @@ def test_uninstall_with_podman() -> None:
 
         call_args = mock_run.call_args[0][0]
         assert call_args[0] == "podman"
+
+
+def test_uninstall_subprocess_error() -> None:
+    """Test uninstall handles subprocess error."""
+    import subprocess
+
+    with patch(
+        "wallpaper_orchestrator.cli.commands.uninstall.subprocess.run"
+    ) as mock_run:
+        mock_run.side_effect = subprocess.SubprocessError("Subprocess failed")
+
+        with pytest.raises(Exit) as exc_info:
+            uninstall(yes=True, engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1
+
+
+def test_uninstall_generic_exception() -> None:
+    """Test uninstall handles generic exception."""
+    with patch(
+        "wallpaper_orchestrator.cli.commands.uninstall.subprocess.run"
+    ) as mock_run:
+        mock_run.side_effect = Exception("Unexpected error")
+
+        with pytest.raises(Exit) as exc_info:
+            uninstall(yes=True, engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1
