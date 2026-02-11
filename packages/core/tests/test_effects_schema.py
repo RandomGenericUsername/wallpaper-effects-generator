@@ -319,7 +319,9 @@ class TestEffectsConfig:
                     description="Blur then dim",
                     chain=[
                         ChainStep(effect="blur", params={"blur": "0x8"}),
-                        ChainStep(effect="brightness", params={"brightness": -20}),
+                        ChainStep(
+                            effect="brightness", params={"brightness": -20}
+                        ),
                     ],
                 )
             },
@@ -371,4 +373,6 @@ class TestEffectsConfig:
         assert config.version == "1.0"
         assert "percent" in config.parameter_types
         assert "blackwhite" in config.effects
-        assert config.effects["blackwhite"].description == "Convert to grayscale"
+        assert (
+            config.effects["blackwhite"].description == "Convert to grayscale"
+        )

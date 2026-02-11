@@ -19,7 +19,6 @@ class TestPackageEffects:
     def test_package_effects_file_is_valid_yaml(self):
         """Package effects.yaml should be valid and loadable."""
         import yaml
-
         from wallpaper_core.effects import get_package_effects_file
 
         path = get_package_effects_file()
@@ -40,7 +39,6 @@ class TestLayeredEffectsConfiguration:
     def test_loads_package_defaults_only(self, tmp_path):
         """Should work with only package layer."""
         from layered_effects import configure, load_effects
-
         from wallpaper_core.effects import get_package_effects_file
 
         configure(
@@ -57,19 +55,20 @@ class TestLayeredEffectsConfiguration:
     def test_project_effects_extend_package(self, tmp_path):
         """Project effects should add to package defaults."""
         from layered_effects import configure, load_effects
-
         from wallpaper_core.effects import get_package_effects_file
 
         # Create project effects.yaml
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 effects:
   custom_project:
     description: "Project custom effect"
     command: "convert $INPUT -blur 0x10 $OUTPUT"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -84,19 +83,20 @@ effects:
     def test_user_effects_override_package(self, tmp_path):
         """User effects should override package defaults."""
         from layered_effects import configure, load_effects
-
         from wallpaper_core.effects import get_package_effects_file
 
         # Create user effects.yaml
         user_effects = tmp_path / "user_effects.yaml"
-        user_effects.write_text("""
+        user_effects.write_text(
+            """
 version: "1.0"
 effects:
   blur:
     description: "My custom blur"
     command: "convert $INPUT -blur 0x50 $OUTPUT"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -112,11 +112,11 @@ effects:
     def test_parameter_types_merge_across_layers(self, tmp_path):
         """Parameter types from all layers should be available."""
         from layered_effects import configure, load_effects
-
         from wallpaper_core.effects import get_package_effects_file
 
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 parameter_types:
   custom_range:
@@ -124,7 +124,8 @@ parameter_types:
     min: 0
     max: 100
     default: 50
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -147,7 +148,6 @@ class TestErrorHandling:
         """Invalid YAML should raise EffectsLoadError."""
         from layered_effects import configure, load_effects
         from layered_effects.errors import EffectsLoadError
-
         from wallpaper_core.effects import get_package_effects_file
 
         project_effects = tmp_path / "effects.yaml"
@@ -165,17 +165,18 @@ class TestErrorHandling:
         """Validation errors should have helpful context."""
         from layered_effects import configure, load_effects
         from layered_effects.errors import EffectsValidationError
-
         from wallpaper_core.effects import get_package_effects_file
 
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 effects:
   bad_effect:
     description: "Missing command field"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),

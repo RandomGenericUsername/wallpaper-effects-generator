@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from click.exceptions import Exit
-
 from wallpaper_orchestrator.cli.commands.uninstall import uninstall
 
 
@@ -113,3 +112,26 @@ def test_uninstall_generic_exception() -> None:
             uninstall(yes=True, engine=None, dry_run=False)
 
         assert exc_info.value.exit_code == 1
+
+
+def test_uninstall_removal_failure() -> None:
+    """Test uninstall when removal command fails."""
+    with patch(
+        "wallpaper_orchestrator.cli.commands.uninstall.subprocess.run"
+    ) as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=1, stderr="Permission denied", stdout=""
+        )
+
+        with pytest.raises(Exit) as exc_info:
+            uninstall(yes=True, engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1
+
+
+def test_uninstall_invalid_engine_error() -> None:
+    """Test uninstall rejects invalid engine."""
+    with pytest.raises(Exit) as exc_info:
+        uninstall(yes=True, engine="invalid_engine", dry_run=False)
+
+    assert exc_info.value.exit_code == 1

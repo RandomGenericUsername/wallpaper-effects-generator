@@ -2,7 +2,6 @@
 
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
-
 from wallpaper_orchestrator.config.settings import OrchestratorSettings
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 
@@ -38,7 +37,9 @@ def test_unified_config_access_orchestrator() -> None:
     config = UnifiedConfig()
 
     assert config.orchestrator.container.engine == "docker"
-    assert config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    assert (
+        config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    )
 
 
 def test_unified_config_from_dict() -> None:

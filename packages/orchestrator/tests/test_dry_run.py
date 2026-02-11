@@ -6,14 +6,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from rich.console import Console
-
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 
 @pytest.fixture
 def console_output():
     string_io = StringIO()
-    console = Console(file=string_io, force_terminal=True, width=120, highlight=False)
+    console = Console(
+        file=string_io, force_terminal=True, width=120, highlight=False
+    )
     return console, string_io
 
 
@@ -68,6 +69,34 @@ class TestContainerValidation:
         image_check = next(c for c in checks if "image" in c.name.lower())
         assert image_check.passed is False
 
+    def test_validate_image_subprocess_error(self, dry_run):
+        """Test validate_container handles subprocess errors."""
+        import subprocess
+
+        with (
+            patch("shutil.which", return_value="/usr/bin/docker"),
+            patch("subprocess.run") as mock_run,
+        ):
+            mock_run.side_effect = subprocess.SubprocessError("Docker error")
+            checks = dry_run.validate_container(
+                engine="docker", image_name="wallpaper-effects:latest"
+            )
+        image_check = next(c for c in checks if "image" in c.name.lower())
+        assert image_check.passed is False
+
+    def test_validate_image_file_not_found(self, dry_run):
+        """Test validate_container handles FileNotFoundError."""
+        with (
+            patch("shutil.which", return_value="/usr/bin/docker"),
+            patch("subprocess.run") as mock_run,
+        ):
+            mock_run.side_effect = FileNotFoundError("Docker not found")
+            checks = dry_run.validate_container(
+                engine="docker", image_name="wallpaper-effects:latest"
+            )
+        image_check = next(c for c in checks if "image" in c.name.lower())
+        assert image_check.passed is False
+
 
 class TestContainerRenderProcess:
     def test_render_container_process_shows_both_commands(
@@ -88,7 +117,11 @@ class TestContainerRenderProcess:
         assert "podman" in output
         assert "magick" in output
         assert "Host" in output or "host" in output
-        assert "Inner" in output or "inner" in output or "Inside" in output.lower()
+        assert (
+            "Inner" in output
+            or "inner" in output
+            or "Inside" in output.lower()
+        )
 
     def test_render_install(self, dry_run, console_output):
         _, string_io = console_output

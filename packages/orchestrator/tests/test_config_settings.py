@@ -2,7 +2,6 @@
 
 import pytest
 from pydantic import ValidationError
-
 from wallpaper_orchestrator.config.settings import (
     ContainerSettings,
     OrchestratorSettings,
@@ -40,6 +39,12 @@ def test_container_settings_normalizes_registry() -> None:
 
     settings = ContainerSettings(image_registry="registry.example.com")
     assert settings.image_registry == "registry.example.com"
+
+
+def test_container_settings_normalizes_empty_registry() -> None:
+    """Test ContainerSettings handles None registry."""
+    settings = ContainerSettings(image_registry=None)
+    assert settings.image_registry is None
 
 
 def test_orchestrator_settings_defaults() -> None:

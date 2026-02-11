@@ -395,3 +395,241 @@ class TestProcessCompositeEdgeCases:
             "not found" in result.stdout.lower()
             or "composite" in result.stdout.lower()
         )
+
+
+class TestPodmanDryRun:
+    """Tests for dry-run with podman engine."""
+
+    def test_dry_run_effect_with_podman(self, tmp_path):
+        """Test effect dry-run shows podman userns flag."""
+        from unittest.mock import patch
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        # Mock the container manager to use podman
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_manager_class:
+            mock_manager = MagicMock()
+            mock_manager.engine = "podman"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_manager_class.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "effect",
+                    str(input_file),
+                    str(output_file),
+                    "blur",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "userns" in result.stdout or "podman" in result.stdout.lower()
+
+    def test_dry_run_preset_with_podman(self, tmp_path):
+        """Test preset dry-run shows podman userns flag."""
+        from unittest.mock import patch
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        # Mock the container manager to use podman
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_manager_class:
+            mock_manager = MagicMock()
+            mock_manager.engine = "podman"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_manager_class.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "dark_blur",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "userns" in result.stdout or "podman" in result.stdout.lower()
+
+    def test_dry_run_preset_with_unknown_effect(self, tmp_path):
+        """Test preset dry-run when preset references unknown effect."""
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                str(output_file),
+                "subtle_blur",
+                "--dry-run",
+            ],
+        )
+
+        assert result.exit_code == 0
+
+    def test_dry_run_preset_with_unknown_composite(self, tmp_path):
+        """Test preset dry-run when preset references unknown composite."""
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                str(output_file),
+                "dark_blur",
+                "--dry-run",
+            ],
+        )
+
+        assert result.exit_code == 0
+
+    def test_dry_run_preset_with_invalid_effect_reference(self, tmp_path):
+        """Test preset dry-run when preset references effect that doesn't exist."""
+        from unittest.mock import patch
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        # Mock load_effects to return config with preset referencing unknown effect
+        with patch(
+            "wallpaper_orchestrator.cli.main.load_effects"
+        ) as mock_load:
+            from wallpaper_core.effects.schema import (
+                Effect,
+                EffectsConfig,
+                Preset,
+            )
+
+            effects_config = EffectsConfig(
+                version="1.0",
+                effects={"blur": Effect(description="Blur", command="magick")},
+                presets={
+                    "bad_preset": Preset(
+                        description="Bad preset",
+                        effect="nonexistent_effect",
+                    )
+                },
+            )
+            mock_load.return_value = effects_config
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "bad_preset",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "not found" in result.stdout.lower()
+
+    def test_dry_run_preset_with_invalid_composite_reference(self, tmp_path):
+        """Test preset dry-run when preset references composite that doesn't exist."""
+        from unittest.mock import patch
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        # Mock load_effects to return config with preset referencing unknown composite
+        with patch(
+            "wallpaper_orchestrator.cli.main.load_effects"
+        ) as mock_load:
+            from wallpaper_core.effects.schema import EffectsConfig, Preset
+
+            effects_config = EffectsConfig(
+                version="1.0",
+                presets={
+                    "bad_preset": Preset(
+                        description="Bad preset",
+                        composite="nonexistent_composite",
+                    )
+                },
+            )
+            mock_load.return_value = effects_config
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "bad_preset",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "not found" in result.stdout.lower()
+
+    def test_dry_run_preset_with_neither_effect_nor_composite(self, tmp_path):
+        """Test preset dry-run when preset has neither effect nor composite."""
+        from unittest.mock import patch
+
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        # Mock load_effects to return config with invalid preset
+        with patch(
+            "wallpaper_orchestrator.cli.main.load_effects"
+        ) as mock_load:
+            from wallpaper_core.effects.schema import EffectsConfig, Preset
+
+            effects_config = EffectsConfig(
+                version="1.0",
+                presets={
+                    "invalid_preset": Preset(
+                        description="Invalid preset", params={}
+                    )
+                },
+            )
+            mock_load.return_value = effects_config
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "invalid_preset",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "neither" in result.stdout.lower()

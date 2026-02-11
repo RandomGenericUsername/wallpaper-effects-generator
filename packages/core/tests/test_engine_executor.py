@@ -82,7 +82,9 @@ class TestCommandExecutor:
         assert result.return_code == 0
         assert output_path.exists()
 
-    def test_execute_with_params(self, test_image_file: Path, tmp_path: Path) -> None:
+    def test_execute_with_params(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
         """Test executing command with parameter substitution."""
         executor = CommandExecutor()
         output_path = tmp_path / "blurred.png"
@@ -155,7 +157,9 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
-        cmd_template = 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
+        cmd_template = (
+            'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
+        )
         result = executor.execute(
             command_template=cmd_template,
             input_path=test_image_file,
@@ -180,3 +184,84 @@ class TestCommandExecutor:
         )
 
         assert result.duration >= 0
+
+    def test_execute_with_stdout_logging(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test execution logs stdout when output is configured."""
+        from unittest.mock import MagicMock
+
+        output = RichOutput(verbosity=Verbosity.DEBUG)
+        executor = CommandExecutor(output=output)
+        output_path = tmp_path / "output.png"
+
+        with patch(
+            "wallpaper_core.engine.executor.subprocess.run"
+        ) as mock_run:
+            # Mock subprocess to return with stdout
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = "Processing complete"
+            mock_result.stderr = ""
+            mock_run.return_value = mock_result
+
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is True
+            assert result.stdout == "Processing complete"
+
+    def test_execute_with_stderr_logging(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test execution logs stderr when output is configured."""
+        from unittest.mock import MagicMock
+
+        output = RichOutput(verbosity=Verbosity.DEBUG)
+        executor = CommandExecutor(output=output)
+        output_path = tmp_path / "output.png"
+
+        with patch(
+            "wallpaper_core.engine.executor.subprocess.run"
+        ) as mock_run:
+            # Mock subprocess to return with stderr
+            mock_result = MagicMock()
+            mock_result.returncode = 0
+            mock_result.stdout = ""
+            mock_result.stderr = "Warning message"
+            mock_run.return_value = mock_result
+
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is True
+            assert result.stderr == "Warning message"
+
+    def test_execute_with_exception(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test execution handles exceptions gracefully."""
+        executor = CommandExecutor()
+        output_path = tmp_path / "output.png"
+
+        with patch(
+            "wallpaper_core.engine.executor.subprocess.run"
+        ) as mock_run:
+            mock_run.side_effect = RuntimeError("Command failed")
+
+            result = executor.execute(
+                command_template='magick "$INPUT" "$OUTPUT"',
+                input_path=test_image_file,
+                output_path=output_path,
+            )
+
+            assert result.success is False
+            assert result.return_code == -1
+            assert "Command failed" in result.stderr
+            assert result.duration >= 0

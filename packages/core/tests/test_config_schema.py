@@ -2,7 +2,6 @@
 
 import pytest
 from pydantic import ValidationError
-
 from wallpaper_core.config.schema import (
     BackendSettings,
     CoreSettings,
@@ -61,6 +60,21 @@ def test_processing_settings_converts_string_to_path() -> None:
     """Test ProcessingSettings converts string to Path."""
     settings = ProcessingSettings(temp_dir="/tmp/custom")
     assert settings.temp_dir.as_posix() == "/tmp/custom"
+
+
+def test_processing_settings_accepts_path_object() -> None:
+    """Test ProcessingSettings accepts Path object directly."""
+    from pathlib import Path
+
+    path_obj = Path("/tmp/test")
+    settings = ProcessingSettings(temp_dir=path_obj)
+    assert settings.temp_dir == path_obj
+
+
+def test_processing_settings_handles_none_temp_dir() -> None:
+    """Test ProcessingSettings handles None for temp_dir."""
+    settings = ProcessingSettings(temp_dir=None)
+    assert settings.temp_dir is None
 
 
 def test_backend_settings_defaults() -> None:

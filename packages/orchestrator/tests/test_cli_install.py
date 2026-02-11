@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.exceptions import Exit
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.commands.install import install
 
 runner = CliRunner()
@@ -91,6 +90,19 @@ def test_install_generic_exception() -> None:
         "wallpaper_orchestrator.cli.commands.install.subprocess.run"
     ) as mock_run:
         mock_run.side_effect = Exception("Unexpected error")
+
+        with pytest.raises(Exit) as exc_info:
+            install(engine=None, dry_run=False)
+
+        assert exc_info.value.exit_code == 1
+
+
+def test_install_dockerfile_not_found() -> None:
+    """Test install when Dockerfile is not found."""
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.Path.exists"
+    ) as mock_exists:
+        mock_exists.return_value = False
 
         with pytest.raises(Exit) as exc_info:
             install(engine=None, dry_run=False)

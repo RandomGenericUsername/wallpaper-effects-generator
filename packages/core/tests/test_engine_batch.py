@@ -221,3 +221,64 @@ class TestBatchGenerator:
 
         assert result.total == len(sample_effects_config.effects)
         assert result.succeeded > 0
+
+    def test_sequential_strict_false(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test sequential execution with strict=False."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=False,
+            strict=False,
+        )
+
+        result = generator.generate_all_composites(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total == len(sample_effects_config.composites)
+
+    def test_parallel_strict_true(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test parallel execution with strict=True."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=True,
+            strict=True,
+        )
+
+        result = generator.generate_all_presets(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total > 0
+
+    def test_generate_all_with_max_workers(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test generate_all with custom max_workers."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=True,
+            max_workers=2,
+        )
+
+        result = generator.generate_all_effects(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total > 0
+        assert result.succeeded > 0

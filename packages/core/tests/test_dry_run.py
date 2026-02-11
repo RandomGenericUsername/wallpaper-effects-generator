@@ -6,7 +6,6 @@ from unittest.mock import patch
 
 import pytest
 from rich.console import Console
-
 from wallpaper_core.dry_run import CoreDryRun
 
 
@@ -14,7 +13,9 @@ from wallpaper_core.dry_run import CoreDryRun
 def console_output():
     """Capture console output."""
     string_io = StringIO()
-    console = Console(file=string_io, force_terminal=True, width=120, highlight=False)
+    console = Console(
+        file=string_io, force_terminal=True, width=120, highlight=False
+    )
     return console, string_io
 
 
@@ -55,7 +56,9 @@ class TestCoreValidation:
         magick_check = next(c for c in checks if "magick" in c.name.lower())
         assert magick_check.passed is False
 
-    def test_validate_effect_found(self, dry_run, tmp_path, sample_effects_config):
+    def test_validate_effect_found(
+        self, dry_run, tmp_path, sample_effects_config
+    ):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         checks = dry_run.validate_core(
@@ -65,11 +68,15 @@ class TestCoreValidation:
             config=sample_effects_config,
         )
         effect_check = next(
-            c for c in checks if "blur" in c.name.lower() or "found" in c.name.lower()
+            c
+            for c in checks
+            if "blur" in c.name.lower() or "found" in c.name.lower()
         )
         assert effect_check.passed is True
 
-    def test_validate_effect_not_found(self, dry_run, tmp_path, sample_effects_config):
+    def test_validate_effect_not_found(
+        self, dry_run, tmp_path, sample_effects_config
+    ):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         checks = dry_run.validate_core(
@@ -88,9 +95,13 @@ class TestCoreValidation:
         input_file.touch()
         output_file = tmp_path / "output" / "result.jpg"
         (tmp_path / "output").mkdir()
-        checks = dry_run.validate_core(input_path=input_file, output_path=output_file)
+        checks = dry_run.validate_core(
+            input_path=input_file, output_path=output_file
+        )
         dir_check = next(
-            c for c in checks if "Output" in c.name or "directory" in c.name.lower()
+            c
+            for c in checks
+            if "Output" in c.name or "directory" in c.name.lower()
         )
         assert dir_check.passed is True
 
@@ -98,9 +109,13 @@ class TestCoreValidation:
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         output_file = tmp_path / "nonexistent_dir" / "result.jpg"
-        checks = dry_run.validate_core(input_path=input_file, output_path=output_file)
+        checks = dry_run.validate_core(
+            input_path=input_file, output_path=output_file
+        )
         dir_check = next(
-            c for c in checks if "Output" in c.name or "directory" in c.name.lower()
+            c
+            for c in checks
+            if "Output" in c.name or "directory" in c.name.lower()
         )
         assert dir_check.passed is False
         assert "would be created" in dir_check.detail.lower()
@@ -137,7 +152,9 @@ class TestCoreRenderProcess:
         output = string_io.getvalue()
         assert "magick" in output
 
-    def test_render_process_composite_shows_chain(self, dry_run, console_output):
+    def test_render_process_composite_shows_chain(
+        self, dry_run, console_output
+    ):
         _, string_io = console_output
         dry_run.render_process(
             item_name="blur-brightness80",
@@ -189,3 +206,24 @@ class TestCoreRenderBatch:
         assert "blur" in output
         assert "blackwhite" in output
         assert "2" in output
+
+    def test_validate_unknown_item_type(
+        self, dry_run, tmp_path, sample_effects_config
+    ):
+        """Test validation with unknown item type."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        # Pass an unknown item_type - should handle gracefully
+        checks = dry_run.validate_core(
+            input_path=input_file,
+            output_path=tmp_path / "output.jpg",
+            item_name="test",
+            item_type="unknown_type",  # Unknown type
+            config=sample_effects_config,
+        )
+        # Should have a check that says the item type is not found
+        item_check = next(
+            (c for c in checks if "found in config" in c.name), None
+        )
+        assert item_check is not None
+        assert item_check.passed is False
