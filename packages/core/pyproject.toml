@@ -46,15 +46,15 @@ allow-direct-references = true
 layered-settings = { workspace = true }
 
 [tool.black]
-line-length = 79
+line-length = 88
 target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
-line_length = 79
+line_length = 88
 
 [tool.ruff]
-line-length = 79
+line-length = 88
 target-version = "py312"
 
 [tool.ruff.lint]
