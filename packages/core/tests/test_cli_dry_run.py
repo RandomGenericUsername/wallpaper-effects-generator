@@ -381,3 +381,68 @@ class TestBatchAllDryRun:
             ],
         )
         assert result.exit_code == 0
+
+    def test_dry_run_composite_quiet(self, test_image_file, tmp_path):
+        """Test dry-run composite with quiet mode."""
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "composite",
+                str(test_image_file),
+                str(tmp_path / "output.png"),
+                "-c",
+                "blur-brightness80",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_preset_quiet(self, test_image_file, tmp_path):
+        """Test dry-run preset with quiet mode."""
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "preset",
+                str(test_image_file),
+                str(tmp_path / "output.png"),
+                "-p",
+                "dark_blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_unknown_effect(self, test_image_file, tmp_path):
+        """Test dry-run with nonexistent effect."""
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                str(tmp_path / "output.png"),
+                "-e",
+                "nonexistent-effect",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_verbose_batch(self, test_image_file, tmp_path):
+        """Test dry-run batch with verbose mode."""
+        result = runner.invoke(
+            app,
+            [
+                "-v",
+                "batch",
+                "effects",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
