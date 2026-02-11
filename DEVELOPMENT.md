@@ -160,6 +160,103 @@ Each workflow:
 ### Setup Codecov
 Add `CODECOV_TOKEN` secret to GitHub repo settings for coverage reports.
 
+### Running GitHub Actions Locally
+
+Before pushing to GitHub, test the entire CI pipeline locally:
+
+```bash
+make push
+```
+
+This will:
+1. Download the `act` tool (GitHub Actions CLI) if not already present
+2. Run all GitHub Actions workflows in local Docker containers
+3. Simulate the exact environment GitHub uses (Ubuntu, specific Python versions)
+4. Report any issues before they reach the cloud
+
+**Benefits of local testing:**
+- Catch CI failures before pushing
+- Faster feedback loop (minutes vs. GitHub Actions queuing)
+- No failed builds in your commit history
+- Safe testing of edge cases
+
+### Workflow: Fast Testing → Local CI → Push to Cloud
+
+```bash
+# 1. Make your changes
+vim packages/core/src/wallpaper_core/something.py
+
+# 2. Format and lint locally
+make format-core
+make lint-core
+
+# 3. Test locally
+make test-core
+
+# 4. Run full local pipeline
+make pipeline
+
+# 5. Run GitHub Actions locally (final check)
+make push
+
+# 6. Push to GitHub if all passes
+git push origin master
+```
+
+---
+
+## Configuration Standardization
+
+### Pre-commit Hooks vs GitHub Actions
+
+All tools are **configured identically** in both environments:
+
+| Tool | Config | Pre-commit | GitHub Actions |
+|------|--------|-----------|-----------------|
+| Ruff | Line length | `--line-length=88` | `--line-length=88` |
+| Black | Line length | `--line-length=88` | `--line-length=88` |
+| isort | Profile & length | `--profile black --line-length 88` | `--profile black --line-length 88` |
+| mypy | Strict mode | `config in pyproject.toml` | `config in pyproject.toml` |
+| Bandit | Security scan | `config in pyproject.toml` | `config in pyproject.toml` |
+
+**Key Points:**
+- Configuration is centralized in `pyproject.toml`
+- Pre-commit hooks enforce the same rules as GitHub Actions
+- No surprises: if it passes locally, it passes in the cloud
+
+### Special Handling: External Dependencies
+
+Some validation checks require external tools that may not be available everywhere:
+
+**Example: ImageMagick (magick) Binary**
+
+The `wallpaper_core/dry_run.py` module performs pre-flight validation checks using `shutil.which("magick")`.
+
+**How we handle it:**
+- **Local development:** Not required for tests (mocked)
+- **GitHub Actions:** Not required (mocked via test fixtures)
+- **Integration tests:** Use subprocess mocking to simulate ImageMagick without installation
+
+The mock is configured in:
+```python
+# packages/core/tests/conftest.py
+@pytest.fixture(autouse=True)
+def mock_subprocess_for_integration_tests():
+    """Mock subprocess.run and shutil.which for all tests"""
+    def mock_which(cmd):
+        if cmd == "magick":
+            return "/usr/bin/magick"  # Fake path for validation checks
+        return None
+
+    with patch("shutil.which", side_effect=mock_which):
+        yield
+```
+
+This ensures:
+- Tests don't require ImageMagick to be installed
+- Validation checks pass without external dependencies
+- CI/CD pipeline is isolated and reproducible
+
 ---
 
 ## Tools Overview
