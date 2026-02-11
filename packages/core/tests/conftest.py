@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects.schema import (
@@ -261,9 +262,7 @@ def _mock_subprocess_run(command, **kwargs):
     mock_result.stderr = ""
 
     # Convert command to string if it's a list
-    command_str = (
-        " ".join(command) if isinstance(command, list) else str(command)
-    )
+    command_str = " ".join(command) if isinstance(command, list) else str(command)
 
     # For magick commands, extract paths and validate/create files
     if "magick" in command_str.lower():
@@ -280,9 +279,7 @@ def _mock_subprocess_run(command, **kwargs):
                 if not input_path.exists():
                     # Return failure for nonexistent input file
                     mock_result.returncode = 1
-                    mock_result.stderr = (
-                        f"magick: unable to open image `{input_file}'"
-                    )
+                    mock_result.stderr = f"magick: unable to open image `{input_file}'"
                     return mock_result
 
             # If we have at least 2 quoted paths, create the output file
