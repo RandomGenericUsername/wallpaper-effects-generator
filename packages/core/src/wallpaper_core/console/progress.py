@@ -38,10 +38,10 @@ class BatchProgress:
             MofNCompleteColumn(),
             TimeElapsedColumn(),
         )
-        self._task: "TaskID | None" = None
+        self._task: TaskID | None = None
         self._started = False
 
-    def __enter__(self) -> "BatchProgress":
+    def __enter__(self) -> BatchProgress:
         """Start the progress bar."""
         self.start()
         return self
@@ -54,7 +54,9 @@ class BatchProgress:
         """Start the progress bar."""
         if not self._started:
             self.progress.start()
-            self._task = self.progress.add_task(self.description, total=self.total)
+            self._task = self.progress.add_task(
+                self.description, total=self.total
+            )
             self._started = True
 
     def stop(self) -> None:

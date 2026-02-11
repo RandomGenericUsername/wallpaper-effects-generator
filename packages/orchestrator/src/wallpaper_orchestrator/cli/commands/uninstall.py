@@ -24,7 +24,9 @@ def uninstall(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Preview without executing"
+    ),  # noqa: B008
 ) -> None:
     """Remove container image for wallpaper effects processing.
 
@@ -65,7 +67,9 @@ def uninstall(
                 image_name=image_name,
                 command=cmd_str,
             )
-            checks = renderer.validate_container(engine=container_engine, image_name=image_name)
+            checks = renderer.validate_container(
+                engine=container_engine, image_name=image_name
+            )
             renderer.render_validation(checks)
             raise typer.Exit(0)
 
@@ -95,9 +99,7 @@ def uninstall(
             )
 
             if result.returncode == 0:
-                console.print(
-                    f"[green]✓ Removed {image_name}[/green]"
-                )
+                console.print(f"[green]✓ Removed {image_name}[/green]")
                 raise typer.Exit(0)
             else:
                 # Image might not exist, which is fine
@@ -106,11 +108,11 @@ def uninstall(
                     or "not found" in result.stderr.lower()
                 ):
                     console.print(
-                        f"[dim]○ Image not found (already removed)[/dim]"
+                        "[dim]○ Image not found (already removed)[/dim]"
                     )
                     raise typer.Exit(0)
                 else:
-                    console.print(f"[red]✗ Failed to remove[/red]")
+                    console.print("[red]✗ Failed to remove[/red]")
                     console.print(f"[dim]{result.stderr}[/dim]")
                     raise typer.Exit(1)
 

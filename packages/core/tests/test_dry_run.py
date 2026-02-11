@@ -6,7 +6,6 @@ from unittest.mock import patch
 
 import pytest
 from rich.console import Console
-
 from wallpaper_core.dry_run import CoreDryRun
 
 
@@ -14,7 +13,9 @@ from wallpaper_core.dry_run import CoreDryRun
 def console_output():
     """Capture console output."""
     string_io = StringIO()
-    console = Console(file=string_io, force_terminal=True, width=120, highlight=False)
+    console = Console(
+        file=string_io, force_terminal=True, width=120, highlight=False
+    )
     return console, string_io
 
 
@@ -55,7 +56,9 @@ class TestCoreValidation:
         magick_check = next(c for c in checks if "magick" in c.name.lower())
         assert magick_check.passed is False
 
-    def test_validate_effect_found(self, dry_run, tmp_path, sample_effects_config):
+    def test_validate_effect_found(
+        self, dry_run, tmp_path, sample_effects_config
+    ):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         checks = dry_run.validate_core(
@@ -64,10 +67,16 @@ class TestCoreValidation:
             item_type="effect",
             config=sample_effects_config,
         )
-        effect_check = next(c for c in checks if "blur" in c.name.lower() or "found" in c.name.lower())
+        effect_check = next(
+            c
+            for c in checks
+            if "blur" in c.name.lower() or "found" in c.name.lower()
+        )
         assert effect_check.passed is True
 
-    def test_validate_effect_not_found(self, dry_run, tmp_path, sample_effects_config):
+    def test_validate_effect_not_found(
+        self, dry_run, tmp_path, sample_effects_config
+    ):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         checks = dry_run.validate_core(
@@ -76,7 +85,9 @@ class TestCoreValidation:
             item_type="effect",
             config=sample_effects_config,
         )
-        effect_check = next(c for c in checks if not c.passed and "effect" in c.name.lower())
+        effect_check = next(
+            c for c in checks if not c.passed and "effect" in c.name.lower()
+        )
         assert effect_check.passed is False
 
     def test_validate_output_dir_exists(self, dry_run, tmp_path):
@@ -84,16 +95,28 @@ class TestCoreValidation:
         input_file.touch()
         output_file = tmp_path / "output" / "result.jpg"
         (tmp_path / "output").mkdir()
-        checks = dry_run.validate_core(input_path=input_file, output_path=output_file)
-        dir_check = next(c for c in checks if "Output" in c.name or "directory" in c.name.lower())
+        checks = dry_run.validate_core(
+            input_path=input_file, output_path=output_file
+        )
+        dir_check = next(
+            c
+            for c in checks
+            if "Output" in c.name or "directory" in c.name.lower()
+        )
         assert dir_check.passed is True
 
     def test_validate_output_dir_missing(self, dry_run, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         output_file = tmp_path / "nonexistent_dir" / "result.jpg"
-        checks = dry_run.validate_core(input_path=input_file, output_path=output_file)
-        dir_check = next(c for c in checks if "Output" in c.name or "directory" in c.name.lower())
+        checks = dry_run.validate_core(
+            input_path=input_file, output_path=output_file
+        )
+        dir_check = next(
+            c
+            for c in checks
+            if "Output" in c.name or "directory" in c.name.lower()
+        )
         assert dir_check.passed is False
         assert "would be created" in dir_check.detail.lower()
 
@@ -128,7 +151,9 @@ class TestCoreRenderProcess:
         output = string_io.getvalue()
         assert "magick" in output
 
-    def test_render_process_composite_shows_chain(self, dry_run, console_output):
+    def test_render_process_composite_shows_chain(
+        self, dry_run, console_output
+    ):
         _, string_io = console_output
         dry_run.render_process(
             item_name="blur-brightness80",
@@ -151,8 +176,20 @@ class TestCoreRenderBatch:
     def test_render_batch_shows_table(self, dry_run, console_output):
         _, string_io = console_output
         items = [
-            {"name": "blur", "type": "effect", "output_path": "/output/blur.jpg", "params": "blur=0x8", "command": 'magick "in.jpg" -blur 0x8 "/output/blur.jpg"'},
-            {"name": "blackwhite", "type": "effect", "output_path": "/output/blackwhite.jpg", "params": "\u2014", "command": 'magick "in.jpg" -grayscale Average "/output/blackwhite.jpg"'},
+            {
+                "name": "blur",
+                "type": "effect",
+                "output_path": "/output/blur.jpg",
+                "params": "blur=0x8",
+                "command": 'magick "in.jpg" -blur 0x8 "/output/blur.jpg"',
+            },
+            {
+                "name": "blackwhite",
+                "type": "effect",
+                "output_path": "/output/blackwhite.jpg",
+                "params": "\u2014",
+                "command": 'magick "in.jpg" -grayscale Average "/output/blackwhite.jpg"',
+            },
         ]
         dry_run.render_batch(
             input_path=Path("/home/user/wallpaper.jpg"),

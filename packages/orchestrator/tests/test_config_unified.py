@@ -37,7 +37,9 @@ def test_unified_config_access_orchestrator() -> None:
     config = UnifiedConfig()
 
     assert config.orchestrator.container.engine == "docker"
-    assert config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    assert (
+        config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    )
 
 
 def test_unified_config_from_dict() -> None:

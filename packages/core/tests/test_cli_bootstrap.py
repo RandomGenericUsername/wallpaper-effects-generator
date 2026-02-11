@@ -1,9 +1,7 @@
 """Tests for CLI bootstrap and configuration."""
 
-import pytest
 from typer.testing import CliRunner
 from wallpaper_core.cli.main import app
-
 
 runner = CliRunner()
 
@@ -25,7 +23,6 @@ def test_cli_help_works() -> None:
 def test_cli_configures_layered_settings() -> None:
     """Test CLI configures layered_settings on startup."""
     # Import triggers configuration
-    from wallpaper_core.cli import main
     from layered_settings import get_config
 
     # Should be able to get config without error
@@ -46,4 +43,7 @@ def test_cli_info_command_exists() -> None:
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     # Should show the info command or its help
-    assert "info" in result.stdout.lower() or "configuration" in result.stdout.lower()
+    assert (
+        "info" in result.stdout.lower()
+        or "configuration" in result.stdout.lower()
+    )

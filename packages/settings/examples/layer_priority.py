@@ -13,13 +13,15 @@ Layer priority (lowest to highest):
 
 import tempfile
 from pathlib import Path
-from pydantic import BaseModel, Field
+
 from layered_settings import SchemaRegistry, configure, get_config
+from pydantic import BaseModel, Field
 
 
 # Define configuration schemas
 class CoreSettings(BaseModel):
     """Core application settings."""
+
     workers: int = Field(default=4)
     timeout: float = Field(default=30.0)
     debug: bool = Field(default=False)
@@ -27,6 +29,7 @@ class CoreSettings(BaseModel):
 
 class AppConfig(BaseModel):
     """Root configuration."""
+
     core: CoreSettings = Field(default_factory=CoreSettings)
 
 
@@ -78,6 +81,7 @@ debug = true
         # NOTE: In a real application, you would use the actual home directory
         # and project root. Here we simulate by changing directories temporarily.
         import os
+
         original_cwd = os.getcwd()
         original_home = os.environ.get("HOME")
 

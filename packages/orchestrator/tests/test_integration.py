@@ -1,11 +1,6 @@
 """Integration tests for wallpaper_orchestrator."""
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
 from layered_settings import configure, get_config
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -30,7 +25,9 @@ def test_unified_config_loads_all_schemas() -> None:
 
     # Orchestrator settings loaded
     assert config.orchestrator.container.engine == "docker"
-    assert config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    assert (
+        config.orchestrator.container.image_name == "wallpaper-effects:latest"
+    )
 
 
 def test_config_merges_cli_overrides() -> None:
@@ -49,9 +46,7 @@ def test_config_merges_cli_overrides() -> None:
 
 def test_container_manager_uses_config() -> None:
     """Test ContainerManager integrates with UnifiedConfig."""
-    config = UnifiedConfig(
-        orchestrator={"container": {"engine": "podman"}}
-    )
+    config = UnifiedConfig(orchestrator={"container": {"engine": "podman"}})
     manager = ContainerManager(config)
 
     assert manager.engine == "podman"
@@ -61,9 +56,7 @@ def test_container_manager_uses_config() -> None:
 def test_container_manager_with_registry() -> None:
     """Test ContainerManager handles image registry."""
     config = UnifiedConfig(
-        orchestrator={
-            "container": {"image_registry": "ghcr.io/user"}
-        }
+        orchestrator={"container": {"image_registry": "ghcr.io/user"}}
     )
     manager = ContainerManager(config)
 
@@ -76,8 +69,7 @@ def test_cli_commands_registered() -> None:
 
     # Get all registered commands (some may have None name, check callback)
     command_names = {
-        cmd.name or cmd.callback.__name__
-        for cmd in app.registered_commands
+        cmd.name or cmd.callback.__name__ for cmd in app.registered_commands
     }
 
     # Should have orchestrator commands

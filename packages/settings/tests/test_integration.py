@@ -5,14 +5,12 @@ configuration building, including caching and override behavior.
 """
 
 from pathlib import Path
-from typing import Any
 from unittest.mock import patch
 
 import pytest
-from pydantic import BaseModel
-
 from layered_settings import SchemaRegistry, configure, get_config
 from layered_settings.errors import SettingsError
+from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):
@@ -48,7 +46,7 @@ class TestConfigureFunction:
 
         # Create dummy defaults file
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = true\nworkers = 4\n')
+        defaults_file.write_text("parallel = true\nworkers = 4\n")
 
         # Register a schema
         SchemaRegistry.register("core", CoreSettings, defaults_file)
@@ -64,7 +62,7 @@ class TestConfigureFunction:
         # Setup: configure once and build config to populate cache
         SchemaRegistry.clear()
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = true\nworkers = 4\n')
+        defaults_file.write_text("parallel = true\nworkers = 4\n")
         SchemaRegistry.register("core", CoreSettings, defaults_file)
 
         configure(root_model=AppConfig, app_name="test-app")
@@ -91,6 +89,7 @@ class TestGetConfigFunction:
 
         # Clear global state by accessing the module's private variables
         import layered_settings
+
         layered_settings._configured_model = None
         layered_settings._app_name = None
         layered_settings._config_cache = None
@@ -105,7 +104,7 @@ class TestGetConfigFunction:
         # Setup: register schema and configure
         SchemaRegistry.clear()
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = false\nworkers = 8\n')
+        defaults_file.write_text("parallel = false\nworkers = 8\n")
         SchemaRegistry.register("core", CoreSettings, defaults_file)
 
         configure(root_model=AppConfig, app_name="test-app")
@@ -123,7 +122,7 @@ class TestGetConfigFunction:
         # Setup
         SchemaRegistry.clear()
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = true\nworkers = 4\n')
+        defaults_file.write_text("parallel = true\nworkers = 4\n")
         SchemaRegistry.register("core", CoreSettings, defaults_file)
 
         configure(root_model=AppConfig, app_name="test-app")
@@ -140,7 +139,7 @@ class TestGetConfigFunction:
         # Setup
         SchemaRegistry.clear()
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = true\nworkers = 4\n')
+        defaults_file.write_text("parallel = true\nworkers = 4\n")
         SchemaRegistry.register("core", CoreSettings, defaults_file)
 
         configure(root_model=AppConfig, app_name="test-app")
@@ -159,7 +158,7 @@ class TestGetConfigFunction:
         # Setup
         SchemaRegistry.clear()
         defaults_file = tmp_path / "defaults.toml"
-        defaults_file.write_text('parallel = true\nworkers = 4\n')
+        defaults_file.write_text("parallel = true\nworkers = 4\n")
         SchemaRegistry.register("core", CoreSettings, defaults_file)
 
         configure(root_model=AppConfig, app_name="test-app")

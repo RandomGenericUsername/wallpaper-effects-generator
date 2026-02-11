@@ -7,7 +7,6 @@ import subprocess
 from pathlib import Path
 
 from layered_settings.dry_run import DryRunBase, ValidationCheck
-from rich.console import Console
 
 
 class OrchestratorDryRun(DryRunBase):
@@ -22,26 +21,36 @@ class OrchestratorDryRun(DryRunBase):
         checks = []
 
         engine_path = shutil.which(engine)
-        checks.append(ValidationCheck(
-            name=f"{engine} binary found",
-            passed=engine_path is not None,
-            detail=engine_path or "not found on PATH",
-        ))
+        checks.append(
+            ValidationCheck(
+                name=f"{engine} binary found",
+                passed=engine_path is not None,
+                detail=engine_path or "not found on PATH",
+            )
+        )
 
         if image_name and engine_path:
             try:
                 result = subprocess.run(
                     [engine, "inspect", image_name],
-                    capture_output=True, text=True, check=False,
+                    capture_output=True,
+                    text=True,
+                    check=False,
                 )
                 available = result.returncode == 0
             except (subprocess.SubprocessError, FileNotFoundError):
                 available = False
-            checks.append(ValidationCheck(
-                name=f"Container image '{image_name}' available",
-                passed=available,
-                detail="" if available else "not found — run: wallpaper-process install",
-            ))
+            checks.append(
+                ValidationCheck(
+                    name=f"Container image '{image_name}' available",
+                    passed=available,
+                    detail=(
+                        ""
+                        if available
+                        else "not found — run: wallpaper-process install"
+                    ),
+                )
+            )
 
         return checks
 
@@ -64,7 +73,9 @@ class OrchestratorDryRun(DryRunBase):
         self.render_field("Engine", engine)
         self.render_field("Image", image_name)
         self.render_command("Host command", host_command)
-        self.render_command("Inner command (runs inside container)", inner_command)
+        self.render_command(
+            "Inner command (runs inside container)", inner_command
+        )
 
     def render_install(
         self,

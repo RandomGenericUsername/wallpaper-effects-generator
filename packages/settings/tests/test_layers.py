@@ -1,13 +1,12 @@
 """Tests for layer discovery in layered_settings."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from pydantic import BaseModel
-
 from layered_settings.layers import LayerDiscovery, LayerSource
-from layered_settings.registry import SchemaEntry, SchemaRegistry
+from layered_settings.registry import SchemaRegistry
+from pydantic import BaseModel
 
 
 class DummyConfig(BaseModel):
@@ -229,8 +228,8 @@ class TestLayerDiscovery:
         SchemaRegistry.register("core", DummyConfig, core_path)
         SchemaRegistry.register("effects", AnotherConfig, effects_path)
 
-        project_path = Path.cwd() / "settings.toml"
-        user_path = Path.home() / ".config" / "test-app" / "settings.toml"
+        Path.cwd() / "settings.toml"
+        Path.home() / ".config" / "test-app" / "settings.toml"
 
         # All files exist
         with patch("pathlib.Path.exists", return_value=True):
@@ -259,7 +258,7 @@ class TestLayerDiscovery:
         SchemaRegistry.register("core", DummyConfig, core_path)
         SchemaRegistry.register("missing", AnotherConfig, missing_path)
 
-        project_path = Path.cwd() / "settings.toml"
+        Path.cwd() / "settings.toml"
         user_path = Path.home() / ".config" / "test-app" / "settings.toml"
 
         # Only core defaults and user config exist

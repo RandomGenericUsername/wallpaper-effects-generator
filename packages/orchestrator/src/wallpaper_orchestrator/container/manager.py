@@ -163,19 +163,21 @@ class ContainerManager:
         if self.engine == "podman":
             cmd.append("--userns=keep-id")
 
-        cmd.extend([
-            "-v",
-            input_mount,
-            "-v",
-            output_mount,
-            self.get_image_name(),
-            "process",
-            command_type,
-            "/input/image.jpg",
-            f"/output/{output_path.name}",
-            f"--{command_type}",
-            command_name,
-        ])
+        cmd.extend(
+            [
+                "-v",
+                input_mount,
+                "-v",
+                output_mount,
+                self.get_image_name(),
+                "process",
+                command_type,
+                "/input/image.jpg",
+                f"/output/{output_path.name}",
+                f"--{command_type}",
+                command_name,
+            ]
+        )
 
         # Add additional arguments if provided
         if additional_args:

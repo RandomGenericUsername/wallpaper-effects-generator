@@ -1,7 +1,6 @@
 """Tests for error hierarchy in layered_settings."""
 
 import pytest
-
 from layered_settings.errors import (
     SettingsError,
     SettingsFileError,
@@ -72,18 +71,26 @@ class TestSettingsRegistryError:
     def test_formats_message_correctly(self):
         """SettingsRegistryError should format message as 'Registry error for namespace '{namespace}': {reason}'."""
         error = SettingsRegistryError("app.config", "namespace already registered")
-        assert str(error) == "Registry error for namespace 'app.config': namespace already registered"
+        assert (
+            str(error)
+            == "Registry error for namespace 'app.config': namespace already registered"
+        )
 
     def test_accepts_namespace_and_reason(self):
         """SettingsRegistryError should accept namespace and reason parameters."""
         error = SettingsRegistryError(namespace="core.settings", reason="duplicate key")
-        assert str(error) == "Registry error for namespace 'core.settings': duplicate key"
+        assert (
+            str(error) == "Registry error for namespace 'core.settings': duplicate key"
+        )
 
     def test_can_be_raised_and_caught(self):
         """SettingsRegistryError should be raisable and catchable."""
         with pytest.raises(SettingsRegistryError) as exc_info:
             raise SettingsRegistryError("test.namespace", "conflict detected")
-        assert "Registry error for namespace 'test.namespace': conflict detected" in str(exc_info.value)
+        assert (
+            "Registry error for namespace 'test.namespace': conflict detected"
+            in str(exc_info.value)
+        )
 
     def test_can_be_caught_as_settings_error(self):
         """SettingsRegistryError should be catchable as SettingsError."""
@@ -102,19 +109,30 @@ class TestSettingsValidationError:
 
     def test_formats_message_correctly(self):
         """SettingsValidationError should format message as 'Validation error for '{config_name}': {reason}'."""
-        error = SettingsValidationError("DatabaseConfig", "missing required field 'host'")
-        assert str(error) == "Validation error for 'DatabaseConfig': missing required field 'host'"
+        error = SettingsValidationError(
+            "DatabaseConfig", "missing required field 'host'"
+        )
+        assert (
+            str(error)
+            == "Validation error for 'DatabaseConfig': missing required field 'host'"
+        )
 
     def test_accepts_config_name_and_reason(self):
         """SettingsValidationError should accept config_name and reason parameters."""
-        error = SettingsValidationError(config_name="AppSettings", reason="invalid type for 'port'")
-        assert str(error) == "Validation error for 'AppSettings': invalid type for 'port'"
+        error = SettingsValidationError(
+            config_name="AppSettings", reason="invalid type for 'port'"
+        )
+        assert (
+            str(error) == "Validation error for 'AppSettings': invalid type for 'port'"
+        )
 
     def test_can_be_raised_and_caught(self):
         """SettingsValidationError should be raisable and catchable."""
         with pytest.raises(SettingsValidationError) as exc_info:
             raise SettingsValidationError("MyConfig", "validation failed")
-        assert "Validation error for 'MyConfig': validation failed" in str(exc_info.value)
+        assert "Validation error for 'MyConfig': validation failed" in str(
+            exc_info.value
+        )
 
     def test_can_be_caught_as_settings_error(self):
         """SettingsValidationError should be catchable as SettingsError."""

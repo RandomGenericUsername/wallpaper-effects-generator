@@ -44,7 +44,5 @@ class ContainerSettings(BaseModel):
 class OrchestratorSettings(BaseModel):
     """Root settings for wallpaper_orchestrator."""
 
-    version: str = Field(
-        default="1.0", description="Settings schema version"
-    )
+    version: str = Field(default="1.0", description="Settings schema version")
     container: ContainerSettings = Field(default_factory=ContainerSettings)

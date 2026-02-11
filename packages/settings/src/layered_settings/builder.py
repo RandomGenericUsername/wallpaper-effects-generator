@@ -6,12 +6,11 @@ merging, and validation of configuration from multiple sources.
 
 from typing import Any
 
-from pydantic import BaseModel, ValidationError
-
 from layered_settings.errors import SettingsValidationError
 from layered_settings.layers import LayerSource
 from layered_settings.loader import FileLoader
 from layered_settings.merger import ConfigMerger
+from pydantic import BaseModel, ValidationError
 
 
 class ConfigBuilder:

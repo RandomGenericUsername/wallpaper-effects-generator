@@ -1,10 +1,9 @@
 """Shared fixtures for wallpaper_core tests."""
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 import pytest
-
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects.schema import (
@@ -16,7 +15,6 @@ from wallpaper_core.effects.schema import (
     ParameterType,
     Preset,
 )
-
 
 # ============================================================================
 # Image Fixtures

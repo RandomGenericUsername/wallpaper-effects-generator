@@ -1,7 +1,5 @@
 """Tests for configuration merging in layered_settings."""
 
-import pytest
-
 from layered_settings.merger import ConfigMerger
 
 
@@ -116,38 +114,10 @@ class TestConfigMergerDicts:
 
     def test_merging_deeply_nested_dicts(self):
         """Deep nesting should be merged recursively."""
-        base = {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "a": 1,
-                        "b": 2
-                    }
-                }
-            }
-        }
-        override = {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "b": 99,
-                        "c": 3
-                    }
-                }
-            }
-        }
+        base = {"level1": {"level2": {"level3": {"a": 1, "b": 2}}}}
+        override = {"level1": {"level2": {"level3": {"b": 99, "c": 3}}}}
         result = ConfigMerger.merge(base, override)
-        assert result == {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "a": 1,
-                        "b": 99,
-                        "c": 3
-                    }
-                }
-            }
-        }
+        assert result == {"level1": {"level2": {"level3": {"a": 1, "b": 99, "c": 3}}}}
 
     def test_adding_new_nested_dict(self):
         """Override should add new nested dicts."""
@@ -156,23 +126,17 @@ class TestConfigMergerDicts:
         result = ConfigMerger.merge(base, override)
         assert result == {
             "existing": {"key": "value"},
-            "new": {"nested": {"data": 123}}
+            "new": {"nested": {"data": 123}},
         }
 
     def test_merging_nested_dicts_with_multiple_keys(self):
         """Nested dicts with multiple keys should merge correctly."""
-        base = {
-            "database": {"host": "localhost", "port": 5432},
-            "cache": {"ttl": 3600}
-        }
-        override = {
-            "database": {"port": 3306, "user": "admin"},
-            "cache": {"ttl": 7200}
-        }
+        base = {"database": {"host": "localhost", "port": 5432}, "cache": {"ttl": 3600}}
+        override = {"database": {"port": 3306, "user": "admin"}, "cache": {"ttl": 7200}}
         result = ConfigMerger.merge(base, override)
         assert result == {
             "database": {"host": "localhost", "port": 3306, "user": "admin"},
-            "cache": {"ttl": 7200}
+            "cache": {"ttl": 7200},
         }
 
 
@@ -290,19 +254,13 @@ class TestConfigMergerMultipleSequentialMerges:
 
     def test_three_layer_merge(self):
         """Three-layer merge should work correctly."""
-        defaults = {
-            "server": {"host": "0.0.0.0", "port": 8000},
-            "debug": False
-        }
+        defaults = {"server": {"host": "0.0.0.0", "port": 8000}, "debug": False}
         user_config = {
             "server": {"port": 9000},
             "debug": True,
-            "logging": {"level": "INFO"}
+            "logging": {"level": "INFO"},
         }
-        cli_args = {
-            "server": {"host": "127.0.0.1"},
-            "logging": {"level": "DEBUG"}
-        }
+        cli_args = {"server": {"host": "127.0.0.1"}, "logging": {"level": "DEBUG"}}
 
         result1 = ConfigMerger.merge(defaults, user_config)
         result2 = ConfigMerger.merge(result1, cli_args)
@@ -310,5 +268,5 @@ class TestConfigMergerMultipleSequentialMerges:
         assert result2 == {
             "server": {"host": "127.0.0.1", "port": 9000},
             "debug": True,
-            "logging": {"level": "DEBUG"}
+            "logging": {"level": "DEBUG"},
         }

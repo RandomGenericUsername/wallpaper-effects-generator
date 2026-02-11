@@ -1,13 +1,9 @@
 """Tests for CLI commands."""
 
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 from typer.testing import CliRunner
-
 from wallpaper_core.cli.main import app
-
 
 runner = CliRunner()
 
@@ -195,9 +191,7 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_all(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_all(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch all command."""
         result = runner.invoke(
             app,
@@ -229,4 +223,3 @@ class TestVerbosityFlags:
         """Test -vv debug flag."""
         result = runner.invoke(app, ["-vv", "show", "effects"])
         assert result.exit_code == 0
-

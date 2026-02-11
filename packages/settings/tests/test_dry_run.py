@@ -3,9 +3,8 @@
 from io import StringIO
 
 import pytest
-from rich.console import Console
-
 from layered_settings.dry_run import DryRunBase, ValidationCheck
+from rich.console import Console
 
 
 @pytest.fixture
@@ -76,7 +75,9 @@ class TestDryRunBaseRendering:
     def test_render_validation_failed(self, dry_run, console_output):
         _, string_io = console_output
         checks = [
-            ValidationCheck(name="Input file exists", passed=False, detail="file not found"),
+            ValidationCheck(
+                name="Input file exists", passed=False, detail="file not found"
+            ),
         ]
         dry_run.render_validation(checks)
         output = string_io.getvalue()

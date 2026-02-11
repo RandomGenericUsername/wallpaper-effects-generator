@@ -1,10 +1,7 @@
 """Tests for schema registration with layered_settings."""
 
-from pathlib import Path
-
 from layered_settings import SchemaRegistry
 from wallpaper_core.config.schema import CoreSettings
-from wallpaper_core.effects.schema import EffectsConfig
 
 
 def test_core_settings_registered() -> None:

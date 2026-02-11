@@ -67,6 +67,7 @@ repos:
         language_version: python3.12
         args: [--ignore-missing-imports]
         stages: [pre-commit]
+        additional_dependencies: [types-PyYAML]
         # Exclude test directories to avoid duplicate module errors
         exclude: ^(packages|src)/.*/tests/
 

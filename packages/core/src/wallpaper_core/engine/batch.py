@@ -37,8 +37,8 @@ class BatchGenerator:
 
     def __init__(
         self,
-        config: "EffectsConfig",
-        output: "RichOutput | None" = None,
+        config: EffectsConfig,
+        output: RichOutput | None = None,
         parallel: bool = True,
         strict: bool = True,
         max_workers: int = 0,
@@ -65,7 +65,7 @@ class BatchGenerator:
         input_path: Path,
         output_dir: Path,
         flat: bool = False,
-        progress: "BatchProgress | None" = None,
+        progress: BatchProgress | None = None,
     ) -> BatchResult:
         """Generate all atomic effects with default params."""
         effects = list(self.config.effects.keys())
@@ -79,7 +79,7 @@ class BatchGenerator:
         input_path: Path,
         output_dir: Path,
         flat: bool = False,
-        progress: "BatchProgress | None" = None,
+        progress: BatchProgress | None = None,
     ) -> BatchResult:
         """Generate all composite effects."""
         composites = list(self.config.composites.keys())
@@ -93,7 +93,7 @@ class BatchGenerator:
         input_path: Path,
         output_dir: Path,
         flat: bool = False,
-        progress: "BatchProgress | None" = None,
+        progress: BatchProgress | None = None,
     ) -> BatchResult:
         """Generate all presets."""
         presets = list(self.config.presets.keys())
@@ -107,7 +107,7 @@ class BatchGenerator:
         input_path: Path,
         output_dir: Path,
         flat: bool = False,
-        progress: "BatchProgress | None" = None,
+        progress: BatchProgress | None = None,
     ) -> BatchResult:
         """Generate all effects, composites, and presets."""
         result = BatchResult(output_dir=output_dir)
@@ -127,9 +127,13 @@ class BatchGenerator:
 
         # Process items
         if self.parallel:
-            result = self._process_parallel(input_path, base_dir, items, flat, progress)
+            result = self._process_parallel(
+                input_path, base_dir, items, flat, progress
+            )
         else:
-            result = self._process_sequential(input_path, base_dir, items, flat, progress)
+            result = self._process_sequential(
+                input_path, base_dir, items, flat, progress
+            )
 
         result.output_dir = base_dir
         return result
@@ -141,7 +145,7 @@ class BatchGenerator:
         names: list[str],
         item_type: str,
         subdir: str | None,
-        progress: "BatchProgress | None",
+        progress: BatchProgress | None,
     ) -> BatchResult:
         """Generate a batch of items of the same type."""
         items = [(name, item_type) for name in names]
@@ -151,9 +155,13 @@ class BatchGenerator:
             base_dir = base_dir / subdir
 
         if self.parallel:
-            result = self._process_parallel(input_path, base_dir, items, True, progress)
+            result = self._process_parallel(
+                input_path, base_dir, items, True, progress
+            )
         else:
-            result = self._process_sequential(input_path, base_dir, items, True, progress)
+            result = self._process_sequential(
+                input_path, base_dir, items, True, progress
+            )
 
         result.output_dir = base_dir
         return result
@@ -164,14 +172,18 @@ class BatchGenerator:
         base_dir: Path,
         items: list[tuple[str, str]],
         flat: bool,
-        progress: "BatchProgress | None",
+        progress: BatchProgress | None,
     ) -> BatchResult:
         """Process items sequentially."""
         result = BatchResult(total=len(items))
 
         for name, item_type in items:
-            output_path = self._get_output_path(base_dir, name, item_type, input_path, flat)
-            exec_result = self._process_item(name, item_type, input_path, output_path)
+            output_path = self._get_output_path(
+                base_dir, name, item_type, input_path, flat
+            )
+            exec_result = self._process_item(
+                name, item_type, input_path, output_path
+            )
             result.results[name] = exec_result
 
             if exec_result.success:
@@ -180,7 +192,9 @@ class BatchGenerator:
                 result.failed += 1
                 if self.strict:
                     if self.output:
-                        self.output.error(f"{item_type} '{name}' failed: {exec_result.stderr}")
+                        self.output.error(
+                            f"{item_type} '{name}' failed: {exec_result.stderr}"
+                        )
                     break
 
             if progress:
@@ -194,7 +208,7 @@ class BatchGenerator:
         base_dir: Path,
         items: list[tuple[str, str]],
         flat: bool,
-        progress: "BatchProgress | None",
+        progress: BatchProgress | None,
     ) -> BatchResult:
         """Process items in parallel."""
         result = BatchResult(total=len(items))
@@ -202,9 +216,15 @@ class BatchGenerator:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = {}
             for name, item_type in items:
-                output_path = self._get_output_path(base_dir, name, item_type, input_path, flat)
+                output_path = self._get_output_path(
+                    base_dir, name, item_type, input_path, flat
+                )
                 future = executor.submit(
-                    self._process_item, name, item_type, input_path, output_path
+                    self._process_item,
+                    name,
+                    item_type,
+                    input_path,
+                    output_path,
                 )
                 futures[future] = (name, item_type)
 
@@ -220,7 +240,9 @@ class BatchGenerator:
                         result.failed += 1
                         if self.strict:
                             if self.output:
-                                self.output.error(f"{item_type} '{name}' failed")
+                                self.output.error(
+                                    f"{item_type} '{name}' failed"
+                                )
                             # Cancel remaining futures
                             for f in futures:
                                 f.cancel()
@@ -232,7 +254,11 @@ class BatchGenerator:
                 except Exception as e:
                     result.failed += 1
                     result.results[name] = ExecutionResult(
-                        success=False, command="", stdout="", stderr=str(e), return_code=-1
+                        success=False,
+                        command="",
+                        stdout="",
+                        stderr=str(e),
+                        return_code=-1,
                     )
                     if self.strict:
                         break
@@ -252,7 +278,11 @@ class BatchGenerator:
         if flat:
             return base_dir / f"{name}{suffix}"
         else:
-            subdir = {"effect": "effects", "composite": "composites", "preset": "presets"}
+            subdir = {
+                "effect": "effects",
+                "composite": "composites",
+                "preset": "presets",
+            }
             return base_dir / subdir.get(item_type, "") / f"{name}{suffix}"
 
     def _process_item(
@@ -271,50 +301,89 @@ class BatchGenerator:
             return self._process_preset(name, input_path, output_path)
         else:
             return ExecutionResult(
-                success=False, command="", stdout="", stderr=f"Unknown type: {item_type}", return_code=1
+                success=False,
+                command="",
+                stdout="",
+                stderr=f"Unknown type: {item_type}",
+                return_code=1,
             )
 
-    def _process_effect(self, name: str, input_path: Path, output_path: Path) -> ExecutionResult:
+    def _process_effect(
+        self, name: str, input_path: Path, output_path: Path
+    ) -> ExecutionResult:
         """Process a single effect."""
         effect = self.config.effects.get(name)
         if effect is None:
             return ExecutionResult(
-                success=False, command="", stdout="", stderr=f"Unknown effect: {name}", return_code=1
+                success=False,
+                command="",
+                stdout="",
+                stderr=f"Unknown effect: {name}",
+                return_code=1,
             )
         params = self.chain_executor._get_params_with_defaults(name, {})
-        return self.executor.execute(effect.command, input_path, output_path, params)
+        return self.executor.execute(
+            effect.command, input_path, output_path, params
+        )
 
-    def _process_composite(self, name: str, input_path: Path, output_path: Path) -> ExecutionResult:
+    def _process_composite(
+        self, name: str, input_path: Path, output_path: Path
+    ) -> ExecutionResult:
         """Process a composite effect."""
         composite = self.config.composites.get(name)
         if composite is None:
             return ExecutionResult(
-                success=False, command="", stdout="", stderr=f"Unknown composite: {name}", return_code=1
+                success=False,
+                command="",
+                stdout="",
+                stderr=f"Unknown composite: {name}",
+                return_code=1,
             )
-        return self.chain_executor.execute_chain(composite.chain, input_path, output_path)
+        return self.chain_executor.execute_chain(
+            composite.chain, input_path, output_path
+        )
 
-    def _process_preset(self, name: str, input_path: Path, output_path: Path) -> ExecutionResult:
+    def _process_preset(
+        self, name: str, input_path: Path, output_path: Path
+    ) -> ExecutionResult:
         """Process a preset."""
         preset = self.config.presets.get(name)
         if preset is None:
             return ExecutionResult(
-                success=False, command="", stdout="", stderr=f"Unknown preset: {name}", return_code=1
+                success=False,
+                command="",
+                stdout="",
+                stderr=f"Unknown preset: {name}",
+                return_code=1,
             )
 
         if preset.composite:
             # Preset references a composite
-            return self._process_composite(preset.composite, input_path, output_path)
+            return self._process_composite(
+                preset.composite, input_path, output_path
+            )
         elif preset.effect:
             # Preset references an effect with custom params
             effect = self.config.effects.get(preset.effect)
             if effect is None:
                 return ExecutionResult(
-                    success=False, command="", stdout="", stderr=f"Unknown effect: {preset.effect}", return_code=1
+                    success=False,
+                    command="",
+                    stdout="",
+                    stderr=f"Unknown effect: {preset.effect}",
+                    return_code=1,
                 )
-            params = self.chain_executor._get_params_with_defaults(preset.effect, preset.params)
-            return self.executor.execute(effect.command, input_path, output_path, params)
+            params = self.chain_executor._get_params_with_defaults(
+                preset.effect, preset.params
+            )
+            return self.executor.execute(
+                effect.command, input_path, output_path, params
+            )
         else:
             return ExecutionResult(
-                success=False, command="", stdout="", stderr=f"Preset '{name}' has no effect or composite", return_code=1
+                success=False,
+                command="",
+                stdout="",
+                stderr=f"Preset '{name}' has no effect or composite",
+                return_code=1,
             )
-

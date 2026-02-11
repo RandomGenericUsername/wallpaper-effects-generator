@@ -21,7 +21,8 @@ def get_package_effects_file() -> Path:
     """
     from importlib import resources
 
-    return Path(resources.files("wallpaper_core.effects") / "effects.yaml")
+    effects_file = resources.files("wallpaper_core.effects") / "effects.yaml"
+    return Path(str(effects_file))
 
 
 __all__ = [

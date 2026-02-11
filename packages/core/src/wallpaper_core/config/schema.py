@@ -21,9 +21,7 @@ class ExecutionSettings(BaseModel):
     parallel: bool = Field(
         default=True, description="Run batch operations in parallel"
     )
-    strict: bool = Field(
-        default=True, description="Abort on first failure"
-    )
+    strict: bool = Field(default=True, description="Abort on first failure")
     max_workers: int = Field(
         default=0,
         description="Max parallel workers (0=auto based on CPU count)",
@@ -67,12 +65,8 @@ class BackendSettings(BaseModel):
 class CoreSettings(BaseModel):
     """Root settings for wallpaper_core."""
 
-    version: str = Field(
-        default="1.0", description="Settings schema version"
-    )
+    version: str = Field(default="1.0", description="Settings schema version")
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     output: OutputSettings = Field(default_factory=OutputSettings)
-    processing: ProcessingSettings = Field(
-        default_factory=ProcessingSettings
-    )
+    processing: ProcessingSettings = Field(default_factory=ProcessingSettings)
     backend: BackendSettings = Field(default_factory=BackendSettings)

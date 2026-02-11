@@ -18,8 +18,8 @@ class ChainExecutor:
 
     def __init__(
         self,
-        config: "EffectsConfig",
-        output: "RichOutput | None" = None,
+        config: EffectsConfig,
+        output: RichOutput | None = None,
     ) -> None:
         """Initialize ChainExecutor.
 
@@ -33,7 +33,7 @@ class ChainExecutor:
 
     def execute_chain(
         self,
-        chain: list["ChainStep"],
+        chain: list[ChainStep],
         input_path: Path,
         output_path: Path,
     ) -> ExecutionResult:
@@ -92,7 +92,9 @@ class ChainExecutor:
                     )
 
                 # Merge default params with step params
-                params = self._get_params_with_defaults(step.effect, step.params)
+                params = self._get_params_with_defaults(
+                    step.effect, step.params
+                )
 
                 # Execute step
                 if self.output:
@@ -154,4 +156,3 @@ class ChainExecutor:
                     params[param_name] = param_type.default
 
         return params
-

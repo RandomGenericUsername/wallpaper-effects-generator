@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -21,7 +20,9 @@ def manager(config: UnifiedConfig) -> ContainerManager:
     return ContainerManager(config)
 
 
-def test_manager_init(manager: ContainerManager, config: UnifiedConfig) -> None:
+def test_manager_init(
+    manager: ContainerManager, config: UnifiedConfig
+) -> None:
     """Test ContainerManager initialization."""
     assert manager.config == config
     assert manager.engine == "docker"
@@ -36,9 +37,7 @@ def test_get_image_name_without_registry(manager: ContainerManager) -> None:
 def test_get_image_name_with_registry() -> None:
     """Test get_image_name with registry."""
     config = UnifiedConfig(
-        orchestrator={
-            "container": {"image_registry": "ghcr.io/user"}
-        }
+        orchestrator={"container": {"image_registry": "ghcr.io/user"}}
     )
     manager = ContainerManager(config)
 
@@ -46,7 +45,9 @@ def test_get_image_name_with_registry() -> None:
     assert image == "ghcr.io/user/wallpaper-effects:latest"
 
 
-def test_build_volume_mounts(manager: ContainerManager, tmp_path: Path) -> None:
+def test_build_volume_mounts(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
     """Test build_volume_mounts creates correct mount specs."""
     input_image = tmp_path / "input.jpg"
     output_dir = tmp_path / "output"

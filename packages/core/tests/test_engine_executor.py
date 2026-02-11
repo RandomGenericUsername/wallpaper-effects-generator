@@ -1,9 +1,7 @@
 """Tests for engine executor module."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
-
-import pytest
+from unittest.mock import patch
 
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
@@ -183,4 +181,3 @@ class TestCommandExecutor:
         )
 
         assert result.duration >= 0
-

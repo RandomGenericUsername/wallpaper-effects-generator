@@ -4,16 +4,20 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from layered_effects import configure as configure_effects
+from layered_effects import load_effects
+from layered_effects.errors import (
+    EffectsError,
+    EffectsLoadError,
+    EffectsValidationError,
+)
+from layered_settings import configure, get_config
 from pydantic import BaseModel
 
-from layered_effects import configure as configure_effects, load_effects
-from layered_effects.errors import EffectsError, EffectsLoadError, EffectsValidationError
-from layered_settings import configure, get_config
 from wallpaper_core.cli import batch, process, show
 from wallpaper_core.config.schema import CoreSettings, Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects import get_package_effects_file
-from wallpaper_core.effects.schema import EffectsConfig
 
 
 class CoreOnlyConfig(BaseModel):
@@ -28,8 +32,7 @@ configure(CoreOnlyConfig, app_name="wallpaper-effects")
 
 # Configure layered_effects for effects configuration
 configure_effects(
-    package_effects_file=get_package_effects_file(),
-    project_root=Path.cwd()
+    package_effects_file=get_package_effects_file(), project_root=Path.cwd()
 )
 
 # Create Typer app
@@ -66,7 +69,10 @@ def main(
     verbose: Annotated[
         int,
         typer.Option(
-            "-v", "--verbose", count=True, help="Verbose mode (-v or -vv for debug)"
+            "-v",
+            "--verbose",
+            count=True,
+            help="Verbose mode (-v or -vv for debug)",
         ),
     ] = 0,
 ) -> None:
@@ -82,13 +88,17 @@ def main(
     try:
         effects_config = load_effects()
     except EffectsLoadError as e:
-        output.error(f"[bold red]Failed to load effects configuration[/bold red]")
+        output.error(
+            "[bold red]Failed to load effects configuration[/bold red]"
+        )
         output.error(f"Layer: {getattr(e, 'layer', 'unknown')}")
         output.error(f"File: {e.file_path}")
         output.error(f"Reason: {e.reason}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except EffectsValidationError as e:
-        output.error(f"[bold red]Effects configuration validation failed[/bold red]")
+        output.error(
+            "[bold red]Effects configuration validation failed[/bold red]"
+        )
         output.error(f"Layer: {e.layer or 'merged'}")
         output.error(f"Problem: {e.message}")
         output.newline()
@@ -96,10 +106,10 @@ def main(
         output.error("  • Undefined parameter types referenced in effects")
         output.error("  • Missing required fields (description, command)")
         output.error("  • Invalid YAML syntax")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except EffectsError as e:
         output.error(f"[bold red]Effects error:[/bold red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
     # Store context for sub-commands
     ctx.ensure_object(dict)

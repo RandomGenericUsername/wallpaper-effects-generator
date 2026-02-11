@@ -10,15 +10,17 @@ This example demonstrates:
 """
 
 from pathlib import Path
-from pydantic import BaseModel, Field
-from layered_settings import SchemaRegistry, configure, get_config
 
+from layered_settings import SchemaRegistry, configure, get_config
+from pydantic import BaseModel, Field
 
 # Step 1: Define your configuration schemas using Pydantic
 # =========================================================
 
+
 class DatabaseSettings(BaseModel):
     """Database connection settings."""
+
     host: str = Field(default="localhost", description="Database host")
     port: int = Field(default=5432, description="Database port")
     db_name: str = Field(default="myapp", description="Database name")
@@ -28,7 +30,10 @@ class DatabaseSettings(BaseModel):
 
 class ServerSettings(BaseModel):
     """Web server settings."""
-    host: str = Field(default="0.0.0.0", description="Server bind address")
+
+    host: str = Field(
+        default="0.0.0.0", description="Server bind address"
+    )  # nosec B104
     port: int = Field(default=8000, description="Server port")
     workers: int = Field(default=4, description="Number of worker processes")
     debug: bool = Field(default=False, description="Enable debug mode")
@@ -36,6 +41,7 @@ class ServerSettings(BaseModel):
 
 class LoggingSettings(BaseModel):
     """Logging configuration."""
+
     level: str = Field(default="INFO", description="Log level")
     format: str = Field(default="json", description="Log format (json or text)")
     output: str = Field(default="stdout", description="Log output destination")
@@ -45,8 +51,10 @@ class LoggingSettings(BaseModel):
 # ============================================
 # This model combines all namespaces into a single configuration
 
+
 class AppConfig(BaseModel):
     """Root configuration for the entire application."""
+
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     server: ServerSettings = Field(default_factory=ServerSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
@@ -55,6 +63,7 @@ class AppConfig(BaseModel):
 # Step 3: Register schemas with the SchemaRegistry
 # =================================================
 # Each schema is registered with a namespace and a defaults file
+
 
 def register_schemas() -> None:
     """Register all configuration schemas."""
@@ -85,6 +94,7 @@ def register_schemas() -> None:
 # Step 4: Initialize the configuration system
 # ============================================
 
+
 def main() -> None:
     """Main function demonstrating configuration usage."""
 
@@ -100,8 +110,12 @@ def main() -> None:
     print("=" * 60)
     config = get_config()
 
-    print(f"Database: {config.database.host}:{config.database.port}/{config.database.db_name}")
-    print(f"Server: {config.server.host}:{config.server.port} (workers={config.server.workers})")
+    print(
+        f"Database: {config.database.host}:{config.database.port}/{config.database.db_name}"
+    )
+    print(
+        f"Server: {config.server.host}:{config.server.port} (workers={config.server.workers})"
+    )
     print(f"Logging: {config.logging.level} ({config.logging.format})")
     print()
 
@@ -119,9 +133,15 @@ def main() -> None:
 
     config_with_overrides = get_config(overrides=overrides)
 
-    print(f"Database: {config_with_overrides.database.host}:{config_with_overrides.database.port}/{config_with_overrides.database.db_name}")
-    print(f"Server: {config_with_overrides.server.host}:{config_with_overrides.server.port} (workers={config_with_overrides.server.workers}, debug={config_with_overrides.server.debug})")
-    print(f"Logging: {config_with_overrides.logging.level} ({config_with_overrides.logging.format})")
+    print(
+        f"Database: {config_with_overrides.database.host}:{config_with_overrides.database.port}/{config_with_overrides.database.db_name}"
+    )
+    print(
+        f"Server: {config_with_overrides.server.host}:{config_with_overrides.server.port} (workers={config_with_overrides.server.workers}, debug={config_with_overrides.server.debug})"
+    )
+    print(
+        f"Logging: {config_with_overrides.logging.level} ({config_with_overrides.logging.format})"
+    )
     print()
 
     # Demonstrate caching behavior

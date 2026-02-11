@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -29,11 +28,11 @@ def test_run_process_effect_builds_correct_command(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="", stderr=""
-        )
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         result = manager.run_process(
             command_type="effect",
@@ -54,7 +53,9 @@ def test_run_process_effect_builds_correct_command(
 
         # Verify mounts - extract volume mount arguments
         volume_mounts = [arg for arg in call_args if arg.startswith("-v")]
-        assert len(volume_mounts) >= 2, "Should have at least input and output mounts"
+        assert (
+            len(volume_mounts) >= 2
+        ), "Should have at least input and output mounts"
 
         # Find the actual mount specifications (they follow -v flags)
         mount_specs = []
@@ -67,8 +68,12 @@ def test_run_process_effect_builds_correct_command(
         assert len(input_mounts) == 1, "Should have one read-only input mount"
 
         # Verify output mount (read-write)
-        output_mounts = [m for m in mount_specs if "/output" in m and ":rw" in m]
-        assert len(output_mounts) == 1, "Should have one read-write output mount"
+        output_mounts = [
+            m for m in mount_specs if "/output" in m and ":rw" in m
+        ]
+        assert (
+            len(output_mounts) == 1
+        ), "Should have one read-write output mount"
 
         # Verify core command
         assert "process" in call_args
@@ -127,8 +132,10 @@ def test_run_process_creates_output_directory(
     output_file = output_dir / "result.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         manager.run_process(
@@ -151,8 +158,10 @@ def test_run_process_uses_absolute_paths(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         manager.run_process(
@@ -180,8 +189,10 @@ def test_run_process_returns_container_exit_code(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
         mock_run.return_value = MagicMock(
             returncode=42, stdout="", stderr="error"
         )
@@ -199,17 +210,17 @@ def test_run_process_returns_container_exit_code(
 
 def test_run_process_with_podman_engine(tmp_path: Path) -> None:
     """Test run_process works with podman engine."""
-    config = UnifiedConfig(
-        orchestrator={"container": {"engine": "podman"}}
-    )
+    config = UnifiedConfig(orchestrator={"container": {"engine": "podman"}})
     manager = ContainerManager(config)
 
     input_file = tmp_path / "input.jpg"
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         manager.run_process(
@@ -231,8 +242,10 @@ def test_run_process_with_additional_args(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch("subprocess.run") as mock_run, \
-         patch.object(manager, "is_image_available", return_value=True):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         manager.run_process(

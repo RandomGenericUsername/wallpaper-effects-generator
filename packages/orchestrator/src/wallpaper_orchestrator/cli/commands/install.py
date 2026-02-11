@@ -20,7 +20,9 @@ def install(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Preview without executing"
+    ),  # noqa: B008
 ) -> None:
     """Build container image for wallpaper effects processing.
 
@@ -91,14 +93,20 @@ def install(
                 build_command=" ".join(cmd),
             )
             # Validation
-            checks = renderer.validate_container(engine=container_engine, image_name=image_name)
+            checks = renderer.validate_container(
+                engine=container_engine, image_name=image_name
+            )
             # Check Dockerfile exists
             from layered_settings.dry_run import ValidationCheck
-            checks.insert(0, ValidationCheck(
-                name="Dockerfile exists",
-                passed=dockerfile.exists(),
-                detail=str(dockerfile),
-            ))
+
+            checks.insert(
+                0,
+                ValidationCheck(
+                    name="Dockerfile exists",
+                    passed=dockerfile.exists(),
+                    detail=str(dockerfile),
+                ),
+            )
             renderer.render_validation(checks)
             raise typer.Exit(0)
 
@@ -122,9 +130,7 @@ def install(
                 )
 
                 if result.returncode == 0:
-                    progress.update(
-                        task, description=f"✓ Built {image_name}"
-                    )
+                    progress.update(task, description=f"✓ Built {image_name}")
                     console.print(
                         f"\n[green]✓ Successfully built {image_name}[/green]"
                     )
@@ -133,7 +139,7 @@ def install(
                     progress.update(
                         task, description=f"✗ Failed to build {image_name}"
                     )
-                    console.print(f"\n[red]✗ Build failed[/red]")
+                    console.print("\n[red]✗ Build failed[/red]")
                     console.print(f"[dim]{result.stderr}[/dim]")
                     raise typer.Exit(1)
 

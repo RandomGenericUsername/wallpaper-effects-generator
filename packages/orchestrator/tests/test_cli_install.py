@@ -1,21 +1,20 @@
 """Tests for install command."""
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.exceptions import Exit
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.commands.install import install
-
 
 runner = CliRunner()
 
 
 def test_install_default_engine() -> None:
     """Test install with default docker engine."""
-    with patch("wallpaper_orchestrator.cli.commands.install.subprocess.run") as mock_run:
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.subprocess.run"
+    ) as mock_run:
         mock_run.return_value = MagicMock(returncode=0)
 
         # Call install function directly
@@ -34,7 +33,9 @@ def test_install_default_engine() -> None:
 
 def test_install_with_podman() -> None:
     """Test install with podman engine."""
-    with patch("wallpaper_orchestrator.cli.commands.install.subprocess.run") as mock_run:
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.subprocess.run"
+    ) as mock_run:
         mock_run.return_value = MagicMock(returncode=0)
 
         with pytest.raises(Exit) as exc_info:
@@ -48,11 +49,10 @@ def test_install_with_podman() -> None:
 
 def test_install_build_failure() -> None:
     """Test install handles build failure."""
-    with patch("wallpaper_orchestrator.cli.commands.install.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=1,
-            stderr="Build failed"
-        )
+    with patch(
+        "wallpaper_orchestrator.cli.commands.install.subprocess.run"
+    ) as mock_run:
+        mock_run.return_value = MagicMock(returncode=1, stderr="Build failed")
 
         with pytest.raises(Exit) as exc_info:
             install(engine=None, dry_run=False)

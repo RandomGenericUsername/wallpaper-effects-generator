@@ -1,10 +1,6 @@
 """Tests for centralized path discovery module."""
 
-import os
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 
 class TestXdgConfigHome:
@@ -23,22 +19,22 @@ class TestUserPaths:
 
     def test_user_config_dir(self):
         """USER_CONFIG_DIR should be under XDG_CONFIG_HOME."""
-        from layered_settings.paths import USER_CONFIG_DIR, XDG_CONFIG_HOME
         from layered_settings.constants import APP_NAME
+        from layered_settings.paths import USER_CONFIG_DIR, XDG_CONFIG_HOME
 
         assert USER_CONFIG_DIR == XDG_CONFIG_HOME / APP_NAME
 
     def test_user_settings_file(self):
         """USER_SETTINGS_FILE should be settings.toml in config dir."""
-        from layered_settings.paths import USER_SETTINGS_FILE, USER_CONFIG_DIR
         from layered_settings.constants import SETTINGS_FILENAME
+        from layered_settings.paths import USER_CONFIG_DIR, USER_SETTINGS_FILE
 
         assert USER_SETTINGS_FILE == USER_CONFIG_DIR / SETTINGS_FILENAME
 
     def test_user_effects_file(self):
         """USER_EFFECTS_FILE should be effects.yaml in config dir."""
-        from layered_settings.paths import USER_EFFECTS_FILE, USER_CONFIG_DIR
         from layered_settings.constants import EFFECTS_FILENAME
+        from layered_settings.paths import USER_CONFIG_DIR, USER_EFFECTS_FILE
 
         assert USER_EFFECTS_FILE == USER_CONFIG_DIR / EFFECTS_FILENAME
 

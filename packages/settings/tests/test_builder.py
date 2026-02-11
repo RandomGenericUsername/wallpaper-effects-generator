@@ -1,14 +1,12 @@
 """Tests for config builder functionality."""
 
 from pathlib import Path
-from typing import Any
 
 import pytest
-from pydantic import BaseModel, ValidationError
-
 from layered_settings.builder import ConfigBuilder
 from layered_settings.errors import SettingsValidationError
 from layered_settings.layers import LayerSource
+from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):

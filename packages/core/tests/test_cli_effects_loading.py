@@ -1,5 +1,5 @@
 """Test CLI properly loads and uses layered effects."""
-from pathlib import Path
+
 from typer.testing import CliRunner
 from wallpaper_core.cli.main import app
 
@@ -30,7 +30,8 @@ def test_cli_shows_presets():
 
 def test_cli_error_on_invalid_user_effects(tmp_path, monkeypatch):
     """CLI should show helpful error for invalid user config."""
-    from layered_effects import configure as configure_effects, _reset
+    from layered_effects import _reset
+    from layered_effects import configure as configure_effects
     from wallpaper_core.effects import get_package_effects_file
 
     # Create invalid user effects file
@@ -42,7 +43,7 @@ def test_cli_error_on_invalid_user_effects(tmp_path, monkeypatch):
     configure_effects(
         package_effects_file=get_package_effects_file(),
         project_root=None,
-        user_effects_file=invalid_effects
+        user_effects_file=invalid_effects,
     )
 
     result = runner.invoke(app, ["show", "effects"])

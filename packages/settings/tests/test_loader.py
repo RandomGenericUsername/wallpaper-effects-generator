@@ -1,11 +1,8 @@
 """Tests for file loader functionality."""
 
 from pathlib import Path
-from typing import Any
 
 import pytest
-import yaml
-
 from layered_settings.errors import SettingsFileError
 from layered_settings.loader import FileLoader
 
@@ -275,7 +272,7 @@ class TestIntegration:
 
         # Create YAML file
         yaml_file = tmp_path / "config.yaml"
-        yaml_file.write_text('section:\n  key: value\n  count: 42')
+        yaml_file.write_text("section:\n  key: value\n  count: 42")
 
         # Load both and verify structure
         toml_result = FileLoader.load(toml_file)

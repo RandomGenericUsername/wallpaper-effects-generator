@@ -27,7 +27,7 @@ class ExecutionResult:
 class CommandExecutor:
     """Execute shell commands for effects."""
 
-    def __init__(self, output: "RichOutput | None" = None) -> None:
+    def __init__(self, output: RichOutput | None = None) -> None:
         """Initialize CommandExecutor.
 
         Args:
@@ -93,7 +93,7 @@ class CommandExecutor:
         try:
             result = subprocess.run(
                 command,
-                shell=True,
+                shell=True,  # nosec B602: Required for executing user-defined effect commands
                 capture_output=True,
                 text=True,
                 check=False,
@@ -124,4 +124,3 @@ class CommandExecutor:
                 return_code=-1,
                 duration=duration,
             )
-

@@ -37,7 +37,9 @@ class DryRunBase:
 
     def render_field(self, label: str, value: str) -> None:
         """Render an aligned key-value field."""
-        self.console.print(f"  [bold]{label}:[/bold]{' ' * max(1, 12 - len(label))}{value}")
+        self.console.print(
+            f"  [bold]{label}:[/bold]{' ' * max(1, 12 - len(label))}{value}"
+        )
 
     def render_command(self, label: str, command: str) -> None:
         """Render a labeled command block."""
