@@ -1,7 +1,6 @@
 """Tests for CLI integration with core commands."""
 
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()
@@ -35,3 +34,33 @@ def test_cli_process_help() -> None:
 
     assert result.exit_code == 0
     # Should show core's process command help
+
+
+def test_cli_batch_help() -> None:
+    """Test batch command is available (tests batch_callback)."""
+    result = runner.invoke(app, ["batch", "--help"])
+
+    assert result.exit_code == 0
+
+
+def test_cli_batch_effects_help() -> None:
+    """Test batch effects subcommand."""
+    result = runner.invoke(app, ["batch", "effects", "--help"])
+
+    assert result.exit_code == 0
+
+
+def test_cli_show_help() -> None:
+    """Test show command is available (tests show_callback)."""
+    result = runner.invoke(app, ["show", "--help"])
+
+    assert result.exit_code == 0
+
+
+def test_cli_show_effects() -> None:
+    """Test show effects command."""
+    result = runner.invoke(app, ["show", "effects"])
+
+    assert result.exit_code == 0
+    # Should show effects
+    assert "blur" in result.stdout.lower() or "effect" in result.stdout.lower()
