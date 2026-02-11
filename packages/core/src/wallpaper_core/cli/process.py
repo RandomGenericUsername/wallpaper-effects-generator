@@ -17,7 +17,10 @@ app = typer.Typer(help="Process a single image with effects")
 
 
 def _resolve_command(
-    command_template: str, input_path: Path, output_path: Path, params: dict
+    command_template: str,
+    input_path: Path,
+    output_path: Path,
+    params: dict[str, str | int | float],
 ) -> str:
     """Resolve command template by substituting variables."""
     substitutions = {"INPUT": str(input_path), "OUTPUT": str(output_path)}

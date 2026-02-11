@@ -14,6 +14,7 @@ from wallpaper_core.cli.process import (
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.progress import BatchProgress
 from wallpaper_core.dry_run import CoreDryRun
+from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator
 from wallpaper_core.engine.chain import ChainExecutor
 
@@ -40,18 +41,18 @@ def _get_batch_generator(
 
 
 def _resolve_batch_items(
-    config,
+    config: EffectsConfig,
     batch_type: str,
     input_file: Path,
     output_dir: Path,
     flat: bool,
-) -> list[dict]:
+) -> list[dict[str, str]]:
     """Resolve all batch items with their output paths and commands."""
     suffix = input_file.suffix or ".png"
     image_name = input_file.stem
     chain_executor = ChainExecutor(config, None)
 
-    items: list[dict] = []
+    items: list[dict[str, str]] = []
 
     # Collect items based on batch_type
     item_groups: list[tuple[str, str, str | None]] = (
