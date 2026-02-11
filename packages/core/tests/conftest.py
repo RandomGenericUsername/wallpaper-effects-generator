@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects.schema import (
@@ -262,7 +261,9 @@ def _mock_subprocess_run(command, **kwargs):
     mock_result.stderr = ""
 
     # Convert command to string if it's a list
-    command_str = " ".join(command) if isinstance(command, list) else str(command)
+    command_str = (
+        " ".join(command) if isinstance(command, list) else str(command)
+    )
 
     # For magick commands, extract paths and validate/create files
     if "magick" in command_str.lower():
@@ -279,7 +280,9 @@ def _mock_subprocess_run(command, **kwargs):
                 if not input_path.exists():
                     # Return failure for nonexistent input file
                     mock_result.returncode = 1
-                    mock_result.stderr = f"magick: unable to open image `{input_file}'"
+                    mock_result.stderr = (
+                        f"magick: unable to open image `{input_file}'"
+                    )
                     return mock_result
 
             # If we have at least 2 quoted paths, create the output file
@@ -302,13 +305,24 @@ def _mock_subprocess_run(command, **kwargs):
 @pytest.fixture(autouse=True)
 def mock_subprocess_for_integration_tests():
     """
-    Auto-use fixture that mocks subprocess.run for all tests.
+    Auto-use fixture that mocks subprocess.run and shutil.which for all tests.
 
     This allows integration tests to run without ImageMagick installed
-    by simulating command execution and file creation.
+    by simulating command execution and file creation. Also mocks shutil.which
+    so validation checks pass without requiring the binary to be on PATH.
     """
-    with patch(
-        "wallpaper_core.engine.executor.subprocess.run",
-        side_effect=_mock_subprocess_run,
+
+    def mock_which(cmd):
+        """Mock shutil.which to return a fake path for magick."""
+        if cmd == "magick":
+            return "/usr/bin/magick"  # Fake path for validation checks
+        return None
+
+    with (
+        patch(
+            "wallpaper_core.engine.executor.subprocess.run",
+            side_effect=_mock_subprocess_run,
+        ),
+        patch("shutil.which", side_effect=mock_which),
     ):
         yield
