@@ -665,6 +665,98 @@ class TestDryRunErrorCases:
         )
 
 
+class TestExecutorFailures:
+    """Tests for executor failure handling."""
+
+    def test_apply_effect_executor_failure(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test apply effect when executor fails."""
+        from unittest.mock import MagicMock, patch
+
+        output_path = tmp_path / "output.png"
+        with patch(
+            "wallpaper_core.cli.process.CommandExecutor"
+        ) as mock_executor_class:
+            mock_executor = MagicMock()
+            mock_executor.execute.return_value = MagicMock(
+                success=False, stderr="ImageMagick error"
+            )
+            mock_executor_class.return_value = mock_executor
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "effect",
+                    str(test_image_file),
+                    str(output_path),
+                    "-e",
+                    "blur",
+                ],
+            )
+            assert result.exit_code == 1
+
+    def test_apply_composite_executor_failure(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test apply composite when executor fails."""
+        from unittest.mock import MagicMock, patch
+
+        output_path = tmp_path / "output.png"
+        with patch(
+            "wallpaper_core.cli.process.ChainExecutor"
+        ) as mock_executor_class:
+            mock_executor = MagicMock()
+            mock_executor.execute_chain.return_value = MagicMock(
+                success=False, stderr="Chain execution failed"
+            )
+            mock_executor_class.return_value = mock_executor
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "composite",
+                    str(test_image_file),
+                    str(output_path),
+                    "-c",
+                    "blur-brightness80",
+                ],
+            )
+            assert result.exit_code == 1
+
+    def test_apply_preset_executor_failure_composite(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test apply preset with composite executor failure."""
+        from unittest.mock import MagicMock, patch
+
+        output_path = tmp_path / "output.png"
+        with patch(
+            "wallpaper_core.cli.process.ChainExecutor"
+        ) as mock_executor_class:
+            mock_executor = MagicMock()
+            mock_executor.execute_chain.return_value = MagicMock(
+                success=False, stderr="Chain execution failed"
+            )
+            mock_executor_class.return_value = mock_executor
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(test_image_file),
+                    str(output_path),
+                    "-p",
+                    "dark_blur",
+                ],
+            )
+            assert result.exit_code == 1
+
+
+
 class TestCLIExceptionHandlers:
     """Tests for CLI exception handlers in bootstrap."""
 
