@@ -477,6 +477,36 @@ class TestBatchCommands:
         )
         assert result.exit_code != 0
 
+    def test_batch_composites_flat(self, test_image_file: Path, tmp_path: Path) -> None:
+        """Test batch composites with flat output."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "composites",
+                str(test_image_file),
+                str(tmp_path),
+                "--flat",
+                "--sequential",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_batch_presets_flat(self, test_image_file: Path, tmp_path: Path) -> None:
+        """Test batch presets with flat output."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "presets",
+                str(test_image_file),
+                str(tmp_path),
+                "--flat",
+                "--sequential",
+            ],
+        )
+        assert result.exit_code == 0
+
 
 class TestVerbosityFlags:
     """Tests for verbosity flags."""

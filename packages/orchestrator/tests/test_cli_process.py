@@ -279,3 +279,161 @@ def test_process_preset_execution_failure(tmp_path: Path) -> None:
 
         assert result.exit_code == 1
         assert "failed" in result.output.lower()
+
+
+def test_process_effect_runtime_error(tmp_path: Path) -> None:
+    """Test process effect handles RuntimeError."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = RuntimeError("Container error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Error" in result.output or "error" in result.output.lower()
+
+
+def test_process_effect_file_not_found_error(tmp_path: Path) -> None:
+    """Test process effect handles FileNotFoundError."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = FileNotFoundError("File not found")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+
+
+def test_process_effect_permission_error(tmp_path: Path) -> None:
+    """Test process effect handles PermissionError."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = PermissionError("Permission denied")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+
+
+def test_process_effect_generic_exception(tmp_path: Path) -> None:
+    """Test process effect handles generic Exception."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = Exception("Unexpected error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                str(output_file),
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Unexpected error" in result.output or "error" in result.output.lower()
+
+
+def test_process_composite_runtime_error(tmp_path: Path) -> None:
+    """Test process composite handles RuntimeError."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = RuntimeError("Container error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                str(output_file),
+                "blur-brightness80",
+            ],
+        )
+
+        assert result.exit_code == 1
+
+
+def test_process_preset_runtime_error(tmp_path: Path) -> None:
+    """Test process preset handles RuntimeError."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = RuntimeError("Container error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                str(output_file),
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 1
