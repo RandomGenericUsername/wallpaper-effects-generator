@@ -8,13 +8,14 @@ import pytest
 
 def test_full_stack_three_layers(tmp_path: Path):
     """End-to-end test with package, project, and user layers."""
-    from layered_effects import configure, load_effects, _reset
+    from layered_effects import _reset, configure, load_effects
 
     _reset()
 
     # Package layer
     package_file = tmp_path / "package_effects.yaml"
-    package_file.write_text("""
+    package_file.write_text(
+        """
 version: "1.0"
 parameter_types:
   blur_geometry:
@@ -32,13 +33,15 @@ effects:
     command: 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
 composites: {}
 presets: {}
-""")
+"""
+    )
 
     # Project layer
     project_root = tmp_path / "project"
     project_root.mkdir()
     project_effects = project_root / "effects.yaml"
-    project_effects.write_text("""
+    project_effects.write_text(
+        """
 version: "1.0"
 effects:
   blur:
@@ -47,17 +50,20 @@ effects:
   contrast:
     description: "Project contrast"
     command: 'magick "$INPUT" -contrast "$OUTPUT"'
-""")
+"""
+    )
 
     # User layer
     user_file = tmp_path / "user_effects.yaml"
-    user_file.write_text("""
+    user_file.write_text(
+        """
 version: "1.0"
 effects:
   neon:
     description: "User neon"
     command: 'magick "$INPUT" -negate "$OUTPUT"'
-""")
+"""
+    )
 
     # Configure and load
     configure(
@@ -90,27 +96,31 @@ effects:
 
 def test_user_can_override_package_effect(tmp_path: Path):
     """Test user can fully override a package effect."""
-    from layered_effects import configure, load_effects, _reset
+    from layered_effects import _reset, configure, load_effects
 
     _reset()
 
     package_file = tmp_path / "package.yaml"
-    package_file.write_text("""
+    package_file.write_text(
+        """
 version: "1.0"
 effects:
   test:
     description: "Package version"
     command: "package command"
-""")
+"""
+    )
 
     user_file = tmp_path / "user.yaml"
-    user_file.write_text("""
+    user_file.write_text(
+        """
 version: "1.0"
 effects:
   test:
     description: "User version"
     command: "user command"
-""")
+"""
+    )
 
     configure(
         package_effects_file=package_file,
@@ -124,12 +134,19 @@ effects:
 
 def test_works_with_real_effects_yaml(tmp_path: Path):
     """Test with actual effects.yaml from wallpaper-core."""
-    from layered_effects import configure, load_effects, _reset
+    from layered_effects import _reset, configure, load_effects
 
     _reset()
 
     # Use actual package effects file
-    core_effects = Path(__file__).parent.parent.parent.parent / "core" / "src" / "wallpaper_core" / "effects" / "effects.yaml"
+    core_effects = (
+        Path(__file__).parent.parent.parent.parent
+        / "core"
+        / "src"
+        / "wallpaper_core"
+        / "effects"
+        / "effects.yaml"
+    )
 
     if not core_effects.exists():
         pytest.skip("Package effects.yaml not found")

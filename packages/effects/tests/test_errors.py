@@ -1,7 +1,5 @@
 """Tests for effects error classes."""
 
-import pytest
-
 
 def test_effects_error_base():
     """EffectsError should be base exception."""
@@ -15,12 +13,12 @@ def test_effects_error_base():
 
 def test_effects_load_error():
     """EffectsLoadError should include file path."""
-    from layered_effects.errors import EffectsLoadError
     from pathlib import Path
 
+    from layered_effects.errors import EffectsLoadError
+
     error = EffectsLoadError(
-        file_path=Path("/path/to/effects.yaml"),
-        reason="file not found"
+        file_path=Path("/path/to/effects.yaml"), reason="file not found"
     )
 
     assert "effects.yaml" in str(error)

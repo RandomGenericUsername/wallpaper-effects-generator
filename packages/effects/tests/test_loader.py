@@ -95,8 +95,8 @@ class TestEffectsLoader:
 
     def test_raises_on_invalid_yaml(self, tmp_path: Path):
         """Should raise EffectsLoadError for invalid YAML."""
-        from layered_effects.loader import EffectsLoader
         from layered_effects.errors import EffectsLoadError
+        from layered_effects.loader import EffectsLoader
 
         bad_file = tmp_path / "bad.yaml"
         bad_file.write_text("invalid: yaml: content:")
@@ -119,7 +119,8 @@ class TestEffectsLoaderMerge:
 
         # Package layer: blur + brightness
         package_file = tmp_path / "package.yaml"
-        package_file.write_text("""
+        package_file.write_text(
+            """
 version: "1.0"
 effects:
   blur:
@@ -128,11 +129,13 @@ effects:
   brightness:
     description: "Package brightness"
     command: "brightness package"
-""")
+"""
+        )
 
         # User layer: blur (override) + neon (new)
         user_file = tmp_path / "user.yaml"
-        user_file.write_text("""
+        user_file.write_text(
+            """
 version: "1.0"
 effects:
   blur:
@@ -141,7 +144,8 @@ effects:
   neon:
     description: "User neon"
     command: "neon user"
-""")
+"""
+        )
 
         loader = EffectsLoader(
             package_effects_file=package_file,
@@ -188,8 +192,8 @@ effects:
 
     def test_raises_when_no_package_layer(self, tmp_path: Path):
         """Should raise when package layer doesn't exist."""
-        from layered_effects.loader import EffectsLoader
         from layered_effects.errors import EffectsLoadError
+        from layered_effects.loader import EffectsLoader
 
         missing_file = tmp_path / "missing.yaml"
 
