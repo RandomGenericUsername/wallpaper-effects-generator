@@ -14,6 +14,8 @@ from layered_effects.errors import (
 )
 from layered_effects.loader import EffectsLoader
 
+from wallpaper_core.effects.schema import EffectsConfig
+
 __version__ = "0.1.0"
 
 # Module-level state
@@ -53,7 +55,7 @@ def configure(
     _config_cache = None  # Clear cache on reconfiguration
 
 
-def load_effects():
+def load_effects() -> EffectsConfig:
     """Load and merge effects from all configured layers.
 
     This function discovers effects.yaml files, deep merges them, and
@@ -100,9 +102,6 @@ def load_effects():
         raise
 
     # Validate with EffectsConfig schema
-    # Import here to avoid circular dependency
-    from wallpaper_core.effects.schema import EffectsConfig
-
     try:
         _config_cache = EffectsConfig(**merged_data)
     except Exception as e:
