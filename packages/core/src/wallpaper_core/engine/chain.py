@@ -112,11 +112,15 @@ class ChainExecutor:
                 total_duration += result.duration
 
                 if not result.success:
+                    error_msg = (
+                        f"Chain failed at step {i + 1} ({step.effect}): "
+                        f"{result.stderr}"
+                    )
                     return ExecutionResult(
                         success=False,
                         command=result.command,
                         stdout=result.stdout,
-                        stderr=f"Chain failed at step {i + 1} ({step.effect}): {result.stderr}",
+                        stderr=error_msg,
                         return_code=result.return_code,
                         duration=total_duration,
                     )

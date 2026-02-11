@@ -315,9 +315,11 @@ def apply_preset(
                         input_file,
                         output_file,
                     )
-                    resolved = f"chain: {' -> '.join(s.effect for s in composite_def.chain)}"
+                    chain_str = " -> ".join(s.effect for s in composite_def.chain)
+                    resolved = f"chain: {chain_str}"
                 else:
-                    resolved = f"# Cannot resolve: unknown composite '{preset_def.composite}'"
+                    composite_name = preset_def.composite
+                    resolved = f"# Cannot resolve: unknown composite '{composite_name}'"
             elif preset_def.effect:
                 effect_def = config.effects.get(preset_def.effect)
                 if effect_def is not None:

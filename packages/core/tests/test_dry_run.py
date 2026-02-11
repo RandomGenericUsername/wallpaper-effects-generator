@@ -125,13 +125,14 @@ class TestCoreValidation:
 class TestCoreRenderProcess:
     def test_render_process_shows_effect(self, dry_run, console_output):
         _, string_io = console_output
+        cmd = 'magick "/home/user/wallpaper.jpg" -blur 0x8 "/home/user/output/blur.jpg"'
         dry_run.render_process(
             item_name="blur",
             item_type="effect",
             input_path=Path("/home/user/wallpaper.jpg"),
             output_path=Path("/home/user/output/blur.jpg"),
             params={"blur": "0x8"},
-            resolved_command='magick "/home/user/wallpaper.jpg" -blur 0x8 "/home/user/output/blur.jpg"',
+            resolved_command=cmd,
         )
         output = string_io.getvalue()
         assert "blur" in output
@@ -189,7 +190,9 @@ class TestCoreRenderBatch:
                 "type": "effect",
                 "output_path": "/output/blackwhite.jpg",
                 "params": "\u2014",
-                "command": 'magick "in.jpg" -grayscale Average "/output/blackwhite.jpg"',
+                "command": (
+                    'magick "in.jpg" -grayscale Average "/output/blackwhite.jpg"'
+                ),
             },
         ]
         dry_run.render_batch(

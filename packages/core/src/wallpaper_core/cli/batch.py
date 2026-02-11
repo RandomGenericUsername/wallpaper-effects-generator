@@ -106,7 +106,7 @@ def _resolve_batch_items(
                     / f"{name}{suffix}"
                 )
         else:
-            # _generate_batch: base_dir = output_dir / image_name / subdir (when not flat)
+            # generate_batch: base_dir varies based on flat/subdir settings
             base_dir = output_dir / image_name
             if not flat and single_type_subdir:
                 base_dir = base_dir / single_type_subdir

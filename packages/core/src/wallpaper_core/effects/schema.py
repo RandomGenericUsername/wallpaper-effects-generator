@@ -58,7 +58,7 @@ class Effect(BaseModel):
         description="Human-readable description of the effect"
     )
     command: str = Field(
-        description="Shell command template with $INPUT, $OUTPUT, and parameter variables"
+        description="Shell command template with $INPUT, $OUTPUT, and params"
     )
     parameters: dict[str, ParameterDefinition] = Field(
         default_factory=dict, description="Effect parameters keyed by name"

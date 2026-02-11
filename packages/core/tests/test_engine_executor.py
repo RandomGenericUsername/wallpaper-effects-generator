@@ -157,8 +157,9 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
+        cmd_template = 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
         result = executor.execute(
-            command_template='magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"',
+            command_template=cmd_template,
             input_path=test_image_file,
             output_path=output_path,
             params={"brightness": -20},
