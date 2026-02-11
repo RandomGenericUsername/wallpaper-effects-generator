@@ -444,3 +444,55 @@ def test_process_preset_runtime_error(tmp_path: Path) -> None:
         )
 
         assert result.exit_code == 1
+
+
+def test_process_composite_generic_exception(tmp_path):
+    """Test process composite handles generic exception."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = Exception("Unknown error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                str(output_file),
+                "blur-brightness80",
+            ],
+        )
+
+        assert result.exit_code == 1
+
+
+def test_process_preset_generic_exception(tmp_path):
+    """Test process preset handles generic exception."""
+    input_file = tmp_path / "input.jpg"
+    output_file = tmp_path / "output.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = Exception("Unknown error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                str(output_file),
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 1
