@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
+
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()
@@ -13,10 +14,7 @@ class TestInstallDryRun:
         result = runner.invoke(app, ["install", "--dry-run"])
         assert result.exit_code == 0
         assert "build" in result.stdout.lower()
-        assert (
-            "Dockerfile" in result.stdout
-            or "dockerfile" in result.stdout.lower()
-        )
+        assert "Dockerfile" in result.stdout or "dockerfile" in result.stdout.lower()
 
     def test_dry_run_no_image_built(self):
         with patch("subprocess.run") as mock_run:
@@ -25,9 +23,7 @@ class TestInstallDryRun:
             for call in mock_run.call_args_list:
                 args = call[0][0] if call[0] else call[1].get("args", [])
                 if isinstance(args, list):
-                    assert (
-                        "build" not in args
-                    ), "Should not run build during dry-run"
+                    assert "build" not in args, "Should not run build during dry-run"
 
 
 class TestUninstallDryRun:
@@ -42,9 +38,7 @@ class TestUninstallDryRun:
             for call in mock_run.call_args_list:
                 args = call[0][0] if call[0] else call[1].get("args", [])
                 if isinstance(args, list):
-                    assert (
-                        "rmi" not in args
-                    ), "Should not run rmi during dry-run"
+                    assert "rmi" not in args, "Should not run rmi during dry-run"
 
 
 class TestProcessEffectContainerDryRun:
@@ -53,15 +47,11 @@ class TestProcessEffectContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -78,9 +68,7 @@ class TestProcessEffectContainerDryRun:
 
         assert result.exit_code == 0
         # Should show host command (docker run...)
-        assert (
-            "docker" in result.stdout.lower() or "run" in result.stdout.lower()
-        )
+        assert "docker" in result.stdout.lower() or "run" in result.stdout.lower()
         # Should show inner command (magick...)
         assert "magick" in result.stdout
 
@@ -89,15 +77,11 @@ class TestProcessEffectContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             runner.invoke(
@@ -121,15 +105,11 @@ class TestProcessCompositeContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -146,29 +126,20 @@ class TestProcessCompositeContainerDryRun:
 
         assert result.exit_code == 0
         # Should show host command (docker run...)
-        assert (
-            "docker" in result.stdout.lower() or "run" in result.stdout.lower()
-        )
+        assert "docker" in result.stdout.lower() or "run" in result.stdout.lower()
         # Should show inner command chain
-        assert (
-            "blur" in result.stdout.lower()
-            or "brightness" in result.stdout.lower()
-        )
+        assert "blur" in result.stdout.lower() or "brightness" in result.stdout.lower()
 
     def test_dry_run_composite_with_podman(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "podman"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -185,10 +156,7 @@ class TestProcessCompositeContainerDryRun:
 
         assert result.exit_code == 0
         # Should show podman-specific userns flag
-        assert (
-            "podman" in result.stdout.lower()
-            or "--userns" in result.stdout.lower()
-        )
+        assert "podman" in result.stdout.lower() or "--userns" in result.stdout.lower()
 
 
 class TestProcessPresetContainerDryRun:
@@ -197,15 +165,11 @@ class TestProcessPresetContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -222,24 +186,18 @@ class TestProcessPresetContainerDryRun:
 
         assert result.exit_code == 0
         # Should show docker and magick
-        assert (
-            "docker" in result.stdout.lower() or "run" in result.stdout.lower()
-        )
+        assert "docker" in result.stdout.lower() or "run" in result.stdout.lower()
 
     def test_dry_run_unknown_preset(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -267,15 +225,11 @@ class TestProcessPresetContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -298,15 +252,11 @@ class TestProcessPresetContainerDryRun:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -331,15 +281,11 @@ class TestProcessEffectDryRunEdgeCases:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -355,9 +301,7 @@ class TestProcessEffectDryRunEdgeCases:
             )
 
         assert result.exit_code == 0
-        assert (
-            "not found" in result.stdout.lower() or "magick" in result.stdout
-        )
+        assert "not found" in result.stdout.lower() or "magick" in result.stdout
 
 
 class TestProcessCompositeEdgeCases:
@@ -367,15 +311,11 @@ class TestProcessCompositeEdgeCases:
         input_file.touch()
         output_file = tmp_path / "output.jpg"
 
-        with patch(
-            "wallpaper_orchestrator.cli.main.ContainerManager"
-        ) as mock_mgr:
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
             mock_manager.is_image_available.return_value = True
             mock_manager.engine = "docker"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_mgr.return_value = mock_manager
 
             result = runner.invoke(
@@ -392,8 +332,7 @@ class TestProcessCompositeEdgeCases:
 
         assert result.exit_code == 0
         assert (
-            "not found" in result.stdout.lower()
-            or "composite" in result.stdout.lower()
+            "not found" in result.stdout.lower() or "composite" in result.stdout.lower()
         )
 
 
@@ -414,9 +353,7 @@ class TestPodmanDryRun:
         ) as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager.engine = "podman"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_manager_class.return_value = mock_manager
 
             result = runner.invoke(
@@ -448,9 +385,7 @@ class TestPodmanDryRun:
         ) as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager.engine = "podman"
-            mock_manager.get_image_name.return_value = (
-                "wallpaper-effects:latest"
-            )
+            mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
             mock_manager_class.return_value = mock_manager
 
             result = runner.invoke(
@@ -519,9 +454,7 @@ class TestPodmanDryRun:
         output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with preset referencing unknown effect
-        with patch(
-            "wallpaper_orchestrator.cli.main.load_effects"
-        ) as mock_load:
+        with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
             from wallpaper_core.effects.schema import (
                 Effect,
                 EffectsConfig,
@@ -564,9 +497,7 @@ class TestPodmanDryRun:
         output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with preset referencing unknown composite
-        with patch(
-            "wallpaper_orchestrator.cli.main.load_effects"
-        ) as mock_load:
+        with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
             from wallpaper_core.effects.schema import EffectsConfig, Preset
 
             effects_config = EffectsConfig(
@@ -604,17 +535,13 @@ class TestPodmanDryRun:
         output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with invalid preset
-        with patch(
-            "wallpaper_orchestrator.cli.main.load_effects"
-        ) as mock_load:
+        with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
             from wallpaper_core.effects.schema import EffectsConfig, Preset
 
             effects_config = EffectsConfig(
                 version="1.0",
                 presets={
-                    "invalid_preset": Preset(
-                        description="Invalid preset", params={}
-                    )
+                    "invalid_preset": Preset(description="Invalid preset", params={})
                 },
             )
             mock_load.return_value = effects_config

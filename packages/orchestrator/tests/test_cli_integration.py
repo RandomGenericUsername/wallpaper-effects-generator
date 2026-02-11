@@ -1,6 +1,7 @@
 """Tests for CLI integration with core commands."""
 
 from typer.testing import CliRunner
+
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()
@@ -72,6 +73,5 @@ def test_cli_version_command() -> None:
 
     assert result.exit_code == 0
     assert (
-        "wallpaper-orchestrator" in result.stdout
-        or "version" in result.stdout.lower()
+        "wallpaper-orchestrator" in result.stdout or "version" in result.stdout.lower()
     )

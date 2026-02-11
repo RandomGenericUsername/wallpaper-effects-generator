@@ -6,15 +6,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from rich.console import Console
+
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 
 @pytest.fixture
 def console_output():
     string_io = StringIO()
-    console = Console(
-        file=string_io, force_terminal=True, width=120, highlight=False
-    )
+    console = Console(file=string_io, force_terminal=True, width=120, highlight=False)
     return console, string_io
 
 
@@ -117,11 +116,7 @@ class TestContainerRenderProcess:
         assert "podman" in output
         assert "magick" in output
         assert "Host" in output or "host" in output
-        assert (
-            "Inner" in output
-            or "inner" in output
-            or "Inside" in output.lower()
-        )
+        assert "Inner" in output or "inner" in output or "Inside" in output.lower()
 
     def test_render_install(self, dry_run, console_output):
         _, string_io = console_output

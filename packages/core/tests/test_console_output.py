@@ -1,6 +1,7 @@
 """Tests for RichOutput console class."""
 
 from rich.table import Table
+
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 

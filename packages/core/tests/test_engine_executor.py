@@ -82,9 +82,7 @@ class TestCommandExecutor:
         assert result.return_code == 0
         assert output_path.exists()
 
-    def test_execute_with_params(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_execute_with_params(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test executing command with parameter substitution."""
         executor = CommandExecutor()
         output_path = tmp_path / "blurred.png"
@@ -157,9 +155,7 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
-        cmd_template = (
-            'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
-        )
+        cmd_template = 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
         result = executor.execute(
             command_template=cmd_template,
             input_path=test_image_file,
@@ -195,9 +191,7 @@ class TestCommandExecutor:
         executor = CommandExecutor(output=output)
         output_path = tmp_path / "output.png"
 
-        with patch(
-            "wallpaper_core.engine.executor.subprocess.run"
-        ) as mock_run:
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
             # Mock subprocess to return with stdout
             mock_result = MagicMock()
             mock_result.returncode = 0
@@ -224,9 +218,7 @@ class TestCommandExecutor:
         executor = CommandExecutor(output=output)
         output_path = tmp_path / "output.png"
 
-        with patch(
-            "wallpaper_core.engine.executor.subprocess.run"
-        ) as mock_run:
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
             # Mock subprocess to return with stderr
             mock_result = MagicMock()
             mock_result.returncode = 0
@@ -250,9 +242,7 @@ class TestCommandExecutor:
         executor = CommandExecutor()
         output_path = tmp_path / "output.png"
 
-        with patch(
-            "wallpaper_core.engine.executor.subprocess.run"
-        ) as mock_run:
+        with patch("wallpaper_core.engine.executor.subprocess.run") as mock_run:
             mock_run.side_effect = RuntimeError("Command failed")
 
             result = executor.execute(

@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
+
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()
@@ -317,9 +318,7 @@ def test_process_effect_file_not_found_error(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_process.side_effect = FileNotFoundError(
-            "File not found"
-        )
+        mock_manager.run_process.side_effect = FileNotFoundError("File not found")
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -345,9 +344,7 @@ def test_process_effect_permission_error(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_process.side_effect = PermissionError(
-            "Permission denied"
-        )
+        mock_manager.run_process.side_effect = PermissionError("Permission denied")
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -388,10 +385,7 @@ def test_process_effect_generic_exception(tmp_path: Path) -> None:
         )
 
         assert result.exit_code == 1
-        assert (
-            "Unexpected error" in result.output
-            or "error" in result.output.lower()
-        )
+        assert "Unexpected error" in result.output or "error" in result.output.lower()
 
 
 def test_process_composite_runtime_error(tmp_path: Path) -> None:

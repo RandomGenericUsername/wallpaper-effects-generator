@@ -172,4 +172,3 @@ presets:
     description: "Cool blue tint"
     effect: color_overlay
     params: { color: "#0088ff", opacity: 20 }
-

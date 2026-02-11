@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from typer.testing import CliRunner
+
 from wallpaper_core.cli.main import app
 
 runner = CliRunner()
@@ -55,9 +56,7 @@ class TestShowCommands:
 class TestProcessCommands:
     """Tests for process commands."""
 
-    def test_process_effect(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_effect(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process effect command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -252,9 +251,7 @@ class TestProcessCommands:
         )
         assert result.exit_code == 0
 
-    def test_process_composite(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_composite(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process composite command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -306,9 +303,7 @@ class TestProcessCommands:
         )
         assert result.exit_code != 0
 
-    def test_process_preset(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_preset(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process preset command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -364,9 +359,7 @@ class TestProcessCommands:
 class TestBatchCommands:
     """Tests for batch commands."""
 
-    def test_batch_effects(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_effects(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects command."""
         result = runner.invoke(
             app,
@@ -383,9 +376,7 @@ class TestBatchCommands:
         effects_dir = tmp_path / test_image_file.stem / "effects"
         assert effects_dir.exists() or (tmp_path / "effects").exists()
 
-    def test_batch_effects_flat(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_effects_flat(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects with flat output."""
         result = runner.invoke(
             app,
@@ -414,9 +405,7 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_all_flat(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_all_flat(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch all with flat output."""
         result = runner.invoke(
             app,
@@ -431,9 +420,7 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_composites(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_composites(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch composites command."""
         result = runner.invoke(
             app,
@@ -447,9 +434,7 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_presets(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_presets(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch presets command."""
         result = runner.invoke(
             app,
@@ -477,9 +462,7 @@ class TestBatchCommands:
         )
         assert result.exit_code != 0
 
-    def test_batch_composites_flat(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_composites_flat(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch composites with flat output."""
         result = runner.invoke(
             app,
@@ -494,9 +477,7 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_presets_flat(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_presets_flat(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch presets with flat output."""
         result = runner.invoke(
             app,
@@ -526,10 +507,7 @@ class TestInfoCommand:
         """Test info command shows effects count."""
         result = runner.invoke(app, ["info"])
         assert result.exit_code == 0
-        assert (
-            "Effects defined" in result.stdout
-            or "effects" in result.stdout.lower()
-        )
+        assert "Effects defined" in result.stdout or "effects" in result.stdout.lower()
 
 
 class TestVerbosityFlags:
@@ -716,9 +694,7 @@ class TestExecutorFailures:
         from unittest.mock import MagicMock, patch
 
         output_path = tmp_path / "output.png"
-        with patch(
-            "wallpaper_core.cli.process.CommandExecutor"
-        ) as mock_executor_class:
+        with patch("wallpaper_core.cli.process.CommandExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute.return_value = MagicMock(
                 success=False, stderr="ImageMagick error"
@@ -745,9 +721,7 @@ class TestExecutorFailures:
         from unittest.mock import MagicMock, patch
 
         output_path = tmp_path / "output.png"
-        with patch(
-            "wallpaper_core.cli.process.ChainExecutor"
-        ) as mock_executor_class:
+        with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
                 success=False, stderr="Chain execution failed"
@@ -774,9 +748,7 @@ class TestExecutorFailures:
         from unittest.mock import MagicMock, patch
 
         output_path = tmp_path / "output.png"
-        with patch(
-            "wallpaper_core.cli.process.ChainExecutor"
-        ) as mock_executor_class:
+        with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
                 success=False, stderr="Chain execution failed"
@@ -885,9 +857,7 @@ class TestQuietModeProcessing:
         )
         assert result.exit_code == 0
 
-    def test_batch_quiet_mode(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_quiet_mode(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch in quiet mode."""
         result = runner.invoke(
             app,
@@ -902,9 +872,7 @@ class TestQuietModeProcessing:
         )
         assert result.exit_code == 0
 
-    def test_batch_all_quiet_mode(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_all_quiet_mode(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch all in quiet mode."""
         result = runner.invoke(
             app,
