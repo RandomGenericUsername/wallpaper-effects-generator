@@ -36,8 +36,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/wallpaper_core"]
 
-[tool.hatch.build.targets.wheel.shared-data]
-"effects" = "share/wallpaper_core/effects"
+# Include data files in the package distribution for importlib.resources
+[tool.hatch.build.targets.wheel.force-include]
+"src/wallpaper_core/effects/effects.yaml" = "wallpaper_core/effects/effects.yaml"
 
 [tool.hatch.metadata]
 allow-direct-references = true
