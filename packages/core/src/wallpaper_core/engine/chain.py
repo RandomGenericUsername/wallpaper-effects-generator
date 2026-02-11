@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from wallpaper_core.engine.executor import CommandExecutor, ExecutionResult
 
@@ -136,8 +136,8 @@ class ChainExecutor:
     def _get_params_with_defaults(
         self,
         effect_name: str,
-        override_params: dict,
-    ) -> dict:
+        override_params: dict[str, Any],
+    ) -> dict[str, Any]:
         """Get parameters with defaults filled in."""
         effect = self.config.effects.get(effect_name)
         if effect is None:

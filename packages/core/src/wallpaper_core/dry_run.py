@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from layered_settings.dry_run import DryRunBase, ValidationCheck
 
@@ -87,7 +87,7 @@ class CoreDryRun(DryRunBase):
         item_type: str,
         input_path: Path,
         output_path: Path,
-        params: dict,
+        params: dict[str, Any],
         resolved_command: str,
         chain_commands: list[str] | None = None,
         command_template: str | None = None,
@@ -114,7 +114,7 @@ class CoreDryRun(DryRunBase):
         self,
         input_path: Path,
         output_dir: Path,
-        items: list[dict],
+        items: list[dict[str, Any]],
         parallel: bool,
         max_workers: int | None,
         strict: bool,
