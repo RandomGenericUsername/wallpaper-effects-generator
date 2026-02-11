@@ -65,7 +65,7 @@ repos:
       - id: mypy
         name: Type check with mypy
         language_version: python3.12
-        args: [--ignore-missing-imports, --ignore-untyped-calls]
+        args: [--ignore-missing-imports, --disable-error-code=import-untyped]
         stages: [pre-commit]
         additional_dependencies: [types-PyYAML]
         # Exclude test directories to avoid duplicate module errors

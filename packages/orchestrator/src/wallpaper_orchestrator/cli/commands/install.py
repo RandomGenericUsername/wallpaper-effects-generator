@@ -1,6 +1,6 @@
 """Install command to build wallpaper effects container image."""
 
-import subprocess
+import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
 import typer
@@ -55,16 +55,12 @@ def install(
         # packages/orchestrator/src/wallpaper_orchestrator/cli/commands/install.py
         # Project root is: ../../../../../../..
         current_file = Path(__file__)
-        project_root = (
-            current_file.parent.parent.parent.parent.parent.parent.parent
-        )
+        project_root = current_file.parent.parent.parent.parent.parent.parent.parent
         docker_dir = project_root / "packages" / "orchestrator" / "docker"
         dockerfile = docker_dir / "Dockerfile.imagemagick"
 
         if not dockerfile.exists():
-            console.print(
-                f"[red]Error:[/red] Dockerfile not found at {dockerfile}"
-            )
+            console.print(f"[red]Error:[/red] Dockerfile not found at {dockerfile}")
             raise typer.Exit(1)
 
         image_name = "wallpaper-effects:latest"
@@ -122,7 +118,7 @@ def install(
             )
 
             try:
-                result = subprocess.run(
+                result = subprocess.run(  # nosec: B603
                     cmd,
                     capture_output=True,
                     text=True,
@@ -131,24 +127,18 @@ def install(
 
                 if result.returncode == 0:
                     progress.update(task, description=f"✓ Built {image_name}")
-                    console.print(
-                        f"\n[green]✓ Successfully built {image_name}[/green]"
-                    )
+                    console.print(f"\n[green]✓ Successfully built {image_name}[/green]")
                     raise typer.Exit(0)
                 else:
-                    progress.update(
-                        task, description=f"✗ Failed to build {image_name}"
-                    )
+                    progress.update(task, description=f"✗ Failed to build {image_name}")
                     console.print("\n[red]✗ Build failed[/red]")
                     console.print(f"[dim]{result.stderr}[/dim]")
                     raise typer.Exit(1)
 
             except subprocess.SubprocessError as e:
-                progress.update(
-                    task, description=f"✗ Error building {image_name}"
-                )
+                progress.update(task, description=f"✗ Error building {image_name}")
                 console.print(f"\n[red]✗ Build error:[/red] {str(e)}")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
     except typer.Exit:
         raise

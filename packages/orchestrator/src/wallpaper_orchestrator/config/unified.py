@@ -31,6 +31,4 @@ class UnifiedConfig(BaseModel):
 
     core: CoreSettings = Field(default_factory=CoreSettings)
     effects: EffectsConfig = Field(default_factory=_load_effects_defaults)
-    orchestrator: OrchestratorSettings = Field(
-        default_factory=OrchestratorSettings
-    )
+    orchestrator: OrchestratorSettings = Field(default_factory=OrchestratorSettings)

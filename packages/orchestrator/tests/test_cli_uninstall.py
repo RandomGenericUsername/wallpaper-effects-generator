@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from click.exceptions import Exit
+
 from wallpaper_orchestrator.cli.commands.uninstall import uninstall
 
 

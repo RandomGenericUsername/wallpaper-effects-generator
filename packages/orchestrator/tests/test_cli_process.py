@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
+
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()
@@ -15,15 +16,13 @@ def test_process_effect_calls_container_manager(tmp_path: Path) -> None:
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch(
-        "wallpaper_orchestrator.cli.main.ContainerManager"
-    ) as MockManager:
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
         mock_manager.run_process.return_value = MagicMock(
             returncode=0, stdout="", stderr=""
         )
-        MockManager.return_value = mock_manager
+        mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
             app,
@@ -51,12 +50,10 @@ def test_process_effect_checks_image_available(tmp_path: Path) -> None:
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch(
-        "wallpaper_orchestrator.cli.main.ContainerManager"
-    ) as MockManager:
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = False
-        MockManager.return_value = mock_manager
+        mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
             app,
@@ -82,15 +79,13 @@ def test_process_effect_handles_container_failure(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch(
-        "wallpaper_orchestrator.cli.main.ContainerManager"
-    ) as MockManager:
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
         mock_manager.run_process.return_value = MagicMock(
             returncode=1, stdout="", stderr="magick: invalid parameter"
         )
-        MockManager.return_value = mock_manager
+        mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
             app,
@@ -115,15 +110,13 @@ def test_process_composite_calls_container_manager(
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch(
-        "wallpaper_orchestrator.cli.main.ContainerManager"
-    ) as MockManager:
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
         mock_manager.run_process.return_value = MagicMock(
             returncode=0, stdout="", stderr=""
         )
-        MockManager.return_value = mock_manager
+        mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
             app,
@@ -151,15 +144,13 @@ def test_process_preset_calls_container_manager(tmp_path: Path) -> None:
     output_file = tmp_path / "output.jpg"
     input_file.touch()
 
-    with patch(
-        "wallpaper_orchestrator.cli.main.ContainerManager"
-    ) as MockManager:
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
         mock_manager.run_process.return_value = MagicMock(
             returncode=0, stdout="", stderr=""
         )
-        MockManager.return_value = mock_manager
+        mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
             app,

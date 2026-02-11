@@ -1,6 +1,6 @@
 """Container manager for orchestrating wallpaper effects processing."""
 
-import subprocess
+import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
 from wallpaper_orchestrator.config.unified import UnifiedConfig
@@ -73,7 +73,7 @@ class ContainerManager:
         image_name = self.get_image_name()
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # nosec: B603
                 [self.engine, "inspect", image_name],
                 capture_output=True,
                 text=True,
@@ -184,7 +184,7 @@ class ContainerManager:
             cmd.extend(additional_args)
 
         # Execute container
-        result = subprocess.run(
+        result = subprocess.run(  # nosec: B603
             cmd,
             capture_output=True,
             text=True,

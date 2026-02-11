@@ -1,6 +1,7 @@
 """Integration tests for wallpaper_orchestrator."""
 
 from layered_settings import configure, get_config
+
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -25,9 +26,7 @@ def test_unified_config_loads_all_schemas() -> None:
 
     # Orchestrator settings loaded
     assert config.orchestrator.container.engine == "docker"
-    assert (
-        config.orchestrator.container.image_name == "wallpaper-effects:latest"
-    )
+    assert config.orchestrator.container.image_name == "wallpaper-effects:latest"
 
 
 def test_config_merges_cli_overrides() -> None:

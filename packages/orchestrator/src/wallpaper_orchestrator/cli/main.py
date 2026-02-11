@@ -230,14 +230,10 @@ def process_composite(
                     Path(f"/output/{output_file.name}"),
                 )
                 inner_command = (
-                    " && ".join(inner_commands)
-                    if inner_commands
-                    else "<empty chain>"
+                    " && ".join(inner_commands) if inner_commands else "<empty chain>"
                 )
             else:
-                inner_command = (
-                    f"<composite '{composite}' not found in config>"
-                )
+                inner_command = f"<composite '{composite}' not found in config>"
 
             renderer.render_container_process(
                 item_name=composite,
@@ -363,13 +359,9 @@ def process_preset(
                             params,
                         )
                     else:
-                        inner_command = (
-                            f"<effect '{preset_def.effect}' not found>"
-                        )
+                        inner_command = f"<effect '{preset_def.effect}' not found>"
                 elif preset_def.composite:
-                    composite_def = effects_config.composites.get(
-                        preset_def.composite
-                    )
+                    composite_def = effects_config.composites.get(preset_def.composite)
                     if composite_def:
                         from wallpaper_core.cli.process import (
                             _resolve_chain_commands,

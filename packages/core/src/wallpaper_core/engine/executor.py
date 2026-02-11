@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
+import subprocess  # nosec: necessary for command execution
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING

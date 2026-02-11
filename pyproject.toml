@@ -49,3 +49,7 @@ target-version = ["py312"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+
+[tool.mypy]
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]

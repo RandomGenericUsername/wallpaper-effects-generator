@@ -14,8 +14,7 @@ def test_full_stack_three_layers(tmp_path: Path):
 
     # Package layer
     package_file = tmp_path / "package_effects.yaml"
-    package_file.write_text(
-        """
+    package_file.write_text("""
 version: "1.0"
 parameter_types:
   blur_geometry:
@@ -33,15 +32,13 @@ effects:
     command: 'magick "$INPUT" -brightness-contrast "$BRIGHTNESS"% "$OUTPUT"'
 composites: {}
 presets: {}
-"""
-    )
+""")
 
     # Project layer
     project_root = tmp_path / "project"
     project_root.mkdir()
     project_effects = project_root / "effects.yaml"
-    project_effects.write_text(
-        """
+    project_effects.write_text("""
 version: "1.0"
 effects:
   blur:
@@ -50,20 +47,17 @@ effects:
   contrast:
     description: "Project contrast"
     command: 'magick "$INPUT" -contrast "$OUTPUT"'
-"""
-    )
+""")
 
     # User layer
     user_file = tmp_path / "user_effects.yaml"
-    user_file.write_text(
-        """
+    user_file.write_text("""
 version: "1.0"
 effects:
   neon:
     description: "User neon"
     command: 'magick "$INPUT" -negate "$OUTPUT"'
-"""
-    )
+""")
 
     # Configure and load
     configure(
@@ -101,26 +95,22 @@ def test_user_can_override_package_effect(tmp_path: Path):
     _reset()
 
     package_file = tmp_path / "package.yaml"
-    package_file.write_text(
-        """
+    package_file.write_text("""
 version: "1.0"
 effects:
   test:
     description: "Package version"
     command: "package command"
-"""
-    )
+""")
 
     user_file = tmp_path / "user.yaml"
-    user_file.write_text(
-        """
+    user_file.write_text("""
 version: "1.0"
 effects:
   test:
     description: "User version"
     command: "user command"
-"""
-    )
+""")
 
     configure(
         package_effects_file=package_file,

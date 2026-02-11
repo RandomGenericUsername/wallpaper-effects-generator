@@ -1,6 +1,6 @@
 """Uninstall command to remove wallpaper effects container image."""
 
-import subprocess
+import subprocess  # nosec: necessary for container management
 
 import typer
 from rich.console import Console
@@ -75,9 +75,7 @@ def uninstall(
 
         # Confirm deletion
         if not yes:
-            console.print(
-                "[yellow]Warning:[/yellow] This will remove the image:"
-            )
+            console.print("[yellow]Warning:[/yellow] This will remove the image:")
             console.print(f"  - {image_name}")
             console.print()
 
@@ -92,7 +90,7 @@ def uninstall(
         cmd = [container_engine, "rmi", image_name]
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # nosec: B603
                 cmd,
                 capture_output=True,
                 text=True,
@@ -107,9 +105,7 @@ def uninstall(
                     "no such image" in result.stderr.lower()
                     or "not found" in result.stderr.lower()
                 ):
-                    console.print(
-                        "[dim]○ Image not found (already removed)[/dim]"
-                    )
+                    console.print("[dim]○ Image not found (already removed)[/dim]")
                     raise typer.Exit(0)
                 else:
                     console.print("[red]✗ Failed to remove[/red]")
@@ -118,7 +114,7 @@ def uninstall(
 
         except subprocess.SubprocessError as e:
             console.print(f"[red]✗ Error:[/red] {str(e)}")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     except typer.Exit:
         raise

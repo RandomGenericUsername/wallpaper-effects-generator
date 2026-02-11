@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
+import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
 from layered_settings.dry_run import DryRunBase, ValidationCheck
@@ -31,7 +31,7 @@ class OrchestratorDryRun(DryRunBase):
 
         if image_name and engine_path:
             try:
-                result = subprocess.run(
+                result = subprocess.run(  # nosec: B603
                     [engine, "inspect", image_name],
                     capture_output=True,
                     text=True,
@@ -73,9 +73,7 @@ class OrchestratorDryRun(DryRunBase):
         self.render_field("Engine", engine)
         self.render_field("Image", image_name)
         self.render_command("Host command", host_command)
-        self.render_command(
-            "Inner command (runs inside container)", inner_command
-        )
+        self.render_command("Inner command (runs inside container)", inner_command)
 
     def render_install(
         self,
