@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects.schema import (
