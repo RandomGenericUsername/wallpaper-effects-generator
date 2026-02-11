@@ -127,29 +127,11 @@ def version() -> None:
 @app.command()
 def info() -> None:
     """Show current configuration."""
-    output = RichOutput()
-
     try:
         config = get_config()
-    except Exception as e:  # pragma: no cover
-        output.error(f"[bold red]Failed to load core configuration:[/bold red] {e}")
-        raise typer.Exit(1) from e
-
-    try:
         effects = load_effects()  # Load effects from layered-effects
-    except EffectsLoadError as e:  # pragma: no cover
-        output.error("[bold red]Failed to load effects configuration[/bold red]")
-        output.error(f"Layer: {getattr(e, 'layer', 'unknown')}")
-        output.error(f"File: {e.file_path}")
-        output.error(f"Reason: {e.reason}")
-        raise typer.Exit(1) from e
-    except EffectsValidationError as e:  # pragma: no cover
-        output.error("[bold red]Effects configuration validation failed[/bold red]")
-        output.error(f"Layer: {e.layer or 'merged'}")
-        output.error(f"Problem: {e.message}")
-        raise typer.Exit(1) from e
-    except EffectsError as e:  # pragma: no cover
-        output.error(f"[bold red]Effects error:[/bold red] {e}")
+    except Exception as e:  # pragma: no cover
+        typer.echo(f"Error: {type(e).__name__}: {e}", err=True)
         raise typer.Exit(1) from e
 
     typer.echo("=== Core Settings ===")
