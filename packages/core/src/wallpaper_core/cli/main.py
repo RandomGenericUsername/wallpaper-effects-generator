@@ -127,8 +127,30 @@ def version() -> None:
 @app.command()
 def info() -> None:
     """Show current configuration."""
-    config = get_config()
-    effects = load_effects()  # Load effects from layered-effects
+    output = RichOutput()
+
+    try:
+        config = get_config()
+    except Exception as e:  # pragma: no cover
+        output.error(f"[bold red]Failed to load core configuration:[/bold red] {e}")
+        raise typer.Exit(1) from e
+
+    try:
+        effects = load_effects()  # Load effects from layered-effects
+    except EffectsLoadError as e:  # pragma: no cover
+        output.error("[bold red]Failed to load effects configuration[/bold red]")
+        output.error(f"Layer: {getattr(e, 'layer', 'unknown')}")
+        output.error(f"File: {e.file_path}")
+        output.error(f"Reason: {e.reason}")
+        raise typer.Exit(1) from e
+    except EffectsValidationError as e:  # pragma: no cover
+        output.error("[bold red]Effects configuration validation failed[/bold red]")
+        output.error(f"Layer: {e.layer or 'merged'}")
+        output.error(f"Problem: {e.message}")
+        raise typer.Exit(1) from e
+    except EffectsError as e:  # pragma: no cover
+        output.error(f"[bold red]Effects error:[/bold red] {e}")
+        raise typer.Exit(1) from e
 
     typer.echo("=== Core Settings ===")
     typer.echo(f"Parallel: {config.core.execution.parallel}")  # type: ignore[attr-defined]
