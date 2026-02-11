@@ -36,11 +36,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/wallpaper_core"]
 
-# Include yaml data files for importlib.resources
-include = [
-    { path = "src/wallpaper_core/effects/effects.yaml", format = "wheel" },
-]
-
 [tool.hatch.metadata]
 allow-direct-references = true
 
