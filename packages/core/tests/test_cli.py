@@ -783,3 +783,96 @@ class TestCLIExceptionHandlers:
             mock_load.side_effect = EffectsError("Generic effects error")
             result = runner.invoke(app, ["show", "effects"])
             assert result.exit_code == 1
+
+
+class TestQuietModeProcessing:
+    """Tests for quiet mode in processing commands."""
+
+    def test_process_effect_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test process effect in quiet mode."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "effect",
+                str(test_image_file),
+                str(output_path),
+                "-e",
+                "blur",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_process_composite_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test process composite in quiet mode."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "composite",
+                str(test_image_file),
+                str(output_path),
+                "-c",
+                "blur-brightness80",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_process_preset_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test process preset in quiet mode."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "preset",
+                str(test_image_file),
+                str(output_path),
+                "-p",
+                "dark_blur",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_batch_quiet_mode(self, test_image_file: Path, tmp_path: Path) -> None:
+        """Test batch in quiet mode."""
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "batch",
+                "effects",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--sequential",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_batch_all_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test batch all in quiet mode."""
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "batch",
+                "all",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--sequential",
+            ],
+        )
+        assert result.exit_code == 0
