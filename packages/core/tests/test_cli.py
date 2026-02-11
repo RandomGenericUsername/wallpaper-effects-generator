@@ -477,7 +477,9 @@ class TestBatchCommands:
         )
         assert result.exit_code != 0
 
-    def test_batch_composites_flat(self, test_image_file: Path, tmp_path: Path) -> None:
+    def test_batch_composites_flat(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
         """Test batch composites with flat output."""
         result = runner.invoke(
             app,
@@ -492,7 +494,9 @@ class TestBatchCommands:
         )
         assert result.exit_code == 0
 
-    def test_batch_presets_flat(self, test_image_file: Path, tmp_path: Path) -> None:
+    def test_batch_presets_flat(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
         """Test batch presets with flat output."""
         result = runner.invoke(
             app,
@@ -506,6 +510,26 @@ class TestBatchCommands:
             ],
         )
         assert result.exit_code == 0
+
+
+class TestInfoCommand:
+    """Tests for info command."""
+
+    def test_info_shows_settings(self) -> None:
+        """Test info command displays settings."""
+        result = runner.invoke(app, ["info"])
+        assert result.exit_code == 0
+        assert "Core Settings" in result.stdout
+        assert "Effects" in result.stdout
+
+    def test_info_shows_effects_count(self) -> None:
+        """Test info command shows effects count."""
+        result = runner.invoke(app, ["info"])
+        assert result.exit_code == 0
+        assert (
+            "Effects defined" in result.stdout
+            or "effects" in result.stdout.lower()
+        )
 
 
 class TestVerbosityFlags:
@@ -525,3 +549,117 @@ class TestVerbosityFlags:
         """Test -vv debug flag."""
         result = runner.invoke(app, ["-vv", "show", "effects"])
         assert result.exit_code == 0
+
+
+class TestApplyCompositeErrors:
+    """Tests for composite error handling."""
+
+    def test_apply_composite_unknown_composite_error(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test apply composite with unknown composite references missing composite."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                str(output_path),
+                "-c",
+                "nonexistent-composite",
+            ],
+        )
+        assert result.exit_code != 0
+
+
+class TestApplyPresetErrors:
+    """Tests for preset error handling."""
+
+    def test_apply_preset_missing_preset_error(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test apply preset with missing preset."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                str(output_path),
+                "-p",
+                "nonexistent-preset",
+            ],
+        )
+        assert result.exit_code != 0
+
+
+class TestDryRunErrorCases:
+    """Tests for dry-run with error conditions."""
+
+    def test_dry_run_composite_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test dry-run composite in quiet mode."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "composite",
+                str(test_image_file),
+                str(output_path),
+                "-c",
+                "blur-brightness80",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_unknown_composite(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test dry-run with unknown composite."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                str(output_path),
+                "-c",
+                "nonexistent-composite",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        assert (
+            "cannot resolve" in result.stdout.lower()
+            or "unknown" in result.stdout.lower()
+        )
+
+    def test_dry_run_unknown_preset(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test dry-run with unknown preset."""
+        output_path = tmp_path / "output.png"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                str(output_path),
+                "-p",
+                "nonexistent-preset",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        assert (
+            "cannot resolve" in result.stdout.lower()
+            or "unknown" in result.stdout.lower()
+        )

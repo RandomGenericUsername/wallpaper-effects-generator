@@ -260,3 +260,138 @@ class TestProcessPresetContainerDryRun:
             "cannot resolve" in result.stdout.lower()
             or "unknown" in result.stdout.lower()
         )
+
+    def test_dry_run_preset_with_unknown_effect(self, tmp_path):
+        """Test dry-run for preset with unknown effect."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_mgr:
+            mock_manager = MagicMock()
+            mock_manager.is_image_available.return_value = True
+            mock_manager.engine = "docker"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_mgr.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "dark_blur",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+
+    def test_dry_run_preset_with_unknown_composite(self, tmp_path):
+        """Test dry-run for preset with unknown composite."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_mgr:
+            mock_manager = MagicMock()
+            mock_manager.is_image_available.return_value = True
+            mock_manager.engine = "docker"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_mgr.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    str(output_file),
+                    "dark_vibrant",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+
+
+class TestProcessEffectDryRunEdgeCases:
+    def test_dry_run_effect_not_found_in_config(self, tmp_path):
+        """Test dry-run for effect not found in config."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_mgr:
+            mock_manager = MagicMock()
+            mock_manager.is_image_available.return_value = True
+            mock_manager.engine = "docker"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_mgr.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "effect",
+                    str(input_file),
+                    str(output_file),
+                    "nonexistent-effect",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert (
+            "not found" in result.stdout.lower() or "magick" in result.stdout
+        )
+
+
+class TestProcessCompositeEdgeCases:
+    def test_dry_run_composite_not_found_in_config(self, tmp_path):
+        """Test dry-run for composite not found in config."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+        output_file = tmp_path / "output.jpg"
+
+        with patch(
+            "wallpaper_orchestrator.cli.main.ContainerManager"
+        ) as mock_mgr:
+            mock_manager = MagicMock()
+            mock_manager.is_image_available.return_value = True
+            mock_manager.engine = "docker"
+            mock_manager.get_image_name.return_value = (
+                "wallpaper-effects:latest"
+            )
+            mock_mgr.return_value = mock_manager
+
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "composite",
+                    str(input_file),
+                    str(output_file),
+                    "nonexistent-composite",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert (
+            "not found" in result.stdout.lower()
+            or "composite" in result.stdout.lower()
+        )

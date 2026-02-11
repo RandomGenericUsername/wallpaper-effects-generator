@@ -64,3 +64,14 @@ def test_cli_show_effects() -> None:
     assert result.exit_code == 0
     # Should show effects
     assert "blur" in result.stdout.lower() or "effect" in result.stdout.lower()
+
+
+def test_cli_version_command() -> None:
+    """Test version command is available."""
+    result = runner.invoke(app, ["version"])
+
+    assert result.exit_code == 0
+    assert (
+        "wallpaper-orchestrator" in result.stdout
+        or "version" in result.stdout.lower()
+    )

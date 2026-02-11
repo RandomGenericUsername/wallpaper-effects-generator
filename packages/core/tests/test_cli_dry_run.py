@@ -1,7 +1,6 @@
 """Tests for --dry-run flag on core CLI commands."""
 
 from typer.testing import CliRunner
-
 from wallpaper_core.cli.main import app
 
 runner = CliRunner()
@@ -72,9 +71,13 @@ class TestProcessEffectDryRun:
             ],
         )
         assert "Dry Run" in result.stdout
-        assert "not found" in result.stdout.lower() or "\u2717" in result.stdout
+        assert (
+            "not found" in result.stdout.lower() or "\u2717" in result.stdout
+        )
 
-    def test_dry_run_unknown_effect_shows_warning(self, test_image_file, tmp_path):
+    def test_dry_run_unknown_effect_shows_warning(
+        self, test_image_file, tmp_path
+    ):
         result = runner.invoke(
             app,
             [
@@ -88,7 +91,9 @@ class TestProcessEffectDryRun:
             ],
         )
         assert "Dry Run" in result.stdout
-        assert "not found" in result.stdout.lower() or "\u2717" in result.stdout
+        assert (
+            "not found" in result.stdout.lower() or "\u2717" in result.stdout
+        )
 
     def test_dry_run_quiet_shows_only_command(self, test_image_file, tmp_path):
         output_file = tmp_path / "output.jpg"
@@ -253,7 +258,9 @@ class TestBatchAllDryRun:
         )
         assert result.exit_code == 0
         assert "blur" in result.stdout
-        assert "dark_blur" in result.stdout or "preset" in result.stdout.lower()
+        assert (
+            "dark_blur" in result.stdout or "preset" in result.stdout.lower()
+        )
 
     def test_dry_run_no_files_created(self, test_image_file, tmp_path):
         output_dir = tmp_path / "output"
@@ -269,7 +276,9 @@ class TestBatchAllDryRun:
         )
         assert not output_dir.exists()
 
-    def test_dry_run_quiet_shows_only_commands(self, test_image_file, tmp_path):
+    def test_dry_run_quiet_shows_only_commands(
+        self, test_image_file, tmp_path
+    ):
         result = runner.invoke(
             app,
             [
@@ -284,3 +293,91 @@ class TestBatchAllDryRun:
         assert result.exit_code == 0
         assert "magick" in result.stdout
         assert "Validation" not in result.stdout
+
+    def test_dry_run_batch_all_flat(self, test_image_file, tmp_path):
+        """Test batch all with flat output in dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "all",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--flat",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_batch_composites(self, test_image_file, tmp_path):
+        """Test batch composites dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "composites",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_batch_composites_flat(self, test_image_file, tmp_path):
+        """Test batch composites with flat output in dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "composites",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--flat",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_batch_presets(self, test_image_file, tmp_path):
+        """Test batch presets dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "presets",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_batch_presets_flat(self, test_image_file, tmp_path):
+        """Test batch presets with flat output in dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "presets",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--flat",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_dry_run_batch_effects_flat(self, test_image_file, tmp_path):
+        """Test batch effects with flat output in dry-run."""
+        result = runner.invoke(
+            app,
+            [
+                "batch",
+                "effects",
+                str(test_image_file),
+                str(tmp_path / "output"),
+                "--flat",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
