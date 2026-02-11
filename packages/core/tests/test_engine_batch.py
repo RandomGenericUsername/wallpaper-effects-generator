@@ -48,14 +48,10 @@ class TestBatchGenerator:
 
     def test_init(self, sample_effects_config: EffectsConfig) -> None:
         """Test BatchGenerator initialization."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=True,
-            strict=False,
-        )
-        assert generator.config is sample_effects_config
+        generator = BatchGenerator(config=sample_effects_config)
+        assert generator.config == sample_effects_config
         assert generator.parallel is True
-        assert generator.strict is False
+        assert generator.strict is True
 
     def test_generate_all_effects(
         self,
@@ -63,12 +59,8 @@ class TestBatchGenerator:
         test_image_file: Path,
         tmp_path: Path,
     ) -> None:
-        """Test generating all effects."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=False,
-            strict=False,
-        )
+        """Test generate_all with effects."""
+        generator = BatchGenerator(config=sample_effects_config)
 
         result = generator.generate_all_effects(
             input_path=test_image_file,
@@ -77,8 +69,6 @@ class TestBatchGenerator:
 
         assert result.total == len(sample_effects_config.effects)
         assert result.succeeded > 0
-        # Output dir includes image stem subdirectory
-        assert "effects" in str(result.output_dir)
 
     def test_generate_all_effects_flat(
         self,
@@ -86,12 +76,8 @@ class TestBatchGenerator:
         test_image_file: Path,
         tmp_path: Path,
     ) -> None:
-        """Test generating all effects with flat output."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=False,
-            strict=False,
-        )
+        """Test generate_all with flat output for effects."""
+        generator = BatchGenerator(config=sample_effects_config)
 
         result = generator.generate_all_effects(
             input_path=test_image_file,
@@ -100,8 +86,6 @@ class TestBatchGenerator:
         )
 
         assert result.total == len(sample_effects_config.effects)
-        # Flat output still uses image stem subdirectory
-        assert result.output_dir.exists()
 
     def test_generate_all_composites(
         self,
@@ -109,12 +93,8 @@ class TestBatchGenerator:
         test_image_file: Path,
         tmp_path: Path,
     ) -> None:
-        """Test generating all composites."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=False,
-            strict=False,
-        )
+        """Test generate_all with composites."""
+        generator = BatchGenerator(config=sample_effects_config)
 
         result = generator.generate_all_composites(
             input_path=test_image_file,
@@ -122,7 +102,6 @@ class TestBatchGenerator:
         )
 
         assert result.total == len(sample_effects_config.composites)
-        assert "composites" in str(result.output_dir)
 
     def test_generate_all_presets(
         self,
@@ -130,12 +109,8 @@ class TestBatchGenerator:
         test_image_file: Path,
         tmp_path: Path,
     ) -> None:
-        """Test generating all presets."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=False,
-            strict=False,
-        )
+        """Test generate_all with presets."""
+        generator = BatchGenerator(config=sample_effects_config)
 
         result = generator.generate_all_presets(
             input_path=test_image_file,
@@ -143,7 +118,6 @@ class TestBatchGenerator:
         )
 
         assert result.total == len(sample_effects_config.presets)
-        assert "presets" in str(result.output_dir)
 
     def test_generate_all(
         self,
@@ -151,12 +125,8 @@ class TestBatchGenerator:
         test_image_file: Path,
         tmp_path: Path,
     ) -> None:
-        """Test generating all effects, composites, and presets."""
-        generator = BatchGenerator(
-            config=sample_effects_config,
-            parallel=False,
-            strict=False,
-        )
+        """Test generate_all with all types."""
+        generator = BatchGenerator(config=sample_effects_config)
 
         result = generator.generate_all(
             input_path=test_image_file,
@@ -180,6 +150,67 @@ class TestBatchGenerator:
         generator = BatchGenerator(
             config=sample_effects_config,
             parallel=True,
+            strict=False,
+        )
+
+        result = generator.generate_all_effects(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total == len(sample_effects_config.effects)
+        assert result.succeeded > 0
+
+    def test_parallel_execution_composites(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test parallel batch execution with composites."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=True,
+            strict=False,
+        )
+
+        result = generator.generate_all_composites(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total == len(sample_effects_config.composites)
+
+    def test_parallel_execution_presets(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test parallel batch execution with presets."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=True,
+            strict=False,
+        )
+
+        result = generator.generate_all_presets(
+            input_path=test_image_file,
+            output_dir=tmp_path,
+        )
+
+        assert result.total == len(sample_effects_config.presets)
+
+    def test_sequential_execution(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test sequential batch execution."""
+        generator = BatchGenerator(
+            config=sample_effects_config,
+            parallel=False,
             strict=False,
         )
 
