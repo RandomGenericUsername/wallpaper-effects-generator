@@ -1,6 +1,7 @@
 """Tests for --dry-run flag on core CLI commands."""
 
 from typer.testing import CliRunner
+
 from wallpaper_core.cli.main import app
 
 runner = CliRunner()

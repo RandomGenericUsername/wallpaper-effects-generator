@@ -2,6 +2,7 @@
 
 import pytest
 from pydantic import ValidationError
+
 from wallpaper_core.config.schema import (
     BackendSettings,
     CoreSettings,

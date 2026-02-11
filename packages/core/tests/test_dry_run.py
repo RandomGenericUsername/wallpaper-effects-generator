@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from rich.console import Console
+
 from wallpaper_core.dry_run import CoreDryRun
 
 

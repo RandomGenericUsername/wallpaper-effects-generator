@@ -1,6 +1,7 @@
 """Tests for schema registration with layered_settings."""
 
 from layered_settings import SchemaRegistry
+
 from wallpaper_core.config.schema import CoreSettings
 
 
