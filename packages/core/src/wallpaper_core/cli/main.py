@@ -112,7 +112,7 @@ def main(
     ctx.obj["verbosity"] = verbosity
     ctx.obj["output"] = output
     ctx.obj["config"] = effects_config  # Changed from config_obj.effects
-    ctx.obj["settings"] = config_obj.core
+    ctx.obj["settings"] = config_obj.core  # type: ignore[attr-defined]
 
 
 @app.command()
@@ -131,11 +131,11 @@ def info() -> None:
     effects = load_effects()  # Load effects from layered-effects
 
     typer.echo("=== Core Settings ===")
-    typer.echo(f"Parallel: {config.core.execution.parallel}")
-    typer.echo(f"Strict: {config.core.execution.strict}")
-    typer.echo(f"Max Workers: {config.core.execution.max_workers}")
-    typer.echo(f"Verbosity: {config.core.output.verbosity.name}")
-    typer.echo(f"Backend Binary: {config.core.backend.binary}")
+    typer.echo(f"Parallel: {config.core.execution.parallel}")  # type: ignore[attr-defined]
+    typer.echo(f"Strict: {config.core.execution.strict}")  # type: ignore[attr-defined]
+    typer.echo(f"Max Workers: {config.core.execution.max_workers}")  # type: ignore[attr-defined]
+    typer.echo(f"Verbosity: {config.core.output.verbosity.name}")  # type: ignore[attr-defined]
+    typer.echo(f"Backend Binary: {config.core.backend.binary}")  # type: ignore[attr-defined]
 
     typer.echo("\n=== Effects ===")
     typer.echo(f"Version: {effects.version}")

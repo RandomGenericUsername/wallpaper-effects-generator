@@ -65,7 +65,7 @@ def process_effect(
     """
     try:
         config = get_config()
-        manager = ContainerManager(config)
+        manager = ContainerManager(config)  # type: ignore[arg-type]
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -188,7 +188,7 @@ def process_composite(
     """
     try:
         config = get_config()
-        manager = ContainerManager(config)
+        manager = ContainerManager(config)  # type: ignore[arg-type]
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -309,7 +309,7 @@ def process_preset(
     """
     try:
         config = get_config()
-        manager = ContainerManager(config)
+        manager = ContainerManager(config)  # type: ignore[arg-type]
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -471,8 +471,8 @@ def batch_callback(ctx: typer.Context) -> None:
     config = get_config()
     ctx.ensure_object(dict)
     ctx.obj["output"] = RichOutput()
-    ctx.obj["config"] = config.effects
-    ctx.obj["settings"] = config.core
+    ctx.obj["config"] = config.effects  # type: ignore[attr-defined]
+    ctx.obj["settings"] = config.core  # type: ignore[attr-defined]
 
 
 @show_app.callback()
@@ -483,16 +483,16 @@ def show_callback(ctx: typer.Context) -> None:
     config = get_config()
     ctx.ensure_object(dict)
     ctx.obj["output"] = RichOutput()
-    ctx.obj["config"] = config.effects
-    ctx.obj["settings"] = config.core
+    ctx.obj["config"] = config.effects  # type: ignore[attr-defined]
+    ctx.obj["settings"] = config.core  # type: ignore[attr-defined]
 
 
 # Add core commands to the sub-apps
 for cmd_info in core_batch_module.app.registered_commands:
-    batch_app.command(name=cmd_info.name)(cmd_info.callback)
+    batch_app.command(name=cmd_info.name)(cmd_info.callback)  # type: ignore[type-var]
 
 for cmd_info in core_show_module.app.registered_commands:
-    show_app.command(name=cmd_info.name)(cmd_info.callback)
+    show_app.command(name=cmd_info.name)(cmd_info.callback)  # type: ignore[type-var]
 
 # Add the sub-apps to main app
 app.add_typer(batch_app, name="batch")
