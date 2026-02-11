@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 from layered_settings import configure, get_config
+
 from wallpaper_core.cli.main import CoreOnlyConfig
 
 
