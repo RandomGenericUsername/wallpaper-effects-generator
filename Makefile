@@ -213,7 +213,7 @@ pipeline: ## Validate pipeline - simulate GitHub Actions workflows locally
 	@echo -e "$(GREEN)Your changes are safe to push to the cloud.$(NC)"
 	@echo -e ""
 
-push: ## Run GitHub Actions workflows locally using act
+push: ## Run GitHub Actions workflows locally using act with auto-logging
 	@echo -e "$(BLUE)Setting up GitHub Actions locally...$(NC)"
 	@if [ ! -f ./bin/act ]; then \
 		echo -e "$(BLUE)Downloading act (GitHub Actions CLI)...$(NC)"; \
@@ -226,10 +226,26 @@ push: ## Run GitHub Actions workflows locally using act
 		echo -e "$(GREEN)✓ act already available$(NC)"; \
 	fi
 	@echo -e ""
-	@echo -e "$(BLUE)Running GitHub Actions workflows locally...$(NC)"
-	@./bin/act push
-	@echo -e ""
-	@echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"
+	@mkdir -p .logs
+	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
+	LOG_FILE=".logs/make-push-$$TIMESTAMP.log"; \
+	echo -e "$(BLUE)Running GitHub Actions workflows locally...$(NC)"; \
+	echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
+	echo -e ""; \
+	./bin/act push 2>&1 | tee "$$LOG_FILE"; \
+	EXIT_CODE=$$?; \
+	echo -e ""; \
+	if [ $$EXIT_CODE -eq 0 ]; then \
+		echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
+	else \
+		echo -e "$(RED)✗ GitHub Actions simulation failed (exit code: $$EXIT_CODE)$(NC)"; \
+	fi; \
+	echo -e ""; \
+	echo -e "$(GREEN)📋 Full logs saved to: $$LOG_FILE$(NC)"; \
+	echo -e "$(GREEN)Review logs with: cat $$LOG_FILE$(NC)"; \
+	echo -e "$(GREEN)Search logs with: grep 'PASSED\|FAILED' $$LOG_FILE$(NC)"; \
+	echo -e ""; \
+	exit $$EXIT_CODE
 
 ##@ Cleanup
 clean: ## Remove build artifacts and caches

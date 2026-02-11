@@ -173,12 +173,41 @@ This will:
 2. Run all GitHub Actions workflows in local Docker containers
 3. Simulate the exact environment GitHub uses (Ubuntu, specific Python versions)
 4. Report any issues before they reach the cloud
+5. **Automatically capture all output to timestamped log files** in `.logs/` directory
 
 **Benefits of local testing:**
 - Catch CI failures before pushing
 - Faster feedback loop (minutes vs. GitHub Actions queuing)
 - No failed builds in your commit history
 - Safe testing of edge cases
+- **Full logs automatically saved for review and debugging**
+
+### Logs and Debugging
+
+The `make push` command automatically captures all GitHub Actions output to timestamped log files in the `.logs/` directory. At the end of execution, you'll see:
+
+```
+📋 Full logs saved to: .logs/make-push-20260211-182152.log
+Review logs with: cat .logs/make-push-20260211-182152.log
+Search logs with: grep 'PASSED|FAILED' .logs/make-push-20260211-182152.log
+```
+
+**Example: Finding test results**
+```bash
+# Search for all passed tests
+grep "PASSED" .logs/make-push-20260211-182152.log
+
+# Search for failures
+grep "FAILED\|failed\|error" .logs/make-push-20260211-182152.log
+
+# View the last 100 lines of the log
+tail -100 .logs/make-push-20260211-182152.log
+
+# Count test statistics
+grep -c "PASSED" .logs/make-push-20260211-182152.log
+```
+
+Log files are named with the format: `make-push-YYYYMMDD-HHMMSS.log` so you can easily identify when each run occurred.
 
 ### Workflow: Fast Testing → Local CI → Push to Cloud
 
@@ -292,9 +321,17 @@ make test-core
 git add packages/core/
 git commit -m "feat: describe your changes"
 
-# 6. Before final push, validate full pipeline
+# 6. Validate full local pipeline
 make pipeline
+
+# 7. Run GitHub Actions locally (final check before pushing to cloud)
+make push
+
+# 8. Push to GitHub if all passes
+git push origin master
 ```
+
+The `make push` step is crucial before pushing to GitHub - it tests the exact same environment and configuration that GitHub Actions will use, catching any CI failures locally before they reach the cloud.
 
 ---
 
