@@ -88,4 +88,3 @@ docker build --no-cache -t wallpaper-effects -f docker/Dockerfile .
 
 - [Testing](testing.md)
 - [Contributing](contributing.md)
-

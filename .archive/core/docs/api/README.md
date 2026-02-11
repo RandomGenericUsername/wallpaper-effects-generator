@@ -10,4 +10,3 @@ API documentation for `wallpaper-effects-process`.
 |---------|-------------|
 | [CLI](cli/) | Command-line interface reference |
 | [Python](python/) | Python library reference |
-

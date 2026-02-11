@@ -1,5 +1,6 @@
 """Configuration module for wallpaper effects processor."""
 
+from wallpaper_processor.config.loader import ConfigLoader
 from wallpaper_processor.config.schema import (
     ChainStep,
     CompositeDefinition,
@@ -16,7 +17,6 @@ from wallpaper_processor.config.settings import (
     Settings,
     Verbosity,
 )
-from wallpaper_processor.config.loader import ConfigLoader
 
 __all__ = [
     # Schema

@@ -122,7 +122,7 @@ __all__ = [
     "EffectDefinition", "ParameterDefinition", "ParameterType",
     "ChainStep", "CompositeDefinition", "PresetDefinition", "EffectsConfig",
     "Settings", "ExecutionSettings", "OutputSettings", "PathSettings", "Verbosity",
-    "CommandExecutor", "ChainExecutor", "BatchGenerator", 
+    "CommandExecutor", "ChainExecutor", "BatchGenerator",
     "BatchResult", "ExecutionResult",
     "RichOutput", "BatchProgress",
 ]
@@ -144,7 +144,7 @@ from .container import (
 __all__ = [
     "__version__",
     "ContainerRunner",
-    "ImageBuilder", 
+    "ImageBuilder",
     "ContainerResult",
 ]
 ```
@@ -262,7 +262,7 @@ class BatchResult:
     failed: int = 0
     results: dict[str, ExecutionResult] = field(default_factory=dict)
     output_dir: Path | None = None
-    
+
     @property
     def success(self) -> bool:
         return self.failed == 0
@@ -277,24 +277,24 @@ class BatchResult:
 ```python
 class ConfigLoader:
     """Loader for effects and settings configuration.
-    
+
     Uses class-level caching to ensure configurations are loaded
     only once per process.
-    
+
     Load order (later overrides earlier):
     1. Package default: wallpaper_effects/data/effects.yaml
     2. User config: ~/.config/wallpaper-effects/effects.yaml
     3. User custom: ~/.config/wallpaper-effects/effects.d/*.yaml
     """
-    
+
     @classmethod
     def load_effects(cls, force_reload: bool = False) -> EffectsConfig:
         """Load merged effects configuration."""
-        
+
     @classmethod
     def load_settings(cls, force_reload: bool = False) -> Settings:
         """Load settings configuration."""
-        
+
     @classmethod
     def clear_cache(cls) -> None:
         """Clear all cached configurations."""
@@ -305,18 +305,18 @@ class ConfigLoader:
 ```python
 class CommandExecutor:
     """Execute shell commands for effects.
-    
+
     Substitutes variables in command templates:
     - $INPUT: Input file path
     - $OUTPUT: Output file path
     - $PARAM_NAME: Parameter values (uppercase)
     """
-    
+
     def __init__(self, output: RichOutput | None = None) -> None: ...
-    
+
     def is_magick_available(self) -> bool:
         """Check if ImageMagick is available."""
-    
+
     def execute(
         self,
         command_template: str,
@@ -332,19 +332,19 @@ class CommandExecutor:
 ```python
 class ChainExecutor:
     """Execute chains of effects using temp files.
-    
+
     Process flow:
     - step1: input -> temp1
     - step2: temp1 -> temp2
     - stepN: tempN-1 -> output
     """
-    
+
     def __init__(
         self,
         config: EffectsConfig,
         output: RichOutput | None = None,
     ) -> None: ...
-    
+
     def execute_chain(
         self,
         chain: list[ChainStep],
@@ -359,7 +359,7 @@ class ChainExecutor:
 ```python
 class BatchGenerator:
     """Generate multiple effects in batch."""
-    
+
     def __init__(
         self,
         config: EffectsConfig,
@@ -368,12 +368,12 @@ class BatchGenerator:
         strict: bool = True,
         max_workers: int = 0,
     ) -> None: ...
-    
+
     def generate_all_effects(
         self, input_path: Path, output_dir: Path, flat: bool = False,
         progress: BatchProgress | None = None,
     ) -> BatchResult: ...
-    
+
     def generate_all_composites(...) -> BatchResult: ...
     def generate_all_presets(...) -> BatchResult: ...
     def generate_all(...) -> BatchResult: ...
@@ -437,13 +437,13 @@ RUN magick --version
 ```python
 class ContainerRunner:
     """Run effect processing in containers."""
-    
+
     def __init__(self, runtime: str = "docker") -> None:
         """Initialize with Docker or Podman runtime."""
-    
+
     def ensure_image(self, tag: str = "wallpaper-effects:latest") -> bool:
         """Build image if not exists."""
-    
+
     def run_effect(
         self,
         input_path: Path,
@@ -532,8 +532,8 @@ paths:
 ```python
 from pathlib import Path
 from wallpaper_effects import (
-    ConfigLoader, 
-    CommandExecutor, 
+    ConfigLoader,
+    CommandExecutor,
     ChainExecutor,
     BatchGenerator,
 )

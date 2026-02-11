@@ -11,27 +11,39 @@ class ParameterType(BaseModel):
     """Definition of a reusable parameter type."""
 
     type: str = Field(description="Type: string, integer, float, boolean")
-    pattern: str | None = Field(default=None, description="Regex pattern for validation")
+    pattern: str | None = Field(
+        default=None, description="Regex pattern for validation"
+    )
     min: int | float | None = Field(default=None, description="Minimum value")
     max: int | float | None = Field(default=None, description="Maximum value")
     default: Any = Field(default=None, description="Default value")
-    description: str = Field(default="", description="Human-readable description")
+    description: str = Field(
+        default="", description="Human-readable description"
+    )
 
 
 class ParameterDefinition(BaseModel):
     """Definition of a parameter for an effect."""
 
-    type: str = Field(description="Reference to parameter_types or inline type")
+    type: str = Field(
+        description="Reference to parameter_types or inline type"
+    )
     cli_flag: str = Field(description="CLI flag like --blur")
     default: Any = Field(default=None, description="Default value override")
-    description: str = Field(default="", description="Human-readable description")
+    description: str = Field(
+        default="", description="Human-readable description"
+    )
 
 
 class EffectDefinition(BaseModel):
     """Definition of an atomic effect."""
 
-    description: str = Field(default="", description="Human-readable description")
-    command: str = Field(description="Shell command template with $INPUT, $OUTPUT, $PARAM")
+    description: str = Field(
+        default="", description="Human-readable description"
+    )
+    command: str = Field(
+        description="Shell command template with $INPUT, $OUTPUT, $PARAM"
+    )
     parameters: dict[str, ParameterDefinition] = Field(
         default_factory=dict, description="Parameter definitions"
     )
@@ -49,16 +61,24 @@ class ChainStep(BaseModel):
 class CompositeDefinition(BaseModel):
     """Definition of a composite effect (chain of effects)."""
 
-    description: str = Field(default="", description="Human-readable description")
-    chain: list[ChainStep] = Field(description="Ordered list of effects to apply")
+    description: str = Field(
+        default="", description="Human-readable description"
+    )
+    chain: list[ChainStep] = Field(
+        description="Ordered list of effects to apply"
+    )
 
 
 class PresetDefinition(BaseModel):
     """Definition of a preset (named configuration)."""
 
-    description: str = Field(default="", description="Human-readable description")
+    description: str = Field(
+        default="", description="Human-readable description"
+    )
     effect: str | None = Field(default=None, description="Single effect name")
-    composite: str | None = Field(default=None, description="Composite effect name")
+    composite: str | None = Field(
+        default=None, description="Composite effect name"
+    )
     params: dict[str, Any] = Field(
         default_factory=dict, description="Parameter values"
     )
@@ -80,4 +100,3 @@ class EffectsConfig(BaseModel):
     presets: dict[str, PresetDefinition] = Field(
         default_factory=dict, description="Preset definitions"
     )
-

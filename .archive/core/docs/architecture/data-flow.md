@@ -130,4 +130,3 @@ Processing pipeline for effects.
 
 - [Architecture Overview](overview.md)
 - [Extending Effects](../guides/extending-effects.md)
-

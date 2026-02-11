@@ -27,7 +27,7 @@ class ExecutionResult:
 class CommandExecutor:
     """Execute shell commands for effects."""
 
-    def __init__(self, output: "RichOutput | None" = None) -> None:
+    def __init__(self, output: RichOutput | None = None) -> None:
         """Initialize CommandExecutor.
 
         Args:
@@ -124,4 +124,3 @@ class CommandExecutor:
                 return_code=-1,
                 duration=duration,
             )
-

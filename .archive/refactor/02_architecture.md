@@ -13,13 +13,13 @@ graph TB
         CLI["wallpaper-effects CLI"]
         LIB["Python Library Import"]
     end
-    
+
     subgraph "wallpaper-effects-orchestrator"
         OCLI["Orchestrator CLI"]
         CONT["Container Manager"]
         DOCK["Docker/Podman"]
     end
-    
+
     subgraph "wallpaper-effects-core"
         CCLI["Core CLI"]
         ENGINE["Engine"]
@@ -27,17 +27,17 @@ graph TB
         MODELS["Models"]
         DATA["effects.yaml"]
     end
-    
+
     subgraph "External"
         IM["ImageMagick"]
     end
-    
+
     CLI --> OCLI
     OCLI -->|delegates| CCLI
     OCLI --> CONT
     CONT --> DOCK
     DOCK --> IM
-    
+
     LIB --> ENGINE
     ENGINE --> LOADER
     LOADER --> MODELS
@@ -124,7 +124,7 @@ sequenceDiagram
     participant Engine
     participant Executor
     participant ImageMagick
-    
+
     User->>CLI: wallpaper-effects process effect -e blur
     CLI->>Engine: load config, create executor
     Engine->>Executor: execute(command_template, input, output)
@@ -145,7 +145,7 @@ sequenceDiagram
     participant Docker
     participant Container
     participant ImageMagick
-    
+
     User->>OrchestratorCLI: wallpaper-effects container run
     OrchestratorCLI->>ContainerRunner: run_effect(image, effect, input, output)
     ContainerRunner->>Docker: create container with mounts
@@ -254,19 +254,19 @@ graph LR
         CORE["wallpaper-effects-core"]
         CM["container-manager"]
     end
-    
+
     subgraph "Third Party"
         TYPER["typer"]
         RICH["rich"]
         PYDANTIC["pydantic"]
         PYYAML["pyyaml"]
     end
-    
+
     ORC --> CORE
     ORC --> CM
     ORC --> TYPER
     ORC --> RICH
-    
+
     CORE --> TYPER
     CORE --> RICH
     CORE --> PYDANTIC
@@ -289,5 +289,5 @@ WORKDIR /workspace
 RUN magick --version
 ```
 
-**Image size**: ~50MB  
+**Image size**: ~50MB
 **Features included**: All standard ImageMagick 7 operations

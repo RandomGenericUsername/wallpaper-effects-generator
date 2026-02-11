@@ -4,7 +4,6 @@ import sys
 
 from wallpaper_effects.config import BACKEND_VERSIONS, OrchestratorConfig
 
-
 # Known effects (mirrors what's in core)
 AVAILABLE_EFFECTS = {
     "blur": "Apply Gaussian blur to the image",
@@ -86,4 +85,3 @@ def _show_backends(config: OrchestratorConfig) -> int:
     print()
     print("Use: wallpaper-effects install --backend <name>")
     return 0
-

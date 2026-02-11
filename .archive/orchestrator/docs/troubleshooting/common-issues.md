@@ -126,4 +126,3 @@ Effect 'effect_name' not found
 
 - [Container Issues](container-issues.md)
 - [Core Troubleshooting](../../../core/docs/troubleshooting/)
-

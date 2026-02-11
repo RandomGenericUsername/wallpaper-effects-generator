@@ -2,16 +2,16 @@
 
 ## Overview
 
-**Feature**: Restructure `wallpaper-effects-generator` into two independent UV packages  
-**Priority**: High  
+**Feature**: Restructure `wallpaper-effects-generator` into two independent UV packages
+**Priority**: High
 **Status**: Proposed
 
 ## Problem Statement
 
 The current project structure mixes core effect processing with future container orchestration needs:
 
-- `core/` contains CLI and engine (named `wallpaper-effects-processor`)  
-- `shared/` contains models and loaders (named `wallpaper-effects-shared`)  
+- `core/` contains CLI and engine (named `wallpaper-effects-processor`)
+- `shared/` contains models and loaders (named `wallpaper-effects-shared`)
 - No container support exists
 - Architecture doesn't follow our standard core/orchestrator pattern
 

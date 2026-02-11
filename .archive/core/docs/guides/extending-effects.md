@@ -218,4 +218,3 @@ effects:
 
 - [Effects YAML Reference](../configuration/effects-yaml.md)
 - [ImageMagick Documentation](https://imagemagick.org/script/command-line-options.php)
-

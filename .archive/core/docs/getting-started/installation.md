@@ -91,4 +91,3 @@ which magick || echo "ImageMagick not installed"
 ## Next Steps
 
 - [Quick Start](quick-start.md) - Run your first effect
-

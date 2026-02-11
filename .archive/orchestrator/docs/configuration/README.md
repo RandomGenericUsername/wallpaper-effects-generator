@@ -10,4 +10,3 @@ Configuration reference for `wallpaper-effects`.
 |----------|-------------|
 | [Settings](settings.md) | Application settings reference |
 | [Container Settings](container-settings.md) | Container-specific configuration |
-

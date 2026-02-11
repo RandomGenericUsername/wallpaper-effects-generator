@@ -1,10 +1,8 @@
 """Tests for the config module."""
 
-import os
 from pathlib import Path
 
 import pytest
-
 from wallpaper_effects.config import (
     BACKEND_VERSIONS,
     BASE_IMAGES,
@@ -99,4 +97,3 @@ class TestOrchestratorConfig:
         assert config.container_timeout == 600
         assert config.container_memory_limit == "2g"
         assert config.verbose is True
-

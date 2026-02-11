@@ -101,4 +101,3 @@ Processing pipeline through containers.
 
 - [Architecture Overview](overview.md)
 - [Container Management](../guides/containers.md)
-

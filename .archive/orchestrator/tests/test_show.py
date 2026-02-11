@@ -17,7 +17,13 @@ class TestAvailableEffects:
 
     def test_expected_effects(self) -> None:
         """Test expected effects are present."""
-        expected = ["blur", "brightness", "saturation", "vignette", "grayscale"]
+        expected = [
+            "blur",
+            "brightness",
+            "saturation",
+            "vignette",
+            "grayscale",
+        ]
         for effect in expected:
             assert effect in AVAILABLE_EFFECTS
 
@@ -83,4 +89,3 @@ class TestRunShow:
         assert result == 1
         captured = capsys.readouterr()
         assert "Unknown option" in captured.err
-

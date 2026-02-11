@@ -3,9 +3,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 import yaml
-
 from wallpaper_processor.config.loader import (
     ConfigLoader,
     _deep_merge,
@@ -167,4 +165,3 @@ class TestHelperFunctions:
         path = _get_user_config_dir()
         assert ".config" in str(path)
         assert "wallpaper-effects" in str(path)
-

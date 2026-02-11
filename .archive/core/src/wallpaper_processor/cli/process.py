@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
-from wallpaper_processor.config.schema import ChainStep
 from wallpaper_processor.engine.chain import ChainExecutor
 from wallpaper_processor.engine.executor import CommandExecutor
 
@@ -19,14 +18,18 @@ def apply_effect(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
     output_file: Annotated[Path, typer.Argument(help="Output image file")],
-    effect: Annotated[str, typer.Option("-e", "--effect", help="Effect to apply")],
-    blur: Annotated[Optional[str], typer.Option("--blur", help="Blur geometry")] = None,
-    brightness: Annotated[Optional[int], typer.Option("--brightness")] = None,
-    contrast: Annotated[Optional[int], typer.Option("--contrast")] = None,
-    saturation: Annotated[Optional[int], typer.Option("--saturation")] = None,
-    strength: Annotated[Optional[int], typer.Option("--strength")] = None,
-    color: Annotated[Optional[str], typer.Option("--color")] = None,
-    opacity: Annotated[Optional[int], typer.Option("--opacity")] = None,
+    effect: Annotated[
+        str, typer.Option("-e", "--effect", help="Effect to apply")
+    ],
+    blur: Annotated[
+        str | None, typer.Option("--blur", help="Blur geometry")
+    ] = None,
+    brightness: Annotated[int | None, typer.Option("--brightness")] = None,
+    contrast: Annotated[int | None, typer.Option("--contrast")] = None,
+    saturation: Annotated[int | None, typer.Option("--saturation")] = None,
+    strength: Annotated[int | None, typer.Option("--strength")] = None,
+    color: Annotated[str | None, typer.Option("--color")] = None,
+    opacity: Annotated[int | None, typer.Option("--opacity")] = None,
 ) -> None:
     """Apply a single effect to an image."""
     output = ctx.obj["output"]
@@ -67,7 +70,9 @@ def apply_effect(
     final_params = chain_executor._get_params_with_defaults(effect, params)
 
     output.verbose(f"Applying effect '{effect}' to {input_file}")
-    result = executor.execute(effect_def.command, input_file, output_file, final_params)
+    result = executor.execute(
+        effect_def.command, input_file, output_file, final_params
+    )
 
     if result.success:
         output.success(f"Created {output_file}")
@@ -81,7 +86,9 @@ def apply_composite(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
     output_file: Annotated[Path, typer.Argument(help="Output image file")],
-    composite: Annotated[str, typer.Option("-c", "--composite", help="Composite")],
+    composite: Annotated[
+        str, typer.Option("-c", "--composite", help="Composite")
+    ],
 ) -> None:
     """Apply a composite effect (chain) to an image."""
     output = ctx.obj["output"]
@@ -98,7 +105,9 @@ def apply_composite(
 
     chain_executor = ChainExecutor(config, output)
     output.verbose(f"Applying composite '{composite}' to {input_file}")
-    result = chain_executor.execute_chain(composite_def.chain, input_file, output_file)
+    result = chain_executor.execute_chain(
+        composite_def.chain, input_file, output_file
+    )
 
     if result.success:
         output.success(f"Created {output_file}")
@@ -135,16 +144,26 @@ def apply_preset(
     if preset_def.composite:
         composite_def = config.composites.get(preset_def.composite)
         if composite_def is None:
-            output.error(f"Preset references unknown composite: {preset_def.composite}")
+            output.error(
+                f"Preset references unknown composite: {preset_def.composite}"
+            )
             raise typer.Exit(1)
-        result = chain_executor.execute_chain(composite_def.chain, input_file, output_file)
+        result = chain_executor.execute_chain(
+            composite_def.chain, input_file, output_file
+        )
     elif preset_def.effect:
         effect_def = config.effects.get(preset_def.effect)
         if effect_def is None:
-            output.error(f"Preset references unknown effect: {preset_def.effect}")
+            output.error(
+                f"Preset references unknown effect: {preset_def.effect}"
+            )
             raise typer.Exit(1)
-        params = chain_executor._get_params_with_defaults(preset_def.effect, preset_def.params)
-        result = executor.execute(effect_def.command, input_file, output_file, params)
+        params = chain_executor._get_params_with_defaults(
+            preset_def.effect, preset_def.params
+        )
+        result = executor.execute(
+            effect_def.command, input_file, output_file, params
+        )
     else:
         output.error(f"Preset '{preset}' has no effect or composite defined")
         raise typer.Exit(1)
@@ -154,4 +173,3 @@ def apply_preset(
     else:
         output.error(f"Failed: {result.stderr}")
         raise typer.Exit(1)
-

@@ -118,4 +118,3 @@ Parallel/sequential batch processing:
 
 - [Data Flow](data-flow.md)
 - [Extending Effects](../guides/extending-effects.md)
-

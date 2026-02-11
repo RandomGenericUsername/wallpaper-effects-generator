@@ -157,4 +157,3 @@ wallpaper-effects-process -vv batch all wallpaper.png /output
 
 - [Usage Guide](usage.md)
 - [Settings Reference](../configuration/settings.md)
-

@@ -26,9 +26,9 @@ def run_status(config: OrchestratorConfig) -> int:
 
         version = engine.version()
         print(f"Version: {version}")
-        print(f"Available: ✓")
+        print("Available: ✓")
     except Exception as e:
-        print(f"Runtime: Not available")
+        print("Runtime: Not available")
         print(f"Error: {e}")
         return 1
 
@@ -60,4 +60,3 @@ def run_status(config: OrchestratorConfig) -> int:
     print(f"  Timeout: {config.container_timeout}s")
 
     return 0
-

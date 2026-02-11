@@ -129,4 +129,3 @@ wallpaper-effects-process -vv process effect input.png output.png -e blur
 
 - [Extending Effects](extending-effects.md)
 - [Configuration](../configuration/settings.md)
-

@@ -22,4 +22,3 @@ First steps with `wallpaper-effects`.
 4. Run your first effect
 
 Time to complete: ~10 minutes
-

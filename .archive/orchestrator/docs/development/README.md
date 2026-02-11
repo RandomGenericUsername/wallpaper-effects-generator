@@ -11,4 +11,3 @@ Contributing and development guide.
 | [Setup](setup.md) | Development environment setup |
 | [Testing](testing.md) | Running and writing tests |
 | [Contributing](contributing.md) | Contribution guidelines |
-

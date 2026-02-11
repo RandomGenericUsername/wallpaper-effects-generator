@@ -35,4 +35,3 @@ __all__ = [
     "RUNTIME_DETECTION_ORDER",
     "RUNTIME_DEFAULTS",
 ]
-

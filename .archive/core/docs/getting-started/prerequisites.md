@@ -81,4 +81,3 @@ sudo nano /etc/ImageMagick-7/policy.xml
 | `rich` | Enhanced CLI output (included) |
 | `typer` | CLI framework (included) |
 | `pydantic` | Configuration validation (included) |
-

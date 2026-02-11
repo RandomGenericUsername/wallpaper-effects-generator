@@ -159,9 +159,10 @@ class ContainerRunner:
         """
         # The entrypoint is wallpaper-effects-process, so we just need args
         command = [
-            "-i", container_input,
-            "-o", container_output,
+            "-i",
+            container_input,
+            "-o",
+            container_output,
         ]
         command.extend(passthrough_args)
         return command
-

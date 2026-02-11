@@ -20,21 +20,29 @@ class Verbosity(IntEnum):
 class ExecutionSettings(BaseModel):
     """Execution-related settings."""
 
-    parallel: bool = Field(default=True, description="Run batch operations in parallel")
+    parallel: bool = Field(
+        default=True, description="Run batch operations in parallel"
+    )
     strict: bool = Field(default=True, description="Abort on first failure")
     max_workers: int = Field(
-        default=0, description="Max parallel workers (0 = auto, based on CPU count)"
+        default=0,
+        description="Max parallel workers (0 = auto, based on CPU count)",
     )
 
 
 class OutputSettings(BaseModel):
     """Output-related settings."""
 
-    verbosity: Verbosity = Field(default=Verbosity.NORMAL, description="Output verbosity")
-    format: str = Field(
-        default="preserve", description="Output format: preserve, jpg, png, webp"
+    verbosity: Verbosity = Field(
+        default=Verbosity.NORMAL, description="Output verbosity"
     )
-    quality: int = Field(default=90, ge=1, le=100, description="JPEG/WebP quality")
+    format: str = Field(
+        default="preserve",
+        description="Output format: preserve, jpg, png, webp",
+    )
+    quality: int = Field(
+        default=90, ge=1, le=100, description="JPEG/WebP quality"
+    )
 
 
 class PathSettings(BaseModel):
@@ -57,7 +65,6 @@ class Settings(BaseModel):
     paths: PathSettings = Field(default_factory=PathSettings)
 
     @classmethod
-    def default(cls) -> "Settings":
+    def default(cls) -> Settings:
         """Create settings with all defaults."""
         return cls()
-

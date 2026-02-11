@@ -102,4 +102,3 @@ Paths are converted to absolute paths for container mounting.
 
 - [Container Management](containers.md)
 - [Configuration](../configuration/settings.md)
-

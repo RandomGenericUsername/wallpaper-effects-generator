@@ -144,4 +144,3 @@ output.command("magick input.png -blur 0x8 output.png")
 
 - [CLI Reference](../cli/)
 - [Architecture](../../architecture/)
-

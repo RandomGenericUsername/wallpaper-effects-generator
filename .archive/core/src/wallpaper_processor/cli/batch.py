@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -13,11 +13,15 @@ from wallpaper_processor.engine.batch import BatchGenerator
 batch_app = typer.Typer(help="Batch generate effects")
 
 
-def _get_batch_generator(ctx: typer.Context, parallel: bool, strict: bool) -> BatchGenerator:
+def _get_batch_generator(
+    ctx: typer.Context, parallel: bool, strict: bool
+) -> BatchGenerator:
     """Create BatchGenerator with settings."""
     settings = ctx.obj["settings"]
     # CLI flags override settings
-    use_parallel = parallel if parallel is not None else settings.execution.parallel
+    use_parallel = (
+        parallel if parallel is not None else settings.execution.parallel
+    )
     use_strict = strict if strict is not None else settings.execution.strict
     max_workers = settings.execution.max_workers
 
@@ -60,7 +64,9 @@ def _run_batch(
         total = len(config.presets)
         method = generator.generate_all_presets
     else:  # all
-        total = len(config.effects) + len(config.composites) + len(config.presets)
+        total = (
+            len(config.effects) + len(config.composites) + len(config.presets)
+        )
         method = generator.generate_all
 
     output.info(f"Generating {total} {batch_type}...")
@@ -70,10 +76,14 @@ def _run_batch(
 
     output.newline()
     if result.success:
-        output.success(f"Generated {result.succeeded}/{result.total} {batch_type}")
+        output.success(
+            f"Generated {result.succeeded}/{result.total} {batch_type}"
+        )
         output.info(f"Output: {result.output_dir}")
     else:
-        output.error(f"Failed: {result.failed}/{result.total} {batch_type} failed")
+        output.error(
+            f"Failed: {result.failed}/{result.total} {batch_type} failed"
+        )
         if strict:
             raise typer.Exit(1)
 
@@ -85,7 +95,9 @@ def batch_effects(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
 ) -> None:
     """Generate all effects for an image."""
     _run_batch(ctx, input_file, output_dir, "effects", parallel, strict, flat)
@@ -98,10 +110,14 @@ def batch_composites(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
 ) -> None:
     """Generate all composites for an image."""
-    _run_batch(ctx, input_file, output_dir, "composites", parallel, strict, flat)
+    _run_batch(
+        ctx, input_file, output_dir, "composites", parallel, strict, flat
+    )
 
 
 @batch_app.command("presets")
@@ -111,7 +127,9 @@ def batch_presets(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
 ) -> None:
     """Generate all presets for an image."""
     _run_batch(ctx, input_file, output_dir, "presets", parallel, strict, flat)
@@ -124,8 +142,9 @@ def batch_all(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
 ) -> None:
     """Generate all effects, composites, and presets for an image."""
     _run_batch(ctx, input_file, output_dir, "all", parallel, strict, flat)
-

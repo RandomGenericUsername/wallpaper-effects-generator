@@ -1,7 +1,6 @@
 """Tests for config settings models."""
 
 import pytest
-
 from wallpaper_processor.config.settings import (
     ExecutionSettings,
     OutputSettings,
@@ -140,4 +139,3 @@ class TestSettings:
         assert settings.execution is not None
         assert settings.output is not None
         assert settings.paths is not None
-

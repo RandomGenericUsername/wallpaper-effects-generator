@@ -177,4 +177,3 @@ magick /input/image.png -blur 0x8 /output/test.png
 
 - [Common Issues](common-issues.md)
 - [Container Management](../guides/containers.md)
-

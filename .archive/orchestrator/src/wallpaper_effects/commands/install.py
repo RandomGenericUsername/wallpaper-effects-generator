@@ -1,7 +1,6 @@
 """Install command - build container images."""
 
 import sys
-from typing import Optional
 
 from wallpaper_effects.config import DEFAULT_BACKENDS, OrchestratorConfig
 from wallpaper_effects.services import ImageBuilder
@@ -10,7 +9,7 @@ from wallpaper_effects.utils.runtime import get_runtime_engine
 
 def run_install(
     config: OrchestratorConfig,
-    backends: Optional[list[str]] = None,
+    backends: list[str] | None = None,
     force: bool = False,
 ) -> int:
     """
@@ -56,4 +55,3 @@ def run_install(
     print(f"Build complete: {success_count} succeeded, {fail_count} failed")
 
     return 0 if fail_count == 0 else 1
-

@@ -12,4 +12,3 @@ Contributing and development guide.
 | [Testing](testing.md) | Running and writing tests |
 | [Contributing](contributing.md) | Contribution guidelines |
 | [Code Style](code-style.md) | Coding standards |
-

@@ -115,4 +115,3 @@ Output shows the ImageMagick command being executed.
 
 - [Advanced Examples](advanced.md)
 - [Usage Guide](../guides/usage.md)
-

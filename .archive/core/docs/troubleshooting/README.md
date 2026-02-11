@@ -10,4 +10,3 @@ Problem solving guide.
 |----------|-------------|
 | [Common Issues](common-issues.md) | Frequently encountered problems |
 | [Error Reference](error-reference.md) | Error message index |
-

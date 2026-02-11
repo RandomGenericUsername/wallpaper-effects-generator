@@ -76,10 +76,10 @@ class TestClassName:
 def test_with_image(test_image_file: Path, tmp_path: Path) -> None:
     """Test that uses fixtures."""
     output = tmp_path / "output.png"
-    
+
     # Use test_image_file as input
     result = process(test_image_file, output)
-    
+
     assert output.exists()
 ```
 
@@ -111,4 +111,3 @@ Aim for:
 
 - [Setup](setup.md)
 - [Contributing](contributing.md)
-

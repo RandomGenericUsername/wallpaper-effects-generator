@@ -1,12 +1,7 @@
 """Tests for console output and progress modules."""
 
-from io import StringIO
-from unittest.mock import patch
 
-import pytest
-from rich.console import Console
 from rich.table import Table
-
 from wallpaper_processor.config.settings import Verbosity
 from wallpaper_processor.console.output import RichOutput
 from wallpaper_processor.console.progress import BatchProgress
@@ -57,7 +52,9 @@ class TestRichOutput:
         """Test that verbose messages are hidden in normal mode."""
         normal_output.verbose("Test verbose")
 
-    def test_verbose_shown_in_verbose(self, verbose_output: RichOutput) -> None:
+    def test_verbose_shown_in_verbose(
+        self, verbose_output: RichOutput
+    ) -> None:
         """Test that verbose messages are shown in verbose mode."""
         verbose_output.verbose("Test verbose")
 
@@ -73,7 +70,9 @@ class TestRichOutput:
         """Test that command output is hidden in normal mode."""
         normal_output.command("echo test")
 
-    def test_command_shown_in_verbose(self, verbose_output: RichOutput) -> None:
+    def test_command_shown_in_verbose(
+        self, verbose_output: RichOutput
+    ) -> None:
         """Test that command output is shown in verbose mode."""
         verbose_output.command("echo test")
 
@@ -171,4 +170,3 @@ class TestBatchProgress:
         """Test completed property before starting."""
         progress = BatchProgress(total=3)
         assert progress.completed == 0
-

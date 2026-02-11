@@ -50,4 +50,3 @@ RUN useradd -m -u 1000 wallpaper || true
 
 # Set entrypoint to wallpaper-effects-process
 ENTRYPOINT ["wallpaper-effects-process"]
-

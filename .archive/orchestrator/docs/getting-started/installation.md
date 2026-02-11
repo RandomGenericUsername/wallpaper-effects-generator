@@ -86,4 +86,3 @@ uv run wallpaper-effects version
 ## Next Steps
 
 - [Quick Start](quick-start.md) - Run your first effect
-

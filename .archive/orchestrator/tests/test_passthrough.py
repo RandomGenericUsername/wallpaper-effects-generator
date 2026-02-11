@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from wallpaper_effects.utils.passthrough import (
     extract_input_output_from_args,
     filter_orchestrator_args,
@@ -40,7 +39,9 @@ class TestExtractInputOutputFromArgs:
     def test_short_flags(self) -> None:
         """Test extracting paths with short flags."""
         args = ["-i", "input.jpg", "-o", "output.png", "-e", "blur"]
-        input_path, output_path, remaining = extract_input_output_from_args(args)
+        input_path, output_path, remaining = extract_input_output_from_args(
+            args
+        )
 
         assert input_path == Path("input.jpg")
         assert output_path == Path("output.png")
@@ -49,7 +50,9 @@ class TestExtractInputOutputFromArgs:
     def test_long_flags(self) -> None:
         """Test extracting paths with long flags."""
         args = ["--input", "image.jpg", "--output", "result.png"]
-        input_path, output_path, remaining = extract_input_output_from_args(args)
+        input_path, output_path, remaining = extract_input_output_from_args(
+            args
+        )
 
         assert input_path == Path("image.jpg")
         assert output_path == Path("result.png")
@@ -57,7 +60,9 @@ class TestExtractInputOutputFromArgs:
     def test_absolute_paths(self) -> None:
         """Test extracting absolute paths."""
         args = ["-i", "/home/user/image.jpg", "-o", "/tmp/output.png"]
-        input_path, output_path, remaining = extract_input_output_from_args(args)
+        input_path, output_path, remaining = extract_input_output_from_args(
+            args
+        )
 
         assert input_path == Path("/home/user/image.jpg")
         assert output_path == Path("/tmp/output.png")
@@ -65,7 +70,9 @@ class TestExtractInputOutputFromArgs:
     def test_missing_input_returns_none(self) -> None:
         """Test missing input returns None (no error)."""
         args = ["-o", "output.png"]
-        input_path, output_path, remaining = extract_input_output_from_args(args)
+        input_path, output_path, remaining = extract_input_output_from_args(
+            args
+        )
 
         assert input_path is None
         assert output_path == Path("output.png")
@@ -73,7 +80,9 @@ class TestExtractInputOutputFromArgs:
     def test_missing_output_returns_none(self) -> None:
         """Test missing output returns None (no error)."""
         args = ["-i", "input.jpg"]
-        input_path, output_path, remaining = extract_input_output_from_args(args)
+        input_path, output_path, remaining = extract_input_output_from_args(
+            args
+        )
 
         assert input_path == Path("input.jpg")
         assert output_path is None
@@ -134,4 +143,3 @@ class TestParseCoreArguments:
         args = ["-i", "in.jpg"]  # Missing command
         with pytest.raises(ValueError, match="Invalid command"):
             parse_core_arguments(args)
-

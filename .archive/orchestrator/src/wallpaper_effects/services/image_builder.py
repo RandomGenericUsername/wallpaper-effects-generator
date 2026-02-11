@@ -1,6 +1,5 @@
 """Image builder service for building container images."""
 
-from typing import Optional
 
 from container_manager import BuildContext, ContainerEngine
 
@@ -29,7 +28,7 @@ class ImageBuilder:
     def build_backend_image(
         self,
         backend: str,
-        tag: Optional[str] = None,
+        tag: str | None = None,
         force: bool = False,
     ) -> str:
         """
@@ -94,7 +93,7 @@ class ImageBuilder:
         image_tag = f"wallpaper-effects-{backend}:latest"
         return self.engine.images.exists(image_tag)
 
-    def get_image_info(self, backend: str) -> Optional[dict]:
+    def get_image_info(self, backend: str) -> dict | None:
         """
         Get information about backend image.
 
@@ -117,4 +116,3 @@ class ImageBuilder:
         except Exception:
             pass
         return None
-

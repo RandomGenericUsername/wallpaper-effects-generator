@@ -110,18 +110,18 @@ def generate_wallpaper_variants(input_path: str, output_dir: str):
     """Generate all effect variants for a wallpaper."""
     loader = ConfigLoader()
     config = loader.load_effects()
-    
+
     generator = BatchGenerator(
         config=config,
         parallel=True,
         strict=False,
     )
-    
+
     result = generator.generate_all(
         input_path=Path(input_path),
         output_dir=Path(output_dir),
     )
-    
+
     print(f"Generated {result.succeeded}/{result.total} variants")
     return result
 
@@ -151,24 +151,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
-      
+
       - name: Install uv
         uses: astral-sh/setup-uv@v4
-      
+
       - name: Install tool
         run: |
           cd wallpaper-effects-generator/core
           uv sync
-      
+
       - name: Generate effects
         run: |
           for img in wallpapers/*.png; do
             uv run wallpaper-effects-process batch all "$img" output/
           done
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -182,4 +182,3 @@ jobs:
 
 - [Basic Examples](basic.md)
 - [Extending Effects](../guides/extending-effects.md)
-

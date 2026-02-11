@@ -97,7 +97,7 @@ from project_core.core.exceptions import (
 __all__ = [
     "BaseProcessor",
     "InputData",
-    "OutputData", 
+    "OutputData",
     "ProcessorConfig",
     "CoreError",
     "ValidationError",
@@ -176,7 +176,7 @@ from project_orchestrator.config.settings import OrchestratorSettings
 class UnifiedConfig(BaseModel):
     """Root config composing all namespaces."""
     model_config = ConfigDict(frozen=True)
-    
+
     core: AppConfig = Field(default_factory=AppConfig)
     orchestrator: OrchestratorSettings = Field(default_factory=OrchestratorSettings)
 ```
@@ -231,11 +231,11 @@ class SchemaEntry:
 
 class SchemaRegistry:
     _entries: dict[str, SchemaEntry] = {}
-    
+
     @classmethod
     def register(cls, namespace: str, model: type[BaseModel], defaults_file: Path):
         cls._entries[namespace] = SchemaEntry(namespace, model, defaults_file)
-    
+
     @classmethod
     def all_entries(cls) -> list[SchemaEntry]: ...
     @classmethod
@@ -388,10 +388,10 @@ def process(
     overrides = {}
     if timeout is not None:
         overrides["core.processing.timeout"] = timeout
-    
+
     # Get config with overrides
     config = get_config(overrides)
-    
+
     # Use config
     config.core.processing.timeout
     config.orchestrator.container.engine
@@ -409,11 +409,11 @@ class BaseProcessor(ABC):
     @abstractmethod
     def process(self, input: InputData, config: ProcessorConfig) -> OutputData:
         pass
-    
+
     @abstractmethod
     def is_available(self) -> bool:
         pass
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
@@ -427,14 +427,14 @@ class BaseProcessor(ABC):
 class ProcessorFactory:
     def __init__(self, settings: AppConfig):
         self.settings = settings
-    
+
     def create(self, processor_type: ProcessorType) -> BaseProcessor:
         """Create processor, verify availability."""
         processor = self._instantiate(processor_type)
         if not processor.is_available():
             raise ProcessorNotAvailableError(processor.name)
         return processor
-    
+
     def auto_detect(self) -> ProcessorType:
         """Return first available processor."""
         for ptype in ProcessorType:

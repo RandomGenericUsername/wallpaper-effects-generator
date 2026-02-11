@@ -100,4 +100,3 @@ wallpaper-effects-process -vv batch all wallpaper.png /output
 - [Usage Guide](../guides/usage.md) - Detailed usage instructions
 - [Extending Effects](../guides/extending-effects.md) - Add your own effects
 - [Configuration](../configuration/settings.md) - Customize settings
-

@@ -10,4 +10,3 @@ Technical design of `wallpaper-effects-process`.
 |----------|-------------|
 | [Overview](overview.md) | High-level architecture |
 | [Data Flow](data-flow.md) | Processing pipeline |
-

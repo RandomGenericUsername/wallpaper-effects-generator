@@ -10,4 +10,3 @@ Task-oriented guides for `wallpaper-effects`.
 |-------|-------------|
 | [Usage](usage.md) | Complete usage guide |
 | [Container Management](containers.md) | Container lifecycle and management |
-

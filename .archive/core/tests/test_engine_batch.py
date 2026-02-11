@@ -2,11 +2,7 @@
 
 from pathlib import Path
 
-import pytest
-
 from wallpaper_processor.config.schema import EffectsConfig
-from wallpaper_processor.config.settings import Settings, Verbosity
-from wallpaper_processor.console.output import RichOutput
 from wallpaper_processor.engine.batch import BatchGenerator, BatchResult
 
 
@@ -194,4 +190,3 @@ class TestBatchGenerator:
 
         assert result.total == len(sample_effects_config.effects)
         assert result.succeeded > 0
-

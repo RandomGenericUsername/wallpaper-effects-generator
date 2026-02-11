@@ -10,4 +10,3 @@ Problem solving guide.
 |----------|-------------|
 | [Common Issues](common-issues.md) | Frequently encountered problems |
 | [Container Issues](container-issues.md) | Container-specific problems |
-

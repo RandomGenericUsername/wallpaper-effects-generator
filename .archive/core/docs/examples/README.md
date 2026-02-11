@@ -10,4 +10,3 @@ Usage examples for `wallpaper-effects-process`.
 |----------|-------------|
 | [Basic Examples](basic.md) | Simple usage examples |
 | [Advanced Examples](advanced.md) | Complex workflows |
-

@@ -1,11 +1,10 @@
 """Shared fixtures for wallpaper processor tests."""
 
+import subprocess
 from pathlib import Path
 from unittest.mock import Mock
-import subprocess
 
 import pytest
-
 from wallpaper_processor.config.schema import (
     ChainStep,
     CompositeDefinition,
@@ -23,7 +22,6 @@ from wallpaper_processor.config.settings import (
     Verbosity,
 )
 from wallpaper_processor.console.output import RichOutput
-
 
 # ============================================================================
 # Image Fixtures
@@ -330,4 +328,3 @@ def clear_config_cache() -> None:
     ConfigLoader.clear_cache()
     yield
     ConfigLoader.clear_cache()
-

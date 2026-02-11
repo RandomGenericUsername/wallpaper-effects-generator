@@ -122,7 +122,7 @@ wc -l <destination_file> # Compare - should be within ±10 lines
 
 # Verify key patterns are preserved
 grep -c "BaseModel" <file>      # For model files
-grep -c "typer" <file>          # For CLI files  
+grep -c "typer" <file>          # For CLI files
 grep -c "from rich" <file>      # For console files
 ```
 
@@ -232,7 +232,7 @@ At each phase transition, the AI MUST ask these questions if anything is unclear
 > - Models: [X] files copied, all use Pydantic BaseModel
 > - CLI: [X] files copied, all use Typer
 > - effects.yaml: [X] effects loaded
-> 
+>
 > Should I proceed to create pyproject.toml and __init__.py?"
 
 ### Phase 3 → Phase 4 Transition:
@@ -240,14 +240,14 @@ At each phase transition, the AI MUST ask these questions if anything is unclear
 > - `uv sync`: [PASS/FAIL]
 > - `pytest`: [X/Y] tests passed
 > - `show effects`: [X] effects displayed
-> 
+>
 > Should I proceed to orchestrator migration?"
 
 ### Phase 4 → Phase 5 Transition:
 > "Orchestrator migration complete. Before final verification:
 > - CLI delegates to core (not subprocess): [YES/NO]
 > - Container module exists: [YES/NO]
-> 
+>
 > Should I run final verification?"
 
 ---
@@ -333,7 +333,7 @@ cd /home/inumaki/Development/wallpaper-effects-generator
 mkdir -p packages/core/src/wallpaper_effects/{models,loader,engine,console,cli,data}
 mkdir -p packages/core/tests
 
-# Create orchestrator package structure  
+# Create orchestrator package structure
 mkdir -p packages/orchestrator/src/wallpaper_effects_orchestrator/{container,cli}
 mkdir -p packages/orchestrator/tests
 ```
@@ -355,7 +355,7 @@ find packages -type d | head -20
 ls -la packages/core/src/wallpaper_effects/
 # Expected: models/ loader/ engine/ console/ cli/ data/
 
-# Check 2: Orchestrator directories exist  
+# Check 2: Orchestrator directories exist
 ls -la packages/orchestrator/src/wallpaper_effects_orchestrator/
 # Expected: container/ cli/
 
@@ -402,7 +402,7 @@ git show HEAD:shared/src/wallpaper_effects_shared/models/effects.py > /tmp/origi
 
 # Step 2: The file should contain Pydantic models like:
 # - class ParameterType(BaseModel)
-# - class ParameterDefinition(BaseModel)  
+# - class ParameterDefinition(BaseModel)
 # - class EffectDefinition(BaseModel)
 # - class ChainStep(BaseModel)
 # - class CompositeDefinition(BaseModel)
@@ -448,7 +448,7 @@ Update the path calculation to find `effects.yaml` in new location:
 ```python
 # The function get_package_effects_path() needs to return:
 # packages/core/src/wallpaper_effects/data/effects.yaml
-# 
+#
 # Original likely uses: Path(__file__).parent.parent / "data" / "effects.yaml"
 # This should still work if data/ is sibling to loader/
 ```
@@ -622,7 +622,7 @@ grep -l "class RichOutput" packages/core/src/wallpaper_effects/console/*.py
 - [ ] Check 6: Key classes exist (all found)
 
 **⛔ IF ANY CHECK FAILS → STOP and report:**
-> "Gate 2 Check [N] failed. 
+> "Gate 2 Check [N] failed.
 > Expected: [X]
 > Actual: [Y]
 > This indicates [problem description].
@@ -732,7 +732,7 @@ __all__ = [
     "ConfigLoader",
     # Models - Effects
     "EffectDefinition",
-    "ParameterDefinition", 
+    "ParameterDefinition",
     "ParameterType",
     "ChainStep",
     "CompositeDefinition",
@@ -1057,7 +1057,7 @@ ls -d core shared 2>/dev/null && echo "WARNING: Old directories still exist"
 grep -r "import click" packages/*/src/ | wc -l
 # Expected: 0
 
-grep -r "@dataclass" packages/core/src/wallpaper_effects/models/*.py | wc -l  
+grep -r "@dataclass" packages/core/src/wallpaper_effects/models/*.py | wc -l
 # Expected: 0
 
 # Check 12: Correct frameworks confirmed
@@ -1092,12 +1092,12 @@ grep -r "import typer" packages/*/src/*/cli/*.py | wc -l
 
 **✅ IF ALL PASS:**
 > "🎉 MIGRATION COMPLETE - All 12 final verification checks passed.
-> 
+>
 > Summary:
 > - Core: [X] tests passing, [Y] effects, CLI working
 > - Orchestrator: Container commands available, delegation working
 > - Integrity: No framework violations, old code removed
-> 
+>
 > Ready to commit?"
 
 ---

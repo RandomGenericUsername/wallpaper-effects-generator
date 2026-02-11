@@ -139,4 +139,3 @@ paths:
 
 - [Effects YAML Reference](effects-yaml.md)
 - [Extending Effects](../guides/extending-effects.md)
-

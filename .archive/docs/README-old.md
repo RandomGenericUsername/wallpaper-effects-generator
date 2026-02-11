@@ -98,4 +98,3 @@ wallpaper-effects-generator/
 ## Documentation Guidelines
 
 See [DOCUMENTATION_GUIDELINES.md](../../DOCUMENTATION_GUIDELINES.md) for information on how documentation is structured.
-

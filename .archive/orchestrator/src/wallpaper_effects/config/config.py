@@ -3,7 +3,6 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from wallpaper_effects.config.constants import (
     CONTAINER_CPUSET_CPUS,
@@ -21,8 +20,8 @@ class OrchestratorConfig:
     """Configuration for the orchestrator."""
 
     # Runtime configuration
-    runtime: Optional[str] = None  # "docker" or "podman", None for auto-detect
-    runtime_path: Optional[str] = None  # Custom path to docker/podman binary
+    runtime: str | None = None  # "docker" or "podman", None for auto-detect
+    runtime_path: str | None = None  # Custom path to docker/podman binary
 
     # Backend configuration
     backend: str = DEFAULT_BACKEND  # Default to imagemagick
@@ -34,8 +33,8 @@ class OrchestratorConfig:
 
     # Container configuration
     container_timeout: int = CONTAINER_TIMEOUT
-    container_memory_limit: Optional[str] = CONTAINER_MEMORY_LIMIT
-    container_cpuset_cpus: Optional[str] = CONTAINER_CPUSET_CPUS
+    container_memory_limit: str | None = CONTAINER_MEMORY_LIMIT
+    container_cpuset_cpus: str | None = CONTAINER_CPUSET_CPUS
 
     # Logging configuration
     verbose: bool = False
@@ -88,4 +87,3 @@ class OrchestratorConfig:
     def default() -> "OrchestratorConfig":
         """Create default configuration."""
         return OrchestratorConfig()
-

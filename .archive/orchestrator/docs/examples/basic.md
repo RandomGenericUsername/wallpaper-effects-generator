@@ -88,4 +88,3 @@ wallpaper-effects -v batch all wallpaper.png /output
 
 - [Advanced Examples](advanced.md)
 - [Usage Guide](../guides/usage.md)
-

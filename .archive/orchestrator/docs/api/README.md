@@ -9,4 +9,3 @@ API documentation for `wallpaper-effects`.
 | Section | Description |
 |---------|-------------|
 | [CLI](cli/) | Command-line interface reference |
-

@@ -87,4 +87,3 @@ wallpaper-effects -vv batch all wallpaper.png /output
 
 - [Usage Guide](../guides/usage.md)
 - [Configuration](../configuration/settings.md)
-

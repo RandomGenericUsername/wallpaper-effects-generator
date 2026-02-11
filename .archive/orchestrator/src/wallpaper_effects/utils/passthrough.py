@@ -1,7 +1,7 @@
 """Argument passthrough utilities for delegating to core tool."""
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from container_manager import VolumeMount
 
@@ -111,7 +111,7 @@ def get_backend_dockerfile(backend_name: str) -> Path:
     return dockerfile
 
 
-def extract_backend_from_args(args: list[str]) -> Optional[str]:
+def extract_backend_from_args(args: list[str]) -> str | None:
     """
     Extract backend name from arguments if specified.
 
@@ -133,7 +133,7 @@ def extract_backend_from_args(args: list[str]) -> Optional[str]:
 
 def extract_input_output_from_args(
     args: list[str],
-) -> tuple[Optional[Path], Optional[Path], list[str]]:
+) -> tuple[Path | None, Path | None, list[str]]:
     """
     Extract input and output paths from arguments.
 
@@ -143,8 +143,8 @@ def extract_input_output_from_args(
     Returns:
         Tuple of (input_path, output_path, remaining_args)
     """
-    input_path: Optional[Path] = None
-    output_path: Optional[Path] = None
+    input_path: Path | None = None
+    output_path: Path | None = None
     remaining: list[str] = []
 
     i = 0
@@ -247,4 +247,3 @@ def filter_orchestrator_args(
             i += 1
 
     return orchestrator_args, core_args
-

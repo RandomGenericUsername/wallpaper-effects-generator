@@ -95,4 +95,3 @@ Settings (`.vscode/settings.json`):
 
 - [Testing](testing.md)
 - [Contributing](contributing.md)
-

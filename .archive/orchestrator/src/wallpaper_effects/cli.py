@@ -3,13 +3,17 @@
 import sys
 from typing import NoReturn
 
-from wallpaper_effects.commands import run_install, run_process, run_show, run_status
+from wallpaper_effects.commands import (
+    run_install,
+    run_process,
+    run_show,
+    run_status,
+)
 from wallpaper_effects.config import OrchestratorConfig
 from wallpaper_effects.utils.passthrough import (
     filter_orchestrator_args,
     parse_core_arguments,
 )
-
 
 USAGE = """
 Wallpaper Effects Orchestrator - Apply effects to wallpapers via containers
@@ -123,4 +127,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

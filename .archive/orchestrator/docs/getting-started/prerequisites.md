@@ -81,4 +81,3 @@ Override with `--runtime docker` or `--runtime podman`.
 ## Note on ImageMagick
 
 ImageMagick is **NOT** required on the host system. It is included in the container image.
-

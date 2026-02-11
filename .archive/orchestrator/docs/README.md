@@ -69,4 +69,3 @@ The orchestrator wraps the [core tool](../../core/docs/) (`wallpaper-effects-pro
 
 - [Troubleshooting Guide](troubleshooting/common-issues.md)
 - [Container Issues](troubleshooting/container-issues.md)
-

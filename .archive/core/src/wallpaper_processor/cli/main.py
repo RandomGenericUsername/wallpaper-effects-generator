@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
-from wallpaper_processor.cli.process import process_app
 from wallpaper_processor.cli.batch import batch_app
+from wallpaper_processor.cli.process import process_app
 from wallpaper_processor.cli.show import show_app
 from wallpaper_processor.config.loader import ConfigLoader
 from wallpaper_processor.config.settings import Verbosity
@@ -47,7 +46,10 @@ def main(
     verbose: Annotated[
         int,
         typer.Option(
-            "-v", "--verbose", count=True, help="Verbose mode (-v or -vv for debug)"
+            "-v",
+            "--verbose",
+            count=True,
+            help="Verbose mode (-v or -vv for debug)",
         ),
     ] = 0,
 ) -> None:
@@ -71,4 +73,3 @@ def version() -> None:
 
 if __name__ == "__main__":
     app()
-

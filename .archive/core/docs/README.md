@@ -57,4 +57,3 @@ Output is organized into `effects/`, `composites/`, and `presets/` subdirectorie
 
 - [Troubleshooting Guide](troubleshooting/common-issues.md)
 - [Error Reference](troubleshooting/error-reference.md)
-

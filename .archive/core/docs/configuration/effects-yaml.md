@@ -198,4 +198,3 @@ Commands support these variables:
 
 - [Extending Effects](../guides/extending-effects.md)
 - [ImageMagick Options](https://imagemagick.org/script/command-line-options.php)
-

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 show_app = typer.Typer(help="Show available effects, composites, and presets")
 
 
-def _get_context(ctx: typer.Context) -> tuple["RichOutput", "EffectsConfig"]:
+def _get_context(ctx: typer.Context) -> tuple[RichOutput, EffectsConfig]:
     """Get output and config from context."""
     return ctx.obj["output"], ctx.obj["config"]
 
@@ -30,7 +30,9 @@ def show_effects(ctx: typer.Context) -> None:
     table.add_column("Parameters", style="dim")
 
     for name, effect in sorted(config.effects.items()):
-        params = ", ".join(effect.parameters.keys()) if effect.parameters else "-"
+        params = (
+            ", ".join(effect.parameters.keys()) if effect.parameters else "-"
+        )
         table.add_row(name, effect.description, params)
 
     output.table(table)
@@ -91,4 +93,3 @@ def show_all(ctx: typer.Context) -> None:
 
     output.rule("Presets")
     show_presets(ctx)
-

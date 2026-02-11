@@ -1,7 +1,5 @@
 """Tests for config schema models."""
 
-import pytest
-from pydantic import ValidationError
 
 from wallpaper_processor.config.schema import (
     ChainStep,
@@ -210,4 +208,3 @@ class TestEffectsConfig:
         }
         config = EffectsConfig(**data)
         assert config.effects["blur"].description == "Blur effect"
-

@@ -105,4 +105,3 @@ wallpaper-effects --runtime docker -v process effect in.png out.png -e blur
 
 - [Usage Guide](../../guides/usage.md)
 - [Core CLI Reference](../../../../core/docs/api/cli/)
-

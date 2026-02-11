@@ -56,7 +56,7 @@ def test_process_effect():
         mock_instance = Mock()
         mock_instance.run.return_value = (0, "Success", "")
         mock.return_value = mock_instance
-        
+
         # Test code here
 ```
 
@@ -86,4 +86,3 @@ def test_image(tmp_path):
 
 - [Setup](setup.md)
 - [Contributing](contributing.md)
-

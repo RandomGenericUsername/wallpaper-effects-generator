@@ -43,7 +43,11 @@ def _deep_merge(base: dict, override: dict) -> dict:
     """Deep merge two dictionaries, with override taking precedence."""
     result = base.copy()
     for key, value in override.items():
-        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+        if (
+            key in result
+            and isinstance(result[key], dict)
+            and isinstance(value, dict)
+        ):
             result[key] = _deep_merge(result[key], value)
         else:
             result[key] = value
@@ -53,11 +57,11 @@ def _deep_merge(base: dict, override: dict) -> dict:
 class ConfigLoader:
     """Loader for effects and settings configuration."""
 
-    _effects_cache: "EffectsConfig | None" = None
-    _settings_cache: "Settings | None" = None
+    _effects_cache: EffectsConfig | None = None
+    _settings_cache: Settings | None = None
 
     @classmethod
-    def load_effects(cls, force_reload: bool = False) -> "EffectsConfig":
+    def load_effects(cls, force_reload: bool = False) -> EffectsConfig:
         """Load effects configuration from all sources.
 
         Load order (later overrides earlier):
@@ -103,7 +107,7 @@ class ConfigLoader:
         return cls._effects_cache
 
     @classmethod
-    def load_settings(cls, force_reload: bool = False) -> "Settings":
+    def load_settings(cls, force_reload: bool = False) -> Settings:
         """Load settings configuration.
 
         Args:
@@ -132,4 +136,3 @@ class ConfigLoader:
         """Clear all cached configurations."""
         cls._effects_cache = None
         cls._settings_cache = None
-

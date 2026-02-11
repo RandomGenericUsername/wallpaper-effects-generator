@@ -138,4 +138,3 @@ wallpaper-effects-process batch all wallpaper.png /output --flat --no-strict
 
 - [Usage Guide](../../guides/usage.md)
 - [Python API](../python/)
-

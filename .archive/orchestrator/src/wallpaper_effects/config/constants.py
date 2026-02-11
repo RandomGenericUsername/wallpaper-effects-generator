@@ -49,4 +49,3 @@ RUNTIME_DEFAULTS = {
     "docker": {"command": "docker"},
     "podman": {"command": "podman"},
 }
-

@@ -1,6 +1,5 @@
 """Container runtime detection and management."""
 
-from typing import Optional
 
 from container_manager import (
     ContainerEngine,
@@ -13,7 +12,7 @@ from wallpaper_effects.config.constants import RUNTIME_DETECTION_ORDER
 
 
 def detect_container_runtime(
-    preferred_runtime: Optional[str] = None,
+    preferred_runtime: str | None = None,
 ) -> ContainerRuntime:
     """
     Detect available container runtime.
@@ -63,7 +62,7 @@ def detect_container_runtime(
 
 
 def get_runtime_engine(
-    preferred_runtime: Optional[str] = None,
+    preferred_runtime: str | None = None,
 ) -> ContainerEngine:
     """
     Get a container engine instance for the detected runtime.
@@ -82,7 +81,7 @@ def get_runtime_engine(
 
 
 def verify_runtime_availability(
-    runtime_name: Optional[str] = None,
+    runtime_name: str | None = None,
 ) -> bool:
     """
     Verify that a container runtime is available.
@@ -99,4 +98,3 @@ def verify_runtime_availability(
         return True
     except RuntimeNotAvailableError:
         return False
-

@@ -1,7 +1,6 @@
 """Process command - apply effects via container."""
 
 import sys
-from typing import Optional
 
 from wallpaper_effects.config import DEFAULT_BACKEND, OrchestratorConfig
 from wallpaper_effects.services import ContainerRunner, ImageBuilder
@@ -12,7 +11,7 @@ from wallpaper_effects.utils.runtime import get_runtime_engine
 def run_process(
     config: OrchestratorConfig,
     args: list[str],
-    backend: Optional[str] = None,
+    backend: str | None = None,
 ) -> int:
     """
     Apply effects to wallpaper via container.
@@ -86,6 +85,6 @@ def run_process(
         print(f"Error during processing: {e}", file=sys.stderr)
         if config.debug:
             import traceback
+
             traceback.print_exc()
         return 1
-

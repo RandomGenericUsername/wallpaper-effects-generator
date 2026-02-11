@@ -75,4 +75,3 @@ class RichOutput:
         """Print a newline (normal+)."""
         if self.verbosity >= Verbosity.NORMAL:
             self.console.print()
-
