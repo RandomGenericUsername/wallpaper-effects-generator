@@ -56,9 +56,7 @@ class TestShowCommands:
 class TestProcessCommands:
     """Tests for process commands."""
 
-    def test_process_effect(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_effect(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process effect command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -114,9 +112,7 @@ class TestProcessCommands:
         )
         assert result.exit_code != 0
 
-    def test_process_composite(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_composite(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process composite command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -133,9 +129,7 @@ class TestProcessCommands:
         assert result.exit_code == 0
         assert output_path.exists()
 
-    def test_process_preset(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_process_preset(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process preset command."""
         output_path = tmp_path / "output.png"
         result = runner.invoke(
@@ -156,9 +150,7 @@ class TestProcessCommands:
 class TestBatchCommands:
     """Tests for batch commands."""
 
-    def test_batch_effects(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_effects(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects command."""
         result = runner.invoke(
             app,
@@ -175,9 +167,7 @@ class TestBatchCommands:
         effects_dir = tmp_path / test_image_file.stem / "effects"
         assert effects_dir.exists() or (tmp_path / "effects").exists()
 
-    def test_batch_effects_flat(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_batch_effects_flat(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects with flat output."""
         result = runner.invoke(
             app,

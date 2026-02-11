@@ -127,9 +127,7 @@ class BatchGenerator:
 
         # Process items
         if self.parallel:
-            result = self._process_parallel(
-                input_path, base_dir, items, flat, progress
-            )
+            result = self._process_parallel(input_path, base_dir, items, flat, progress)
         else:
             result = self._process_sequential(
                 input_path, base_dir, items, flat, progress
@@ -155,9 +153,7 @@ class BatchGenerator:
             base_dir = base_dir / subdir
 
         if self.parallel:
-            result = self._process_parallel(
-                input_path, base_dir, items, True, progress
-            )
+            result = self._process_parallel(input_path, base_dir, items, True, progress)
         else:
             result = self._process_sequential(
                 input_path, base_dir, items, True, progress
@@ -181,9 +177,7 @@ class BatchGenerator:
             output_path = self._get_output_path(
                 base_dir, name, item_type, input_path, flat
             )
-            exec_result = self._process_item(
-                name, item_type, input_path, output_path
-            )
+            exec_result = self._process_item(name, item_type, input_path, output_path)
             result.results[name] = exec_result
 
             if exec_result.success:
@@ -240,9 +234,7 @@ class BatchGenerator:
                         result.failed += 1
                         if self.strict:
                             if self.output:
-                                self.output.error(
-                                    f"{item_type} '{name}' failed"
-                                )
+                                self.output.error(f"{item_type} '{name}' failed")
                             # Cancel remaining futures
                             for f in futures:
                                 f.cancel()
@@ -322,9 +314,7 @@ class BatchGenerator:
                 return_code=1,
             )
         params = self.chain_executor._get_params_with_defaults(name, {})
-        return self.executor.execute(
-            effect.command, input_path, output_path, params
-        )
+        return self.executor.execute(effect.command, input_path, output_path, params)
 
     def _process_composite(
         self, name: str, input_path: Path, output_path: Path
@@ -359,9 +349,7 @@ class BatchGenerator:
 
         if preset.composite:
             # Preset references a composite
-            return self._process_composite(
-                preset.composite, input_path, output_path
-            )
+            return self._process_composite(preset.composite, input_path, output_path)
         elif preset.effect:
             # Preset references an effect with custom params
             effect = self.config.effects.get(preset.effect)

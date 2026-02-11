@@ -54,9 +54,7 @@ class BatchProgress:
         """Start the progress bar."""
         if not self._started:
             self.progress.start()
-            self._task = self.progress.add_task(
-                self.description, total=self.total
-            )
+            self._task = self.progress.add_task(self.description, total=self.total)
             self._started = True
 
     def stop(self) -> None:

@@ -44,7 +44,4 @@ def test_cli_info_command_exists() -> None:
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     # Should show the info command or its help
-    assert (
-        "info" in result.stdout.lower()
-        or "configuration" in result.stdout.lower()
-    )
+    assert "info" in result.stdout.lower() or "configuration" in result.stdout.lower()

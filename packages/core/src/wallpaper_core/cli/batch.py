@@ -26,9 +26,7 @@ def _get_batch_generator(
     """Create BatchGenerator with settings."""
     settings = ctx.obj["settings"]
     # CLI flags override settings
-    use_parallel = (
-        parallel if parallel is not None else settings.execution.parallel
-    )
+    use_parallel = parallel if parallel is not None else settings.execution.parallel
     use_strict = strict if strict is not None else settings.execution.strict
     max_workers = settings.execution.max_workers
 
@@ -56,9 +54,9 @@ def _resolve_batch_items(
     items: list[dict] = []
 
     # Collect items based on batch_type
-    item_groups: list[
-        tuple[str, str, str | None]
-    ] = []  # (name, type, subdir_for_single_type)
+    item_groups: list[tuple[str, str, str | None]] = (
+        []
+    )  # (name, type, subdir_for_single_type)
     if batch_type in ("effects", "all"):
         for name in config.effects:
             item_groups.append(
@@ -100,11 +98,7 @@ def _resolve_batch_items(
                     "composite": "composites",
                     "preset": "presets",
                 }
-                out_path = (
-                    base_dir
-                    / subdir_map.get(item_type, "")
-                    / f"{name}{suffix}"
-                )
+                out_path = base_dir / subdir_map.get(item_type, "") / f"{name}{suffix}"
         else:
             # generate_batch: base_dir varies based on flat/subdir settings
             base_dir = output_dir / image_name
@@ -117,9 +111,7 @@ def _resolve_batch_items(
             effect_def = config.effects.get(name)
             if effect_def is not None:
                 params = chain_executor._get_params_with_defaults(name, {})
-                cmd = _resolve_command(
-                    effect_def.command, input_file, out_path, params
-                )
+                cmd = _resolve_command(effect_def.command, input_file, out_path, params)
                 param_str = (
                     "  ".join(f"{k}={v}" for k, v in params.items())
                     if params
@@ -254,17 +246,11 @@ def _run_batch(
 
     if dry_run:
         settings = ctx.obj["settings"]
-        use_parallel = (
-            parallel if parallel is not None else settings.execution.parallel
-        )
-        use_strict = (
-            strict if strict is not None else settings.execution.strict
-        )
+        use_parallel = parallel if parallel is not None else settings.execution.parallel
+        use_strict = strict if strict is not None else settings.execution.strict
         max_workers = settings.execution.max_workers or None
 
-        items = _resolve_batch_items(
-            config, batch_type, input_file, output_dir, flat
-        )
+        items = _resolve_batch_items(config, batch_type, input_file, output_dir, flat)
 
         if output.verbosity == Verbosity.QUIET:
             for item in items:
@@ -299,9 +285,7 @@ def _run_batch(
         total = len(config.presets)
         method = generator.generate_all_presets
     else:  # all
-        total = (
-            len(config.effects) + len(config.composites) + len(config.presets)
-        )
+        total = len(config.effects) + len(config.composites) + len(config.presets)
         method = generator.generate_all
 
     output.info(f"Generating {total} {batch_type}...")
@@ -311,14 +295,10 @@ def _run_batch(
 
     output.newline()
     if result.success:
-        output.success(
-            f"Generated {result.succeeded}/{result.total} {batch_type}"
-        )
+        output.success(f"Generated {result.succeeded}/{result.total} {batch_type}")
         output.info(f"Output: {result.output_dir}")
     else:
-        output.error(
-            f"Failed: {result.failed}/{result.total} {batch_type} failed"
-        )
+        output.error(f"Failed: {result.failed}/{result.total} {batch_type} failed")
         if strict:
             raise typer.Exit(1)
 
@@ -330,20 +310,14 @@ def batch_effects(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Generate all effects for an image."""
-    _run_batch(
-        ctx, input_file, output_dir, "effects", parallel, strict, flat, dry_run
-    )
+    _run_batch(ctx, input_file, output_dir, "effects", parallel, strict, flat, dry_run)
 
 
 @app.command("composites")
@@ -353,14 +327,10 @@ def batch_composites(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Generate all composites for an image."""
@@ -383,20 +353,14 @@ def batch_presets(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Generate all presets for an image."""
-    _run_batch(
-        ctx, input_file, output_dir, "presets", parallel, strict, flat, dry_run
-    )
+    _run_batch(ctx, input_file, output_dir, "presets", parallel, strict, flat, dry_run)
 
 
 @app.command("all")
@@ -406,17 +370,11 @@ def batch_all(
     output_dir: Annotated[Path, typer.Argument(help="Output directory")],
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Generate all effects, composites, and presets for an image."""
-    _run_batch(
-        ctx, input_file, output_dir, "all", parallel, strict, flat, dry_run
-    )
+    _run_batch(ctx, input_file, output_dir, "all", parallel, strict, flat, dry_run)

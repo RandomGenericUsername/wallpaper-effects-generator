@@ -92,15 +92,11 @@ class ChainExecutor:
                     )
 
                 # Merge default params with step params
-                params = self._get_params_with_defaults(
-                    step.effect, step.params
-                )
+                params = self._get_params_with_defaults(step.effect, step.params)
 
                 # Execute step
                 if self.output:
-                    self.output.debug(
-                        f"Chain step {i + 1}/{len(chain)}: {step.effect}"
-                    )
+                    self.output.debug(f"Chain step {i + 1}/{len(chain)}: {step.effect}")
 
                 result = self.executor.execute(
                     effect.command,

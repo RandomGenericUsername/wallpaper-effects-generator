@@ -54,9 +54,7 @@ class Effect(BaseModel):
     Parameters can use variables that will be substituted in the command.
     """
 
-    description: str = Field(
-        description="Human-readable description of the effect"
-    )
+    description: str = Field(description="Human-readable description of the effect")
     command: str = Field(
         description="Shell command template with $INPUT, $OUTPUT, and params"
     )
@@ -99,9 +97,7 @@ class Preset(BaseModel):
     with specific parameter values. Provides user-friendly shortcuts.
     """
 
-    description: str = Field(
-        description="Human-readable description of the preset"
-    )
+    description: str = Field(description="Human-readable description of the preset")
     composite: str | None = Field(
         default=None, description="Reference to a composite effect name"
     )

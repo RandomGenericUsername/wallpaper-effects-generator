@@ -128,9 +128,7 @@ class CoreDryRun(DryRunBase):
         self.render_field("Input", str(input_path))
         self.render_field("Output", str(output_dir))
         mode = (
-            f"parallel ({max_workers or 'auto'} workers)"
-            if parallel
-            else "sequential"
+            f"parallel ({max_workers or 'auto'} workers)" if parallel else "sequential"
         )
         self.render_field("Mode", mode)
         self.render_field("Strict", "yes" if strict else "no")
@@ -139,9 +137,7 @@ class CoreDryRun(DryRunBase):
             self.render_table(
                 title=f"Effects ({len(effects)})",
                 columns=["Name", "Output Path", "Params"],
-                rows=[
-                    [e["name"], e["output_path"], e["params"]] for e in effects
-                ],
+                rows=[[e["name"], e["output_path"], e["params"]] for e in effects],
             )
         if composites:
             self.render_table(

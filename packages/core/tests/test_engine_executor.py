@@ -82,9 +82,7 @@ class TestCommandExecutor:
         assert result.return_code == 0
         assert output_path.exists()
 
-    def test_execute_with_params(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
+    def test_execute_with_params(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test executing command with parameter substitution."""
         executor = CommandExecutor()
         output_path = tmp_path / "blurred.png"

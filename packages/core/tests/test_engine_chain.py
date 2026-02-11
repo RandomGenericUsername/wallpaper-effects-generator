@@ -148,9 +148,7 @@ class TestChainExecutor:
     ) -> None:
         """Test _get_params_with_defaults with unknown effect."""
         executor = ChainExecutor(config=sample_effects_config)
-        params = executor._get_params_with_defaults(
-            "unknown", {"key": "value"}
-        )
+        params = executor._get_params_with_defaults("unknown", {"key": "value"})
         assert params == {"key": "value"}
 
     def test_chain_total_duration(

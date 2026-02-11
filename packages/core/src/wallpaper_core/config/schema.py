@@ -18,9 +18,7 @@ class Verbosity(IntEnum):
 class ExecutionSettings(BaseModel):
     """Batch execution settings."""
 
-    parallel: bool = Field(
-        default=True, description="Run batch operations in parallel"
-    )
+    parallel: bool = Field(default=True, description="Run batch operations in parallel")
     strict: bool = Field(default=True, description="Abort on first failure")
     max_workers: int = Field(
         default=0,
@@ -57,9 +55,7 @@ class ProcessingSettings(BaseModel):
 class BackendSettings(BaseModel):
     """ImageMagick backend settings."""
 
-    binary: str = Field(
-        default="magick", description="Path to ImageMagick binary"
-    )
+    binary: str = Field(default="magick", description="Path to ImageMagick binary")
 
 
 class CoreSettings(BaseModel):

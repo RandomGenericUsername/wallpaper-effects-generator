@@ -88,17 +88,13 @@ def main(
     try:
         effects_config = load_effects()
     except EffectsLoadError as e:
-        output.error(
-            "[bold red]Failed to load effects configuration[/bold red]"
-        )
+        output.error("[bold red]Failed to load effects configuration[/bold red]")
         output.error(f"Layer: {getattr(e, 'layer', 'unknown')}")
         output.error(f"File: {e.file_path}")
         output.error(f"Reason: {e.reason}")
         raise typer.Exit(1) from e
     except EffectsValidationError as e:
-        output.error(
-            "[bold red]Effects configuration validation failed[/bold red]"
-        )
+        output.error("[bold red]Effects configuration validation failed[/bold red]")
         output.error(f"Layer: {e.layer or 'merged'}")
         output.error(f"Problem: {e.message}")
         output.newline()

@@ -72,13 +72,9 @@ class TestProcessEffectDryRun:
             ],
         )
         assert "Dry Run" in result.stdout
-        assert (
-            "not found" in result.stdout.lower() or "\u2717" in result.stdout
-        )
+        assert "not found" in result.stdout.lower() or "\u2717" in result.stdout
 
-    def test_dry_run_unknown_effect_shows_warning(
-        self, test_image_file, tmp_path
-    ):
+    def test_dry_run_unknown_effect_shows_warning(self, test_image_file, tmp_path):
         result = runner.invoke(
             app,
             [
@@ -92,9 +88,7 @@ class TestProcessEffectDryRun:
             ],
         )
         assert "Dry Run" in result.stdout
-        assert (
-            "not found" in result.stdout.lower() or "\u2717" in result.stdout
-        )
+        assert "not found" in result.stdout.lower() or "\u2717" in result.stdout
 
     def test_dry_run_quiet_shows_only_command(self, test_image_file, tmp_path):
         output_file = tmp_path / "output.jpg"
@@ -259,9 +253,7 @@ class TestBatchAllDryRun:
         )
         assert result.exit_code == 0
         assert "blur" in result.stdout
-        assert (
-            "dark_blur" in result.stdout or "preset" in result.stdout.lower()
-        )
+        assert "dark_blur" in result.stdout or "preset" in result.stdout.lower()
 
     def test_dry_run_no_files_created(self, test_image_file, tmp_path):
         output_dir = tmp_path / "output"
@@ -277,9 +269,7 @@ class TestBatchAllDryRun:
         )
         assert not output_dir.exists()
 
-    def test_dry_run_quiet_shows_only_commands(
-        self, test_image_file, tmp_path
-    ):
+    def test_dry_run_quiet_shows_only_commands(self, test_image_file, tmp_path):
         result = runner.invoke(
             app,
             [

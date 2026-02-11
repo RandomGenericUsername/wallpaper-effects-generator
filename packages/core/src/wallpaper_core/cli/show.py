@@ -30,9 +30,7 @@ def show_effects(ctx: typer.Context) -> None:
     table.add_column("Parameters", style="dim")
 
     for name, effect in sorted(config.effects.items()):
-        params = (
-            ", ".join(effect.parameters.keys()) if effect.parameters else "-"
-        )
+        params = ", ".join(effect.parameters.keys()) if effect.parameters else "-"
         table.add_row(name, effect.description, params)
 
     output.table(table)

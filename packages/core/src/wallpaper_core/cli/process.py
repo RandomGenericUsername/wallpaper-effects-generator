@@ -61,12 +61,8 @@ def _resolve_chain_commands(
             commands.append(f"# Unknown effect: {step.effect}")
             continue
 
-        params = chain_executor._get_params_with_defaults(
-            step.effect, step.params
-        )
-        resolved = _resolve_command(
-            effect_def.command, step_input, step_output, params
-        )
+        params = chain_executor._get_params_with_defaults(step.effect, step.params)
+        resolved = _resolve_command(effect_def.command, step_input, step_output, params)
         commands.append(resolved)
 
     return commands
@@ -77,12 +73,8 @@ def apply_effect(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
     output_file: Annotated[Path, typer.Argument(help="Output image file")],
-    effect: Annotated[
-        str, typer.Option("-e", "--effect", help="Effect to apply")
-    ],
-    blur: Annotated[
-        str | None, typer.Option("--blur", help="Blur geometry")
-    ] = None,
+    effect: Annotated[str, typer.Option("-e", "--effect", help="Effect to apply")],
+    blur: Annotated[str | None, typer.Option("--blur", help="Blur geometry")] = None,
     brightness: Annotated[int | None, typer.Option("--brightness")] = None,
     contrast: Annotated[int | None, typer.Option("--contrast")] = None,
     saturation: Annotated[int | None, typer.Option("--saturation")] = None,
@@ -91,9 +83,7 @@ def apply_effect(
     opacity: Annotated[int | None, typer.Option("--opacity")] = None,
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Apply a single effect to an image."""
@@ -133,9 +123,7 @@ def apply_effect(
         effect_def = config.effects.get(effect)
         if effect_def is not None:
             chain_executor = ChainExecutor(config, None)
-            final_params = chain_executor._get_params_with_defaults(
-                effect, params
-            )
+            final_params = chain_executor._get_params_with_defaults(effect, params)
             resolved = _resolve_command(
                 effect_def.command, input_file, output_file, final_params
             )
@@ -175,9 +163,7 @@ def apply_effect(
     final_params = chain_executor._get_params_with_defaults(effect, params)
 
     output.verbose(f"Applying effect '{effect}' to {input_file}")
-    result = executor.execute(
-        effect_def.command, input_file, output_file, final_params
-    )
+    result = executor.execute(effect_def.command, input_file, output_file, final_params)
 
     if result.success:
         output.success(f"Created {output_file}")
@@ -191,14 +177,10 @@ def apply_composite(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
     output_file: Annotated[Path, typer.Argument(help="Output image file")],
-    composite: Annotated[
-        str, typer.Option("-c", "--composite", help="Composite")
-    ],
+    composite: Annotated[str, typer.Option("-c", "--composite", help="Composite")],
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Apply a composite effect (chain) to an image."""
@@ -225,9 +207,7 @@ def apply_composite(
                 output_file,
             )
         else:
-            chain_commands = [
-                f"# Cannot resolve: unknown composite '{composite}'"
-            ]
+            chain_commands = [f"# Cannot resolve: unknown composite '{composite}'"]
 
         if output.verbosity == Verbosity.QUIET:
             for cmd in chain_commands:
@@ -262,9 +242,7 @@ def apply_composite(
 
     chain_executor = ChainExecutor(config, output)
     output.verbose(f"Applying composite '{composite}' to {input_file}")
-    result = chain_executor.execute_chain(
-        composite_def.chain, input_file, output_file
-    )
+    result = chain_executor.execute_chain(composite_def.chain, input_file, output_file)
 
     if result.success:
         output.success(f"Created {output_file}")
@@ -281,9 +259,7 @@ def apply_preset(
     preset: Annotated[str, typer.Option("-p", "--preset", help="Preset name")],
     dry_run: Annotated[
         bool,
-        typer.Option(
-            "--dry-run", help="Show what would be done without executing"
-        ),
+        typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
     """Apply a preset to an image."""
@@ -337,9 +313,7 @@ def apply_preset(
                 else:
                     resolved = f"# Cannot resolve: unknown effect '{preset_def.effect}'"
             else:
-                resolved = (
-                    f"# Preset '{preset}' has no effect or composite defined"
-                )
+                resolved = f"# Preset '{preset}' has no effect or composite defined"
         else:
             resolved = f"# Cannot resolve: unknown preset '{preset}'"
 
@@ -381,9 +355,7 @@ def apply_preset(
     if preset_def.composite:
         composite_def = config.composites.get(preset_def.composite)
         if composite_def is None:
-            output.error(
-                f"Preset references unknown composite: {preset_def.composite}"
-            )
+            output.error(f"Preset references unknown composite: {preset_def.composite}")
             raise typer.Exit(1)
         result = chain_executor.execute_chain(
             composite_def.chain, input_file, output_file
@@ -391,16 +363,12 @@ def apply_preset(
     elif preset_def.effect:
         effect_def = config.effects.get(preset_def.effect)
         if effect_def is None:
-            output.error(
-                f"Preset references unknown effect: {preset_def.effect}"
-            )
+            output.error(f"Preset references unknown effect: {preset_def.effect}")
             raise typer.Exit(1)
         params = chain_executor._get_params_with_defaults(
             preset_def.effect, preset_def.params
         )
-        result = executor.execute(
-            effect_def.command, input_file, output_file, params
-        )
+        result = executor.execute(effect_def.command, input_file, output_file, params)
     else:
         output.error(f"Preset '{preset}' has no effect or composite defined")
         raise typer.Exit(1)
