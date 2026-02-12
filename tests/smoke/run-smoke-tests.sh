@@ -258,6 +258,8 @@ print_header "Initializing Test Environment"
 echo -e "${BLUE}Checking prerequisites...${NC}"
 echo -e "${GREEN}✓ Test image:${NC} $TEST_IMAGE"
 mkdir -p "$TEST_OUTPUT_DIR"
+# Make output directory writable by container users (UID 1000 in Dockerfile)
+chmod 777 "$TEST_OUTPUT_DIR"
 echo -e "${GREEN}✓ Output directory ready${NC}\n"
 
 # ============================================================================
