@@ -14,10 +14,11 @@ jobs:
     name: End-to-End Smoke Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Verify workspace
         run: |
-          echo "Code already mounted at: $PWD"
-          ls -la
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $PWD"
+          ls -la ${{ github.workspace }} || ls -la $PWD || echo "No files found"
 
       - name: Verify Python
         run: |
@@ -31,6 +32,13 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd ${{ github.workspace }}
+          if [ ! -f "pyproject.toml" ]; then
+            echo "ERROR: pyproject.toml not found!"
+            echo "Workspace contents:"
+            find ${{ github.workspace }} -maxdepth 2 -type f
+            exit 1
+          fi
           uv sync --dev --all-packages
 
       - name: Verify ImageMagick
