@@ -14,11 +14,25 @@ jobs:
     name: End-to-End Smoke Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Verify workspace
+      - name: Setup workspace
         run: |
-          echo "Workspace: ${{ github.workspace }}"
-          echo "PWD: $PWD"
-          ls -la ${{ github.workspace }} || ls -la $PWD || echo "No files found"
+          echo "Workspace should be at: ${{ github.workspace }}"
+          # act mounts the repo to a volume, check if files exist
+          if [ -f "${{ github.workspace }}/pyproject.toml" ]; then
+            echo "✓ Files already mounted"
+          else
+            echo "Files not in workspace, checking for volume mount..."
+            # Files might be in the volume root
+            if [ -f "/pyproject.toml" ]; then
+              echo "✓ Found project root at /"
+              cd /
+            else
+              echo "ERROR: Cannot find project files"
+              find / -name "pyproject.toml" 2>/dev/null | head -5 || echo "pyproject.toml not found anywhere"
+              exit 1
+            fi
+          fi
+          ls -la
 
       - name: Verify Python
         run: |
