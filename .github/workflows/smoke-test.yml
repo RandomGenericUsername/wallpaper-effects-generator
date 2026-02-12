@@ -15,18 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        run: |
+          echo "Code already mounted at: $PWD"
+          ls -la
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Verify Python
+        run: |
+          python3 --version
+          which python3
 
       - name: Install uv
-        run: pip install uv
+        run: |
+          pip3 install uv || python3 -m pip install uv
 
       - name: Install dependencies
-        run: uv sync --dev --all-packages
+        run: |
+          uv sync --dev --all-packages
 
       - name: Verify ImageMagick
         run: |
