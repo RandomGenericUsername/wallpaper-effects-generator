@@ -54,106 +54,26 @@ Create or append to `.gitattributes`:
 tests/fixtures/* binary
 ```
 
-### Step 2: Create Wrapper Script
+### Step 2: Move Your Test Script
 
-Create `tests/smoke/run-smoke-tests.sh`:
-
-```bash
-#!/bin/bash
-##############################################################################
-# Smoke Tests Runner
-#
-# Wrapper script for running the comprehensive smoke test suite.
-# Handles wallpaper selection and test execution.
-#
-# Usage: ./tests/smoke/run-smoke-tests.sh [OPTIONS] [wallpaper-path]
-#
-# Options:
-#   -v, --verbose    Show detailed test information in summary
-#   -h, --help       Show this help message
-#
-# Arguments:
-#   wallpaper-path  Path to wallpaper image file
-#                   If not provided, uses default: tests/fixtures/test-wallpaper.jpg
-#
-##############################################################################
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-
-# Default wallpaper
-DEFAULT_WALLPAPER="$PROJECT_ROOT/tests/fixtures/test-wallpaper.jpg"
-TEST_WALLPAPER="$DEFAULT_WALLPAPER"
-VERBOSE=false
-
-# Parse options
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
-        -h|--help)
-            head -21 "$0" | tail -15
-            exit 0
-            ;;
-        -*)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
-        *)
-            # This is the wallpaper path
-            TEST_WALLPAPER="$1"
-            shift
-            ;;
-    esac
-done
-
-# Resolve to absolute path
-if [ -n "$TEST_WALLPAPER" ] && [ "$TEST_WALLPAPER" != "$DEFAULT_WALLPAPER" ]; then
-    TEST_WALLPAPER="$(cd "$(dirname "$TEST_WALLPAPER")" && pwd)/$(basename "$TEST_WALLPAPER")"
-fi
-
-# Check if file exists
-if [ ! -f "$TEST_WALLPAPER" ]; then
-    echo "Error: Wallpaper file not found: $TEST_WALLPAPER"
-    echo "Using default: $DEFAULT_WALLPAPER"
-    TEST_WALLPAPER="$DEFAULT_WALLPAPER"
-fi
-
-# Check if default wallpaper exists
-if [ ! -f "$TEST_WALLPAPER" ]; then
-    echo "Error: Default wallpaper not found at: $TEST_WALLPAPER"
-    echo "Please provide a wallpaper path or ensure tests/fixtures/test-wallpaper.jpg exists"
-    exit 1
-fi
-
-# Call the main test script
-MAIN_SCRIPT="$PROJECT_ROOT/tools/dev/test-all-commands.sh"
-
-if [ ! -f "$MAIN_SCRIPT" ]; then
-    echo "Error: Main test script not found at: $MAIN_SCRIPT"
-    exit 1
-fi
-
-# Pass arguments to the main script
-if [ "$VERBOSE" = true ]; then
-    "$MAIN_SCRIPT" --verbose "$TEST_WALLPAPER"
-else
-    "$MAIN_SCRIPT" "$TEST_WALLPAPER"
-fi
-```
-
-Make it executable:
+Move your existing comprehensive test script to `tests/smoke/run-smoke-tests.sh`:
 
 ```bash
+# Simply move your existing test script
+mv tools/dev/test-all-commands.sh tests/smoke/run-smoke-tests.sh
+
+# Or if you have a different location
+mv path/to/your/test-script.sh tests/smoke/run-smoke-tests.sh
+
+# Make sure it's executable
 chmod +x tests/smoke/run-smoke-tests.sh
 ```
 
-**Important Adaptations:**
-- Change `DEFAULT_WALLPAPER` path if your test asset is elsewhere
-- Change `MAIN_SCRIPT` path to point to your actual test script
-- Adapt argument parsing if your test script uses different flags
+**Important**: Your test script should:
+- Accept a wallpaper/test asset path as the first positional argument
+- Support `--verbose` flag (optional but recommended)
+- Support `--help` flag (optional but recommended)
+- Use `tests/fixtures/test-wallpaper.jpg` as default if no argument provided
 
 ### Step 3: Add Makefile Target
 
@@ -439,10 +359,7 @@ project-root/
 │   │   └── test-wallpaper.jpg      # New: Test asset
 │   └── smoke/                      # New directory
 │       ├── README.md               # New: Smoke tests documentation
-│       └── run-smoke-tests.sh      # New: Wrapper script
-├── tools/
-│   └── dev/
-│       └── test-all-commands.sh    # Existing: Main smoke test script
+│       └── run-smoke-tests.sh      # Moved: Your main test script (from tools/dev/)
 ├── Makefile                        # Modified: Added smoke-test target, modified push
 └── DEVELOPMENT.md                  # Modified: Added smoke tests documentation
 ```
@@ -498,18 +415,15 @@ make push
 
 If your test script has different arguments:
 
-1. **Modify `tests/smoke/run-smoke-tests.sh`**:
-   - Change how arguments are passed to `MAIN_SCRIPT`
-   - Adapt option parsing in the `while` loop
-   - Update help text
+1. **Adapt your test script** to accept standard arguments:
+   - First positional argument: path to test asset
+   - `--verbose` flag: enable verbose output
+   - `--help` flag: show help message
 
-2. **Example**: If your script uses `--image` instead of positional argument:
-   ```bash
-   # In run.sh, change this:
-   "$MAIN_SCRIPT" --verbose "$TEST_WALLPAPER"
-
-   # To this:
-   "$MAIN_SCRIPT" --verbose --image "$TEST_WALLPAPER"
+2. **Or update Makefile** to pass arguments in your script's format:
+   ```makefile
+   # If your script uses --image flag instead
+   ./tests/smoke/run-smoke-tests.sh --image "$(WALLPAPER)"
    ```
 
 ### For Different Dependencies
@@ -547,10 +461,10 @@ If you have different test assets (not images):
 
 ### Script Not Found
 
-If you get "Main test script not found":
-- Verify `MAIN_SCRIPT` path in `tests/smoke/run-smoke-tests.sh`
-- Ensure your test script exists at that location
-- Check permissions: `ls -l tools/dev/test-all-commands.sh`
+If you get "Script not found":
+- Verify script is at `tests/smoke/run-smoke-tests.sh`
+- Check it's executable: `chmod +x tests/smoke/run-smoke-tests.sh`
+- Check permissions: `ls -l tests/smoke/run-smoke-tests.sh`
 
 ### Dependency Check Fails
 
@@ -597,7 +511,7 @@ make push SMOKE=true
 
 This migration adds:
 
-✅ **Clean separation**: Test script in `tools/dev/`, wrapper in `tests/smoke/`
+✅ **Clean organization**: Test script in `tests/smoke/` with other test files
 ✅ **Flexible execution**: Default or custom wallpaper via `WALLPAPER=` flag
 ✅ **Verbose output**: Optional detailed test information
 ✅ **Hard-fail validation**: Clear error messages for missing dependencies

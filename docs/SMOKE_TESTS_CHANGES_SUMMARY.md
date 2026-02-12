@@ -15,7 +15,7 @@ This directory encapsulates all smoke test infrastructure and provides clean sep
 ### 2. Files Created
 
 #### `tests/smoke/run-smoke-tests.sh`
-**Purpose**: Wrapper script that handles wallpaper parameter and calls main test script
+**Purpose**: Comprehensive end-to-end smoke test script (85+ test cases)
 
 **Features**:
 - Default wallpaper: `tests/fixtures/test-wallpaper.jpg`
@@ -23,8 +23,8 @@ This directory encapsulates all smoke test infrastructure and provides clean sep
 - Verbose mode via `--verbose` flag
 - Help text via `--help`
 - Automatic path resolution (relative → absolute)
-- Graceful fallback to default wallpaper if custom not found
-- Clear error messages
+- Tests all CLI commands, orchestrator, configuration layers, dry-run modes
+- Clear error messages and test summaries
 
 **Usage**:
 ```bash
@@ -76,7 +76,7 @@ This directory encapsulates all smoke test infrastructure and provides clean sep
 ```makefile
 smoke-test: ## Run end-to-end smoke tests (requires ImageMagick + Docker)
 	# ... dependency checks ...
-	./tools/dev/test-all-commands.sh tests/fixtures/test-wallpaper.jpg
+	# Script was in tools/dev/ directory
 ```
 
 **After**:
@@ -110,38 +110,36 @@ make smoke-test WALLPAPER=/path/to/wallpaper.jpg
 make smoke-test WALLPAPER=/path/to/wallpaper.jpg VERBOSE=true
 ```
 
-### 4. Files Unchanged
+### 4. Files Removed
 
-These files remain as-is:
-- `tools/dev/test-all-commands.sh` - Main smoke test script (no changes needed)
+- `tools/dev/test-all-commands.sh` - Moved to `tests/smoke/run-smoke-tests.sh`
+- `tools/dev/` directory - No longer needed
+
+### 5. Files Unchanged
+
 - `tests/fixtures/test-wallpaper.jpg` - Test wallpaper image
 - `.gitattributes` - Binary file handling
-- `.github/workflows/smoke-test.yml` - GitHub Actions workflow
 - `make push` target - Still calls `make smoke-test` for SMOKE=true
 
 ## Key Improvements
 
 ### 1. Better Organization
-- **Before**: Main test script directly called from Makefile
-- **After**: Wrapper script in `tests/smoke/` encapsulates execution logic, main script stays in `tools/dev/`
+- **Before**: Test script in `tools/dev/` directory
+- **After**: Test script in `tests/smoke/` directory, organized with other test files
 
 ### 2. More Flexible
 - **Before**: Fixed wallpaper path
 - **After**: Default wallpaper OR custom path via `WALLPAPER=` parameter
 
-### 3. Better Encapsulation
-- **Before**: All smoke test logic exposed in Makefile
-- **After**: Clean interface via wrapper script, implementation details hidden
-
-### 4. Better Documentation
+### 3. Better Documentation
 - **Before**: No dedicated smoke tests documentation
 - **After**:
   - `tests/smoke/README.md` - Infrastructure docs
   - `docs/SMOKE_TESTS_MIGRATION_GUIDE.md` - Reusable pattern guide
 
-### 5. Easier to Maintain
-- **Before**: Changes require editing Makefile
-- **After**: Most changes can be made in wrapper script
+### 4. Simpler Structure
+- **Before**: Test script in development tools directory
+- **After**: Single test script in dedicated smoke tests directory
 
 ## Directory Structure
 
@@ -158,10 +156,7 @@ project-root/
 │   │   └── test-wallpaper.jpg            # Unchanged
 │   └── smoke/                            # NEW directory
 │       ├── README.md                     # NEW: Infrastructure docs
-│       └── run-smoke-tests.sh            # NEW: Wrapper script
-├── tools/
-│   └── dev/
-│       └── test-all-commands.sh          # Unchanged (main test script)
+│       └── run-smoke-tests.sh            # NEW: Main test script (moved from tools/dev/)
 ├── Makefile                              # Modified: Updated smoke-test target
 └── DEVELOPMENT.md                        # Modified: Added new usage examples
 ```
