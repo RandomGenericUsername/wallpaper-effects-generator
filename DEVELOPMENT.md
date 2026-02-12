@@ -148,6 +148,7 @@ Workflows are automatically triggered on push/PR:
 - `ci-settings.yml` - Runs when settings package changes
 - `ci-effects.yml` - Runs when effects package changes
 - `ci-orchestrator.yml` - Runs when orchestrator package changes
+- `smoke-test.yml` - Manual end-to-end smoke tests (requires ImageMagick + Docker)
 
 ### What They Do
 Each workflow:
@@ -208,6 +209,74 @@ grep -c "PASSED" .logs/make-push-20260211-182152.log
 ```
 
 Log files are named with the format: `make-push-YYYYMMDD-HHMMSS.log` so you can easily identify when each run occurred.
+
+### Running with End-to-End Smoke Tests
+
+For comprehensive validation that includes real CLI command execution with actual image processing:
+
+```bash
+# Option 1: Run standard CI + smoke tests
+make push SMOKE=true
+
+# Option 2: Run smoke tests only (uses default wallpaper)
+make smoke-test
+
+# Option 3: Run smoke tests with verbose output
+make smoke-test VERBOSE=true
+
+# Option 4: Run smoke tests with custom wallpaper
+make smoke-test WALLPAPER=/path/to/wallpaper.jpg
+
+# Option 5: Custom wallpaper + verbose output
+make smoke-test WALLPAPER=/path/to/wallpaper.jpg VERBOSE=true
+```
+
+#### What Each Command Does
+
+**`make push SMOKE=true`** (Local CI simulation + real smoke tests):
+1. Simulates GitHub Actions locally via `act` (lint, security, tests)
+2. If CI passes, runs end-to-end smoke tests locally
+3. All logs captured in single timestamped file in `.logs/`
+4. Total time: ~5-8 minutes
+
+**`make smoke-test`** (Direct smoke tests):
+1. Checks dependencies (ImageMagick, Docker/Podman)
+2. Runs 85+ integration test cases
+3. Fast failure if dependencies missing
+4. Time: ~2-5 minutes
+
+**Tests Validated**:
+- Core CLI commands with real image processing
+- Orchestrator CLI with containerized execution
+- Container image building
+- Dry-run functionality
+- Configuration layer merging
+- 42+ integration test cases
+
+**Requirements**:
+- ImageMagick (`magick` command) must be installed
+- Docker or Podman must be available
+
+**Troubleshooting**:
+
+If you see "ImageMagick not found":
+```bash
+# Ubuntu/Debian
+sudo apt-get install imagemagick
+
+# macOS
+brew install imagemagick
+
+# Fedora/RHEL
+sudo dnf install ImageMagick
+```
+
+If you see "Docker not found":
+```bash
+# Install Docker: https://docs.docker.com/get-docker/
+# Or use Podman instead
+sudo apt-get install podman
+```
 
 ### Workflow: Fast Testing → Local CI → Push to Cloud
 

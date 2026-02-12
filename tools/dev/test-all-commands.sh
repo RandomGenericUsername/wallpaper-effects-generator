@@ -391,7 +391,7 @@ if run_cmd "wallpaper-core batch effects \"$TEST_IMAGE\" \"$core_batch_effect\""
     # Should generate 9 effects
     output_count=$(find "$core_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
-        output_files=$(find "$core_batch_effect" -type f -name "*.jpg" -exec basename {} \; | head -5 | tr '\n' ' ')
+        output_files=$(find "$core_batch_effect" -type f -name "*.jpg" -printf '%f\n' | head -5 | tr '\n' ' ')
         add_detail "• Command: wallpaper-core batch effects <image> <output-dir>"
         add_detail "• Output directory: $core_batch_effect"
         add_detail "• Effects generated: $output_count"
@@ -413,7 +413,7 @@ if run_cmd "wallpaper-core batch composites \"$TEST_IMAGE\" \"$core_batch_compos
     # Should generate 4 composites
     output_count=$(find "$core_batch_composite" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 4 ]; then
-        output_files=$(find "$core_batch_composite" -type f -name "*.jpg" -exec basename {} \; | tr '\n' ' ')
+        output_files=$(find "$core_batch_composite" -type f -name "*.jpg" -printf '%f\n' | tr '\n' ' ')
         add_detail "• Command: wallpaper-core batch composites <image> <output-dir>"
         add_detail "• Output directory: $core_batch_composite"
         add_detail "• Composites generated: $output_count"
@@ -435,7 +435,7 @@ if run_cmd "wallpaper-core batch presets \"$TEST_IMAGE\" \"$core_batch_preset\""
     # Should generate 7 presets
     output_count=$(find "$core_batch_preset" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 7 ]; then
-        output_files=$(find "$core_batch_preset" -type f -name "*.jpg" -exec basename {} \; | head -5 | tr '\n' ' ')
+        output_files=$(find "$core_batch_preset" -type f -name "*.jpg" -printf '%f\n' | head -5 | tr '\n' ' ')
         add_detail "• Command: wallpaper-core batch presets <image> <output-dir>"
         add_detail "• Output directory: $core_batch_preset"
         add_detail "• Presets generated: $output_count"
@@ -671,7 +671,7 @@ elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects 
     # Should generate 9 effects
     output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
-        output_files=$(find "$orch_batch_effect" -type f -name "*.jpg" -exec basename {} \; | head -3 | tr '\n' ', ' | sed 's/,$//')
+        output_files=$(find "$orch_batch_effect" -type f -name "*.jpg" -printf '%f\n' | head -3 | tr '\n' ', ' | sed 's/,$//')
         add_detail "• Command: wallpaper-process batch effects <image> <output-dir>"
         add_detail "• Output directory: $orch_batch_effect"
         add_detail "• Effects generated: $output_count"

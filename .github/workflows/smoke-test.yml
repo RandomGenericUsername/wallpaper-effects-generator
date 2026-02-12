@@ -1,0 +1,72 @@
+name: Smoke Tests (Integration)
+
+on:
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: 'Verbose test output'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  smoke-test:
+    name: End-to-End Smoke Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync --dev --all-packages
+
+      - name: Install ImageMagick
+        run: |
+          echo "📦 Installing ImageMagick..."
+          apt-get update -qq 2>&1 | tail -5
+          apt-get install -y -qq imagemagick 2>&1 | tail -5
+          # Verify installation
+          echo "Verifying ImageMagick installation..."
+          if ! which magick; then
+            echo "ERROR: magick command not found after installation"
+            exit 1
+          fi
+          magick -version | head -1
+
+      - name: Check Docker availability
+        run: |
+          if which docker > /dev/null 2>&1; then
+            echo "✓ Docker is available"
+          else
+            echo "❌ Docker not available"
+            echo "This test requires Docker to be available"
+            exit 1
+          fi
+
+      - name: Verify test wallpaper exists
+        run: |
+          if [ ! -f "tests/fixtures/test-wallpaper.jpg" ]; then
+            echo "❌ Test wallpaper not found at tests/fixtures/test-wallpaper.jpg"
+            exit 1
+          fi
+          echo "✓ Test wallpaper found"
+
+      - name: Run smoke tests (standard mode)
+        if: inputs.verbose == false
+        run: |
+          cd ${{ github.workspace }}
+          ./tools/dev/test-all-commands.sh tests/fixtures/test-wallpaper.jpg
+
+      - name: Run smoke tests (verbose mode)
+        if: inputs.verbose == true
+        run: |
+          cd ${{ github.workspace }}
+          ./tools/dev/test-all-commands.sh --verbose tests/fixtures/test-wallpaper.jpg

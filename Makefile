@@ -193,6 +193,34 @@ build-orchestrator: ## Build orchestrator package
 	cd $(ORCHESTRATOR_DIR) && $(UV) build
 	@echo -e "$(GREEN)✓ Orchestrator package built$(NC)"
 
+##@ Smoke Testing
+smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
+	@echo -e "$(BLUE)Running smoke tests...$(NC)"
+	@# Check dependencies
+	@if ! command -v magick &> /dev/null; then \
+		echo -e "$(RED)✗ ImageMagick (magick) not found$(NC)"; \
+		echo -e "$(RED)  Install: sudo apt-get install imagemagick$(NC)"; \
+		exit 1; \
+	fi
+	@if ! command -v docker &> /dev/null && ! command -v podman &> /dev/null; then \
+		echo -e "$(RED)✗ Docker or Podman not found$(NC)"; \
+		echo -e "$(RED)  Install Docker: https://docs.docker.com/get-docker/$(NC)"; \
+		echo -e "$(RED)  Or Podman: sudo apt-get install podman$(NC)"; \
+		exit 1; \
+	fi
+	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
+	@# Run smoke tests via wrapper script
+	@if [ "$(VERBOSE)" = "true" ] && [ -n "$(WALLPAPER)" ]; then \
+		./tools/smoke-tests/run.sh --verbose "$(WALLPAPER)"; \
+	elif [ "$(VERBOSE)" = "true" ]; then \
+		./tools/smoke-tests/run.sh --verbose; \
+	elif [ -n "$(WALLPAPER)" ]; then \
+		./tools/smoke-tests/run.sh "$(WALLPAPER)"; \
+	else \
+		./tools/smoke-tests/run.sh; \
+	fi
+	@echo -e "$(GREEN)✓ Smoke tests completed$(NC)"
+
 ##@ CI/CD Pipeline
 pipeline: ## Validate pipeline - simulate GitHub Actions workflows locally
 	@echo -e "$(BLUE)Running pipeline validation...$(NC)"
@@ -213,7 +241,7 @@ pipeline: ## Validate pipeline - simulate GitHub Actions workflows locally
 	@echo -e "$(GREEN)Your changes are safe to push to the cloud.$(NC)"
 	@echo -e ""
 
-push: ## Run GitHub Actions workflows locally using act with auto-logging
+push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 	@echo -e "$(BLUE)Setting up GitHub Actions locally...$(NC)"
 	@if [ ! -f ./bin/act ]; then \
 		echo -e "$(BLUE)Downloading act (GitHub Actions CLI)...$(NC)"; \
@@ -229,11 +257,37 @@ push: ## Run GitHub Actions workflows locally using act with auto-logging
 	@mkdir -p .logs
 	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
 	LOG_FILE=".logs/make-push-$$TIMESTAMP.log"; \
-	echo -e "$(BLUE)Running GitHub Actions workflows locally...$(NC)"; \
-	echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
-	echo -e ""; \
-	./bin/act push 2>&1 | tee "$$LOG_FILE"; \
-	EXIT_CODE=$$?; \
+	if [ "$(SMOKE)" = "true" ]; then \
+		echo -e "$(BLUE)Running GitHub Actions with SMOKE TESTS enabled...$(NC)"; \
+		echo -e "$(BLUE)This includes standard CI + end-to-end smoke tests$(NC)"; \
+		echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
+		echo -e ""; \
+		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
+		STANDARD_EXIT=$$?; \
+		if [ $$STANDARD_EXIT -eq 0 ]; then \
+			echo -e "" | tee -a "$$LOG_FILE"; \
+			echo -e "$(BLUE)Standard CI passed. Running smoke tests...$(NC)" | tee -a "$$LOG_FILE"; \
+			$(MAKE) smoke-test 2>&1 | tee -a "$$LOG_FILE"; \
+			SMOKE_EXIT=$$?; \
+			if [ $$SMOKE_EXIT -ne 0 ]; then \
+				echo -e "$(RED)✗ Smoke tests failed$(NC)" | tee -a "$$LOG_FILE"; \
+				EXIT_CODE=$$SMOKE_EXIT; \
+			else \
+				echo -e "$(GREEN)✓ Smoke tests passed$(NC)" | tee -a "$$LOG_FILE"; \
+				EXIT_CODE=0; \
+			fi; \
+		else \
+			echo -e "$(RED)✗ Standard CI failed, skipping smoke tests$(NC)" | tee -a "$$LOG_FILE"; \
+			EXIT_CODE=$$STANDARD_EXIT; \
+		fi; \
+	else \
+		echo -e "$(BLUE)Running standard GitHub Actions workflows...$(NC)"; \
+		echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
+		echo -e "$(BLUE)Tip: Add SMOKE=true to include smoke tests$(NC)"; \
+		echo -e ""; \
+		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
+		EXIT_CODE=$$?; \
+	fi; \
 	echo -e ""; \
 	if [ $$EXIT_CODE -eq 0 ]; then \
 		echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
