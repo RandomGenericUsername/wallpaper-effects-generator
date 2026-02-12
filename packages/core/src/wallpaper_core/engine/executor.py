@@ -36,8 +36,8 @@ class CommandExecutor:
         self.output = output
 
     def is_magick_available(self) -> bool:
-        """Check if ImageMagick is available."""
-        return shutil.which("magick") is not None
+        """Check if ImageMagick is available (v6 or v7)."""
+        return shutil.which("magick") is not None or shutil.which("convert") is not None
 
     def execute(
         self,

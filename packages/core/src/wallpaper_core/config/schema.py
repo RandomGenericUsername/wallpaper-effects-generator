@@ -1,5 +1,6 @@
 """Pydantic schemas for core settings."""
 
+import shutil
 from enum import IntEnum
 from pathlib import Path
 
@@ -55,7 +56,12 @@ class ProcessingSettings(BaseModel):
 class BackendSettings(BaseModel):
     """ImageMagick backend settings."""
 
-    binary: str = Field(default="magick", description="Path to ImageMagick binary")
+    binary: str = Field(
+        default_factory=lambda: shutil.which("magick")
+        or shutil.which("convert")
+        or "magick",
+        description="Path to ImageMagick binary (auto-detects magick or convert)",
+    )
 
 
 class CoreSettings(BaseModel):
