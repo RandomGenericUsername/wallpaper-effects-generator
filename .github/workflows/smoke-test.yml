@@ -63,10 +63,10 @@ jobs:
         if: inputs.verbose == false
         run: |
           cd ${{ github.workspace }}
-          ./tools/dev/test-all-commands.sh tests/fixtures/test-wallpaper.jpg
+          ./tests/smoke/run-smoke-tests.sh tests/fixtures/test-wallpaper.jpg
 
       - name: Run smoke tests (verbose mode)
         if: inputs.verbose == true
         run: |
           cd ${{ github.workspace }}
-          ./tools/dev/test-all-commands.sh --verbose tests/fixtures/test-wallpaper.jpg
+          ./tests/smoke/run-smoke-tests.sh --verbose tests/fixtures/test-wallpaper.jpg

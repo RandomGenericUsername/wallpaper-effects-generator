@@ -5,7 +5,7 @@
 # Wrapper script for running the comprehensive smoke test suite.
 # Handles wallpaper selection and test execution.
 #
-# Usage: ./tools/smoke-tests/run.sh [OPTIONS] [wallpaper-path]
+# Usage: ./tests/smoke/run-smoke-tests.sh [OPTIONS] [wallpaper-path]
 #
 # Options:
 #   -v, --verbose    Show detailed test information in summary
@@ -17,8 +17,8 @@
 #
 ##############################################################################
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR"
 
 # Default wallpaper
 DEFAULT_WALLPAPER="$PROJECT_ROOT/tests/fixtures/test-wallpaper.jpg"
@@ -68,7 +68,7 @@ if [ ! -f "$TEST_WALLPAPER" ]; then
 fi
 
 # Call the main test script
-MAIN_SCRIPT="$SCRIPT_DIR/dev/test-all-commands.sh"
+MAIN_SCRIPT="$PROJECT_ROOT/tools/dev/test-all-commands.sh"
 
 if [ ! -f "$MAIN_SCRIPT" ]; then
     echo "Error: Main test script not found at: $MAIN_SCRIPT"

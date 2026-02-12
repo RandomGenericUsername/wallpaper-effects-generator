@@ -28,7 +28,7 @@ Your project should have:
 
 ```bash
 # Create smoke tests directory
-mkdir -p tools/smoke-tests
+mkdir -p tests/smoke
 mkdir -p tests/fixtures
 ```
 
@@ -56,7 +56,7 @@ tests/fixtures/* binary
 
 ### Step 2: Create Wrapper Script
 
-Create `tools/smoke-tests/run.sh`:
+Create `tests/smoke/run-smoke-tests.sh`:
 
 ```bash
 #!/bin/bash
@@ -66,7 +66,7 @@ Create `tools/smoke-tests/run.sh`:
 # Wrapper script for running the comprehensive smoke test suite.
 # Handles wallpaper selection and test execution.
 #
-# Usage: ./tools/smoke-tests/run.sh [OPTIONS] [wallpaper-path]
+# Usage: ./tests/smoke/run-smoke-tests.sh [OPTIONS] [wallpaper-path]
 #
 # Options:
 #   -v, --verbose    Show detailed test information in summary
@@ -78,8 +78,8 @@ Create `tools/smoke-tests/run.sh`:
 #
 ##############################################################################
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR"
 
 # Default wallpaper
 DEFAULT_WALLPAPER="$PROJECT_ROOT/tests/fixtures/test-wallpaper.jpg"
@@ -129,7 +129,7 @@ if [ ! -f "$TEST_WALLPAPER" ]; then
 fi
 
 # Call the main test script
-MAIN_SCRIPT="$SCRIPT_DIR/dev/test-all-commands.sh"
+MAIN_SCRIPT="$PROJECT_ROOT/tools/dev/test-all-commands.sh"
 
 if [ ! -f "$MAIN_SCRIPT" ]; then
     echo "Error: Main test script not found at: $MAIN_SCRIPT"
@@ -147,7 +147,7 @@ fi
 Make it executable:
 
 ```bash
-chmod +x tools/smoke-tests/run.sh
+chmod +x tests/smoke/run-smoke-tests.sh
 ```
 
 **Important Adaptations:**
@@ -178,13 +178,13 @@ smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
 	@# Run smoke tests via wrapper script
 	@if [ "$(VERBOSE)" = "true" ] && [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh --verbose "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh --verbose "$(WALLPAPER)"; \
 	elif [ "$(VERBOSE)" = "true" ]; then \
-		./tools/smoke-tests/run.sh --verbose; \
+		./tests/smoke/run-smoke-tests.sh --verbose; \
 	elif [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh "$(WALLPAPER)"; \
 	else \
-		./tools/smoke-tests/run.sh; \
+		./tests/smoke/run-smoke-tests.sh; \
 	fi
 	@echo -e "$(GREEN)✓ Smoke tests completed$(NC)"
 ```
@@ -337,13 +337,13 @@ jobs:
         if: inputs.verbose == false
         run: |
           cd ${{ github.workspace }}
-          ./tools/smoke-tests/run.sh
+          ./tests/smoke/run-smoke-tests.sh
 
       - name: Run smoke tests (verbose mode)
         if: inputs.verbose == true
         run: |
           cd ${{ github.workspace }}
-          ./tools/smoke-tests/run.sh --verbose
+          ./tests/smoke/run-smoke-tests.sh --verbose
 ```
 
 **Important Adaptations:**
@@ -435,14 +435,14 @@ project-root/
 │       └── smoke-test.yml          # New: GitHub Actions smoke test workflow
 ├── .gitattributes                  # New/Modified: Binary file handling
 ├── tests/
-│   └── fixtures/
-│       └── test-wallpaper.jpg      # New: Test asset
-├── tools/
-│   ├── dev/
-│   │   └── test-all-commands.sh    # Existing: Main smoke test script
-│   └── smoke-tests/                # New directory
+│   ├── fixtures/
+│   │   └── test-wallpaper.jpg      # New: Test asset
+│   └── smoke/                      # New directory
 │       ├── README.md               # New: Smoke tests documentation
-│       └── run.sh                  # New: Wrapper script
+│       └── run-smoke-tests.sh      # New: Wrapper script
+├── tools/
+│   └── dev/
+│       └── test-all-commands.sh    # Existing: Main smoke test script
 ├── Makefile                        # Modified: Added smoke-test target, modified push
 └── DEVELOPMENT.md                  # Modified: Added smoke tests documentation
 ```
@@ -498,7 +498,7 @@ make push
 
 If your test script has different arguments:
 
-1. **Modify `tools/smoke-tests/run.sh`**:
+1. **Modify `tests/smoke/run-smoke-tests.sh`**:
    - Change how arguments are passed to `MAIN_SCRIPT`
    - Adapt option parsing in the `while` loop
    - Update help text
@@ -535,7 +535,7 @@ If your project needs different dependencies:
 If you have different test assets (not images):
 
 1. **Update paths** in:
-   - `tools/smoke-tests/run.sh` (DEFAULT_WALLPAPER variable)
+   - `tests/smoke/run-smoke-tests.sh` (DEFAULT_WALLPAPER variable)
    - `Makefile` (smoke-test target comments)
    - `.gitattributes` (binary file patterns)
 
@@ -548,7 +548,7 @@ If you have different test assets (not images):
 ### Script Not Found
 
 If you get "Main test script not found":
-- Verify `MAIN_SCRIPT` path in `tools/smoke-tests/run.sh`
+- Verify `MAIN_SCRIPT` path in `tests/smoke/run-smoke-tests.sh`
 - Ensure your test script exists at that location
 - Check permissions: `ls -l tools/dev/test-all-commands.sh`
 
@@ -575,7 +575,7 @@ After migration, verify everything works:
 make help | grep smoke
 
 # 2. Test wrapper script directly
-./tools/smoke-tests/run.sh --help
+./tests/smoke/run-smoke-tests.sh --help
 
 # 3. Run smoke tests with defaults
 make smoke-test
@@ -597,7 +597,7 @@ make push SMOKE=true
 
 This migration adds:
 
-✅ **Clean separation**: Test script in `tools/dev/`, wrapper in `tools/smoke-tests/`
+✅ **Clean separation**: Test script in `tools/dev/`, wrapper in `tests/smoke/`
 ✅ **Flexible execution**: Default or custom wallpaper via `WALLPAPER=` flag
 ✅ **Verbose output**: Optional detailed test information
 ✅ **Hard-fail validation**: Clear error messages for missing dependencies

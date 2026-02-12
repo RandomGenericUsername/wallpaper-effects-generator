@@ -8,13 +8,13 @@ Reorganized smoke tests to avoid exposing the main test script in the root proje
 
 ### 1. Created Smoke Tests Infrastructure
 
-**New Directory**: `tools/smoke-tests/`
+**New Directory**: `tests/smoke/`
 
-This directory encapsulates all smoke test infrastructure and provides clean separation from development tools.
+This directory encapsulates all smoke test infrastructure and provides clean separation from other test types.
 
 ### 2. Files Created
 
-#### `tools/smoke-tests/run.sh`
+#### `tests/smoke/run-smoke-tests.sh`
 **Purpose**: Wrapper script that handles wallpaper parameter and calls main test script
 
 **Features**:
@@ -28,13 +28,13 @@ This directory encapsulates all smoke test infrastructure and provides clean sep
 
 **Usage**:
 ```bash
-./tools/smoke-tests/run.sh                      # Default wallpaper
-./tools/smoke-tests/run.sh /path/to/image.jpg   # Custom wallpaper
-./tools/smoke-tests/run.sh --verbose            # Verbose mode
-./tools/smoke-tests/run.sh --verbose /path.jpg  # Both
+./tests/smoke/run-smoke-tests.sh                      # Default wallpaper
+./tests/smoke/run-smoke-tests.sh /path/to/image.jpg   # Custom wallpaper
+./tests/smoke/run-smoke-tests.sh --verbose            # Verbose mode
+./tests/smoke/run-smoke-tests.sh --verbose /path.jpg  # Both
 ```
 
-#### `tools/smoke-tests/README.md`
+#### `tests/smoke/README.md`
 **Purpose**: Comprehensive documentation for smoke tests infrastructure
 
 **Sections**:
@@ -83,7 +83,7 @@ smoke-test: ## Run end-to-end smoke tests (requires ImageMagick + Docker)
 ```makefile
 smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	# ... dependency checks ...
-	./tools/smoke-tests/run.sh [--verbose] [wallpaper-path]
+	./tests/smoke/run-smoke-tests.sh [--verbose] [wallpaper-path]
 ```
 
 **New Usage**:
@@ -123,7 +123,7 @@ These files remain as-is:
 
 ### 1. Better Organization
 - **Before**: Main test script directly called from Makefile
-- **After**: Wrapper script encapsulates execution logic, main script stays in `tools/dev/`
+- **After**: Wrapper script in `tests/smoke/` encapsulates execution logic, main script stays in `tools/dev/`
 
 ### 2. More Flexible
 - **Before**: Fixed wallpaper path
@@ -136,7 +136,7 @@ These files remain as-is:
 ### 4. Better Documentation
 - **Before**: No dedicated smoke tests documentation
 - **After**:
-  - `tools/smoke-tests/README.md` - Infrastructure docs
+  - `tests/smoke/README.md` - Infrastructure docs
   - `docs/SMOKE_TESTS_MIGRATION_GUIDE.md` - Reusable pattern guide
 
 ### 5. Easier to Maintain
@@ -148,19 +148,20 @@ These files remain as-is:
 ```
 project-root/
 ├── .github/workflows/
-│   └── smoke-test.yml                    # Unchanged
+│   └── smoke-test.yml                    # Modified: Updated paths
 ├── .gitattributes                        # Unchanged
 ├── docs/
 │   ├── SMOKE_TESTS_MIGRATION_GUIDE.md    # NEW: Reusable migration guide
 │   └── SMOKE_TESTS_CHANGES_SUMMARY.md    # NEW: This file
-├── tests/fixtures/
-│   └── test-wallpaper.jpg                # Unchanged
-├── tools/
-│   ├── dev/
-│   │   └── test-all-commands.sh          # Unchanged (main test script)
-│   └── smoke-tests/                      # NEW directory
+├── tests/
+│   ├── fixtures/
+│   │   └── test-wallpaper.jpg            # Unchanged
+│   └── smoke/                            # NEW directory
 │       ├── README.md                     # NEW: Infrastructure docs
-│       └── run.sh                        # NEW: Wrapper script
+│       └── run-smoke-tests.sh            # NEW: Wrapper script
+├── tools/
+│   └── dev/
+│       └── test-all-commands.sh          # Unchanged (main test script)
 ├── Makefile                              # Modified: Updated smoke-test target
 └── DEVELOPMENT.md                        # Modified: Added new usage examples
 ```
@@ -187,19 +188,19 @@ make smoke-test WALLPAPER=~/Pictures/test.jpg VERBOSE=true
 
 ```bash
 # Default wallpaper
-./tools/smoke-tests/run.sh
+./tests/smoke/run-smoke-tests.sh
 
 # Custom wallpaper
-./tools/smoke-tests/run.sh /path/to/wallpaper.jpg
+./tests/smoke/run-smoke-tests.sh /path/to/wallpaper.jpg
 
 # Verbose
-./tools/smoke-tests/run.sh --verbose
+./tests/smoke/run-smoke-tests.sh --verbose
 
 # Both
-./tools/smoke-tests/run.sh --verbose /path/to/wallpaper.jpg
+./tests/smoke/run-smoke-tests.sh --verbose /path/to/wallpaper.jpg
 
 # Help
-./tools/smoke-tests/run.sh --help
+./tests/smoke/run-smoke-tests.sh --help
 ```
 
 ### CI Integration
@@ -218,9 +219,9 @@ All changes have been verified:
 
 ```bash
 # 1. Wrapper script works
-✓ ./tools/smoke-tests/run.sh --help
-✓ ./tools/smoke-tests/run.sh
-✓ ./tools/smoke-tests/run.sh --verbose
+✓ ./tests/smoke/run-smoke-tests.sh --help
+✓ ./tests/smoke/run-smoke-tests.sh
+✓ ./tests/smoke/run-smoke-tests.sh --verbose
 
 # 2. Makefile targets work
 ✓ make help | grep smoke
@@ -237,7 +238,7 @@ All changes have been verified:
 To apply this pattern to another project:
 
 1. **Read**: `docs/SMOKE_TESTS_MIGRATION_GUIDE.md`
-2. **Copy**: `tools/smoke-tests/run.sh` (adapt paths)
+2. **Copy**: `tests/smoke/run-smoke-tests.sh` (adapt paths)
 3. **Update**: Makefile smoke-test target
 4. **Adapt**: Dependency checks for your project
 5. **Test**: Run `make smoke-test` to verify
@@ -250,7 +251,7 @@ To revert to the original simple approach:
 
 ```bash
 # 1. Remove new files
-rm -rf tools/smoke-tests/
+rm -rf tests/smoke/
 rm docs/SMOKE_TESTS_MIGRATION_GUIDE.md
 rm docs/SMOKE_TESTS_CHANGES_SUMMARY.md
 
@@ -275,7 +276,7 @@ smoke-test:
 
 1. **Commit changes**:
    ```bash
-   git add tools/smoke-tests/ docs/ Makefile DEVELOPMENT.md
+   git add tests/smoke/ docs/ Makefile DEVELOPMENT.md .github/
    git commit -m "refactor: reorganize smoke tests with wrapper script and custom wallpaper support"
    ```
 

@@ -211,13 +211,13 @@ smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
 	@# Run smoke tests via wrapper script
 	@if [ "$(VERBOSE)" = "true" ] && [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh --verbose "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh --verbose "$(WALLPAPER)"; \
 	elif [ "$(VERBOSE)" = "true" ]; then \
-		./tools/smoke-tests/run.sh --verbose; \
+		./tests/smoke/run-smoke-tests.sh --verbose; \
 	elif [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh "$(WALLPAPER)"; \
 	else \
-		./tools/smoke-tests/run.sh; \
+		./tests/smoke/run-smoke-tests.sh; \
 	fi
 	@echo -e "$(GREEN)✓ Smoke tests completed$(NC)"
 
