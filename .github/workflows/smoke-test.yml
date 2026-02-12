@@ -26,7 +26,8 @@ jobs:
 
       - name: Install uv
         run: |
-          pip3 install uv || python3 -m pip install uv
+          # Container has externally-managed Python, so use --break-system-packages
+          pip3 install --break-system-packages uv
 
       - name: Install dependencies
         run: |
