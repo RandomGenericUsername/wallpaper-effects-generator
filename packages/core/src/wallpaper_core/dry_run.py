@@ -38,12 +38,24 @@ class CoreDryRun(DryRunBase):
             )
         )
 
-        magick_path = shutil.which("magick")
+        # Check for ImageMagick (both v6 'convert' and v7 'magick')
+        magick_path = shutil.which("magick") or shutil.which("convert")
+        magick_version = (
+            "7 (magick)"
+            if shutil.which("magick")
+            else "6 (convert)"
+            if shutil.which("convert")
+            else None
+        )
         checks.append(
             ValidationCheck(
-                name="magick binary found",
+                name="ImageMagick binary found",
                 passed=magick_path is not None,
-                detail=magick_path or "not found on PATH",
+                detail=(
+                    f"{magick_path} [{magick_version}]"
+                    if magick_path
+                    else "not found on PATH"
+                ),
             )
         )
 

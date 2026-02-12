@@ -196,9 +196,9 @@ build-orchestrator: ## Build orchestrator package
 ##@ Smoke Testing
 smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(BLUE)Running smoke tests...$(NC)"
-	@# Check dependencies
-	@if ! command -v magick &> /dev/null; then \
-		echo -e "$(RED)✗ ImageMagick (magick) not found$(NC)"; \
+	@# Check dependencies (support both ImageMagick 6 and 7)
+	@if ! command -v magick &> /dev/null && ! command -v convert &> /dev/null; then \
+		echo -e "$(RED)✗ ImageMagick not found (neither 'magick' nor 'convert')$(NC)"; \
 		echo -e "$(RED)  Install: sudo apt-get install imagemagick$(NC)"; \
 		exit 1; \
 	fi
@@ -271,24 +271,24 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 		STANDARD_EXIT=$$?; \
 		echo "" | tee -a "$$LOG_FILE"; \
 		if [ $$STANDARD_EXIT -eq 0 ]; then \
-			echo "$(GREEN)✓ Phase 1 complete: Standard CI passed$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(GREEN)✓ Phase 1 complete: Standard CI passed$(NC)" | tee -a "$$LOG_FILE"; \
 			echo "" | tee -a "$$LOG_FILE"; \
 			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
-			echo "PHASE 2: Smoke Tests" | tee -a "$$LOG_FILE"; \
+			echo "PHASE 2: Smoke Tests (via act container)" | tee -a "$$LOG_FILE"; \
 			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
-			$(MAKE) smoke-test 2>&1 | tee -a "$$LOG_FILE"; \
+			./bin/act workflow_dispatch -W .github/workflows/smoke-test.yml 2>&1 | tee -a "$$LOG_FILE"; \
 			SMOKE_EXIT=$$?; \
 			echo "" | tee -a "$$LOG_FILE"; \
 			if [ $$SMOKE_EXIT -ne 0 ]; then \
-				echo "$(RED)✗ Phase 2 failed: Smoke tests failed$(NC)" | tee -a "$$LOG_FILE"; \
+				echo -e "$(RED)✗ Phase 2 failed: Smoke tests failed$(NC)" | tee -a "$$LOG_FILE"; \
 				EXIT_CODE=$$SMOKE_EXIT; \
 			else \
-				echo "$(GREEN)✓ Phase 2 complete: Smoke tests passed$(NC)" | tee -a "$$LOG_FILE"; \
+				echo -e "$(GREEN)✓ Phase 2 complete: Smoke tests passed$(NC)" | tee -a "$$LOG_FILE"; \
 				EXIT_CODE=0; \
 			fi; \
 		else \
-			echo "$(RED)✗ Phase 1 failed: Standard CI failed$(NC)" | tee -a "$$LOG_FILE"; \
-			echo "$(YELLOW)⊘ Phase 2 skipped: Smoke tests not run$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(RED)✗ Phase 1 failed: Standard CI failed$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(YELLOW)⊘ Phase 2 skipped: Smoke tests not run$(NC)" | tee -a "$$LOG_FILE"; \
 			EXIT_CODE=$$STANDARD_EXIT; \
 		fi; \
 	else \
@@ -297,7 +297,7 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 		echo "═══════════════════════════════════════════════════════════"; \
 		echo "Workflows: 4 package workflows (Settings, Core, Templates, Orchestrator)"; \
 		echo "Logs: $$LOG_FILE"; \
-		echo "$(YELLOW)Tip:$(NC) Add SMOKE=true to include smoke tests"; \
+		echo -e "$(YELLOW)Tip:$(NC) Add SMOKE=true to include smoke tests"; \
 		echo "═══════════════════════════════════════════════════════════"; \
 		echo ""; \
 		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
@@ -306,15 +306,15 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 	echo ""; \
 	echo "═══════════════════════════════════════════════════════════"; \
 	if [ $$EXIT_CODE -eq 0 ]; then \
-		echo "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
+		echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
 	else \
-		echo "$(RED)✗ GitHub Actions simulation failed (exit code: $$EXIT_CODE)$(NC)"; \
+		echo -e "$(RED)✗ GitHub Actions simulation failed (exit code: $$EXIT_CODE)$(NC)"; \
 	fi; \
 	echo "═══════════════════════════════════════════════════════════"; \
 	echo ""; \
-	echo "$(GREEN)📋 Full logs saved to:$(NC) $$LOG_FILE"; \
-	echo "$(GREEN)Review logs:$(NC) cat $$LOG_FILE"; \
-	echo "$(GREEN)Search logs:$(NC) grep 'PASSED\|FAILED' $$LOG_FILE"; \
+	echo -e "$(GREEN)📋 Full logs saved to:$(NC) $$LOG_FILE"; \
+	echo -e "$(GREEN)Review logs:$(NC) cat $$LOG_FILE"; \
+	echo -e "$(GREEN)Search logs:$(NC) grep 'PASSED\|FAILED' $$LOG_FILE"; \
 	echo ""; \
 	exit $$EXIT_CODE
 

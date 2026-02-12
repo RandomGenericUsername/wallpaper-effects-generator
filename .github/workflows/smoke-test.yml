@@ -28,18 +28,20 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --all-packages
 
-      - name: Install ImageMagick
+      - name: Verify ImageMagick
         run: |
-          echo "📦 Installing ImageMagick..."
-          apt-get update -qq 2>&1 | tail -5
-          apt-get install -y -qq imagemagick 2>&1 | tail -5
-          # Verify installation
-          echo "Verifying ImageMagick installation..."
-          if ! which magick; then
-            echo "ERROR: magick command not found after installation"
+          echo "📦 Checking ImageMagick..."
+          # ImageMagick 6.x uses 'convert', 7.x uses 'magick'
+          if command -v magick &> /dev/null; then
+            echo "✓ ImageMagick 7.x found (magick command)"
+            magick -version | head -1
+          elif command -v convert &> /dev/null; then
+            echo "✓ ImageMagick 6.x found (convert command)"
+            convert -version | head -1
+          else
+            echo "ERROR: ImageMagick not found"
             exit 1
           fi
-          magick -version | head -1
 
       - name: Check Docker availability
         run: |

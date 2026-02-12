@@ -1241,8 +1241,8 @@ print_header "Testing Core CLI Dry-Run Commands"
 print_test "wallpaper-core process effect --dry-run shows ImageMagick command without executing"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/dry-run-test.jpg --effect blur --dry-run 2>&1)
 exit_code=$?
-if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
-    sample_cmd=$(echo "$dry_run_output" | grep "magick" | head -1 | cut -c1-60)
+if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -qE "(magick|convert)"; then
+    sample_cmd=$(echo "$dry_run_output" | grep -E "(magick|convert)" | head -1 | cut -c1-60)
     add_detail "• Command: wallpaper-core process effect --dry-run"
     add_detail "• Effect: blur"
     add_detail "• Exit code: $exit_code (success)"
@@ -1250,7 +1250,7 @@ if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
     add_detail "• Verified: ImageMagick command displayed without execution"
     test_passed
 else
-    test_failed "dry-run effect command failed or no magick command shown (exit: $exit_code)" \
+    test_failed "dry-run effect command failed or no ImageMagick command shown (exit: $exit_code)" \
         "wallpaper-core process effect ... --effect blur --dry-run" \
         "$dry_run_output"
 fi
@@ -1314,13 +1314,13 @@ fi
 
 print_test "wallpaper-core process effect -q --dry-run shows only command in quiet mode"
 dry_run_output=$(wallpaper-core -q process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
-if echo "$dry_run_output" | grep -q "magick" && ! echo "$dry_run_output" | grep -q "Validation"; then
+if echo "$dry_run_output" | grep -qE "(magick|convert)" && ! echo "$dry_run_output" | grep -q "Validation"; then
     add_detail "• Flag: -q (quiet mode)"
     add_detail "• Output: Command only, no validation details"
     add_detail "• Verified: Quiet mode suppresses verbose output"
     test_passed
 else
-    test_failed "quiet mode not working (should show only magick command, no validation)" \
+    test_failed "quiet mode not working (should show only ImageMagick command, no validation)" \
         "wallpaper-core -q process effect ... --dry-run" \
         "$dry_run_output"
 fi
@@ -1356,7 +1356,7 @@ fi
 
 print_test "wallpaper-core process preset --dry-run shows resolved command"
 dry_run_output=$(wallpaper-core process preset "$TEST_IMAGE" /tmp/test.jpg --preset dark_blur --dry-run 2>&1)
-if echo "$dry_run_output" | grep -q "magick"; then
+if echo "$dry_run_output" | grep -qE "(magick|convert)"; then
     add_detail "• Preset: dark_blur"
     add_detail "• Output shows: Resolved ImageMagick command"
     add_detail "• Verified: Preset resolved to concrete command"
@@ -1411,13 +1411,13 @@ fi
 
 print_test "wallpaper-core batch effects --dry-run shows resolved commands"
 dry_run_output=$(wallpaper-core batch effects "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
-command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
+command_count=$(echo "$dry_run_output" | grep -cE "(magick|convert)" || echo "0")
 if [ "$command_count" -ge 3 ]; then
     add_detail "• ImageMagick commands found: $command_count"
     add_detail "• Verified: Resolved commands for multiple effects"
     test_passed
 else
-    test_failed "insufficient magick commands in dry-run output (expected ≥3, got $command_count)" \
+    test_failed "insufficient ImageMagick commands in dry-run output (expected ≥3, got $command_count)" \
         "wallpaper-core batch effects ... --dry-run" \
         "$dry_run_output"
 fi
@@ -1539,16 +1539,16 @@ rm -rf "$test_dir"
 
 print_test "wallpaper-core batch all -q --dry-run shows only commands in quiet mode"
 dry_run_output=$(wallpaper-core -q batch all "$TEST_IMAGE" /tmp/batch-test --dry-run 2>&1)
-command_count=$(echo "$dry_run_output" | grep -c "magick" || echo "0")
+command_count=$(echo "$dry_run_output" | grep -cE "(magick|convert)" || echo "0")
 if [ "$command_count" -ge 5 ] && ! echo "$dry_run_output" | grep -q "Validation"; then
-    sample_cmd=$(echo "$dry_run_output" | grep "magick" | head -1 | cut -c1-60)
+    sample_cmd=$(echo "$dry_run_output" | grep -E "(magick|convert)" | head -1 | cut -c1-60)
     add_detail "• Flag: -q (quiet mode)"
     add_detail "• Commands shown: $command_count"
     add_detail "• Sample command: $sample_cmd..."
     add_detail "• Verified: Only commands, no validation/table headers"
     test_passed
 else
-    test_failed "quiet mode not working (expected ≥5 magick commands without Validation, got $command_count)" \
+    test_failed "quiet mode not working (expected ≥5 ImageMagick commands without Validation, got $command_count)" \
         "wallpaper-core -q batch all ... --dry-run" \
         "$dry_run_output"
 fi
@@ -1644,10 +1644,10 @@ EOF
     print_test "wallpaper-process process effect --dry-run shows both host and inner commands"
     dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process process effect "$TEST_IMAGE" /tmp/test.jpg blur --dry-run 2>&1)
     has_host_cmd=$(echo "$dry_run_output" | grep -E "($CONTAINER_ENGINE|run)" | wc -l)
-    has_inner_cmd=$(echo "$dry_run_output" | grep "magick" | wc -l)
+    has_inner_cmd=$(echo "$dry_run_output" | grep -E "(magick|convert)" | wc -l)
     if [ "$has_host_cmd" -ge 1 ] && [ "$has_inner_cmd" -ge 1 ]; then
         sample_host=$(echo "$dry_run_output" | grep -E "$CONTAINER_ENGINE" | head -1 | cut -c1-60)
-        sample_inner=$(echo "$dry_run_output" | grep "magick" | head -1 | cut -c1-60)
+        sample_inner=$(echo "$dry_run_output" | grep -E "(magick|convert)" | head -1 | cut -c1-60)
         add_detail "• Command: wallpaper-process process effect --dry-run"
         add_detail "• Host commands: $has_host_cmd ($CONTAINER_ENGINE run...)"
         add_detail "• Inner commands: $has_inner_cmd (ImageMagick)"
@@ -1841,7 +1841,7 @@ print_test "Dry-run edge case special characters in paths handled correctly"
 special_path="/tmp/wallpaper test (dry-run).jpg"
 dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" "$special_path" --effect blur --dry-run 2>&1)
 exit_code=$?
-if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -q "magick"; then
+if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -qE "(magick|convert)"; then
     add_detail "• Test path: $special_path (spaces + parentheses)"
     add_detail "• Exit code: $exit_code (success)"
     add_detail "• Command shown: ImageMagick command with special path"
