@@ -49,6 +49,13 @@ jobs:
           fi
           uv sync --dev --all-packages
 
+      - name: Install ImageMagick
+        run: |
+          echo "📦 Installing ImageMagick..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          echo "✓ ImageMagick installed"
+
       - name: Verify ImageMagick
         run: |
           echo "📦 Checking ImageMagick..."
