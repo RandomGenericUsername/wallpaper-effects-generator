@@ -1,10 +1,27 @@
 """Pydantic schemas for core settings."""
 
 import shutil
-from enum import IntEnum
+from enum import Enum, IntEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
+
+
+class ItemType(str, Enum):
+    """Type of wallpaper item for output path resolution."""
+
+    EFFECT = "effect"
+    COMPOSITE = "composite"
+    PRESET = "preset"
+
+    @property
+    def subdir_name(self) -> str:
+        """Get the plural subdirectory name for this item type."""
+        return {
+            ItemType.EFFECT: "effects",
+            ItemType.COMPOSITE: "composites",
+            ItemType.PRESET: "presets",
+        }[self]
 
 
 class Verbosity(IntEnum):

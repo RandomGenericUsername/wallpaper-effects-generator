@@ -50,6 +50,10 @@ target-version = ["py312"]
 line-length = 88
 target-version = "py312"
 
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["wallpaper_core", "wallpaper_orchestrator", "layered_settings", "layered_effects"]
+
 [tool.mypy]
 ignore_missing_imports = true
 disable_error_code = ["import-untyped"]

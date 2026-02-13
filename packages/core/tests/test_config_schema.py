@@ -9,10 +9,25 @@ from wallpaper_core.config.schema import (
     BackendSettings,
     CoreSettings,
     ExecutionSettings,
+    ItemType,
     OutputSettings,
     ProcessingSettings,
     Verbosity,
 )
+
+
+def test_item_type_enum_values():
+    """ItemType has correct enum values."""
+    assert ItemType.EFFECT.value == "effect"
+    assert ItemType.COMPOSITE.value == "composite"
+    assert ItemType.PRESET.value == "preset"
+
+
+def test_item_type_subdir_names():
+    """ItemType.subdir_name returns plural form."""
+    assert ItemType.EFFECT.subdir_name == "effects"
+    assert ItemType.COMPOSITE.subdir_name == "composites"
+    assert ItemType.PRESET.subdir_name == "presets"
 
 
 def test_verbosity_enum_values() -> None:
