@@ -8,10 +8,12 @@ from wallpaper_core.config.schema import (
     BackendSettings,
     CoreSettings,
     ExecutionSettings,
+    ItemType,
     OutputSettings,
     ProcessingSettings,
     Verbosity,
 )
+
 
 # Register CoreSettings with layered_settings
 SchemaRegistry.register(
@@ -23,6 +25,7 @@ SchemaRegistry.register(
 __all__ = [
     "CoreSettings",
     "ExecutionSettings",
+    "ItemType",
     "OutputSettings",
     "ProcessingSettings",
     "BackendSettings",

@@ -41,6 +41,8 @@ dev = [
 [tool.isort]
 profile = "black"
 line_length = 88
+lines_after_imports = 2
+known_first_party = ["wallpaper_core", "wallpaper_orchestrator", "layered_settings", "layered_effects"]
 
 [tool.black]
 line-length = 88
@@ -50,9 +52,9 @@ target-version = ["py312"]
 line-length = 88
 target-version = "py312"
 
-[tool.ruff.lint.isort]
-lines-after-imports = 2
-known-first-party = ["wallpaper_core", "wallpaper_orchestrator", "layered_settings", "layered_effects"]
+[tool.ruff.lint]
+# Disable all import sorting rules in ruff since we use isort
+ignore = ["I"]
 
 [tool.mypy]
 ignore_missing_imports = true

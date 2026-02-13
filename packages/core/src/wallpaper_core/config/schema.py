@@ -17,11 +17,7 @@ class ItemType(str, Enum):
     @property
     def subdir_name(self) -> str:
         """Get the plural subdirectory name for this item type."""
-        return {
-            ItemType.EFFECT: "effects",
-            ItemType.COMPOSITE: "composites",
-            ItemType.PRESET: "presets",
-        }[self]
+        return self.value + "s"
 
 
 class Verbosity(IntEnum):
