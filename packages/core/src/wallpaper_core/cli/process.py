@@ -7,11 +7,13 @@ from typing import Annotated
 
 import typer
 
-from wallpaper_core.config.schema import Verbosity
+from wallpaper_core.cli.path_utils import resolve_output_path
+from wallpaper_core.config.schema import CoreSettings, ItemType, Verbosity
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects.schema import ChainStep, EffectsConfig
 from wallpaper_core.engine.chain import ChainExecutor
 from wallpaper_core.engine.executor import CommandExecutor
+
 
 app = typer.Typer(help="Process a single image with effects")
 
@@ -75,8 +77,15 @@ def _resolve_chain_commands(
 def apply_effect(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_file: Annotated[Path, typer.Argument(help="Output image file")],
     effect: Annotated[str, typer.Option("-e", "--effect", help="Effect to apply")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     blur: Annotated[str | None, typer.Option("--blur", help="Blur geometry")] = None,
     brightness: Annotated[int | None, typer.Option("--brightness")] = None,
     contrast: Annotated[int | None, typer.Option("--contrast")] = None,
@@ -84,14 +93,34 @@ def apply_effect(
     strength: Annotated[int | None, typer.Option("--strength")] = None,
     color: Annotated[str | None, typer.Option("--color")] = None,
     opacity: Annotated[int | None, typer.Option("--opacity")] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Apply a single effect to an image."""
+    """Apply a single effect to an image.
+
+    Examples:
+        wallpaper-core process effect input.jpg --effect blur
+        wallpaper-core process effect input.jpg -o /out --effect blur --flat
+    """
+    settings: CoreSettings = ctx.obj["settings"]
     output = ctx.obj["output"]
     config = ctx.obj["config"]
+
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    # Resolve output file path
+    output_file = resolve_output_path(
+        output_dir=output_dir,
+        input_file=input_file,
+        item_name=effect,
+        item_type=ItemType.EFFECT,
+        flat=flat,
+    )
 
     # Build params from CLI options
     params: dict[str, str | int] = {}
@@ -112,6 +141,10 @@ def apply_effect(
 
     if dry_run:
         dry = CoreDryRun(console=output.console)
+
+        output.info(f"Would apply effect: {effect}")
+        output.info(f"Input: {input_file}")
+        output.info(f"Output: {output_file}")
 
         # Validation checks (non-fatal in dry-run mode)
         checks = dry.validate_core(

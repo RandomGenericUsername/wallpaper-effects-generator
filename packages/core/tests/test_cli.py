@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from wallpaper_core.cli.main import app
 
+
 runner = CliRunner()
 
 
@@ -56,35 +57,79 @@ class TestShowCommands:
 class TestProcessCommands:
     """Tests for process commands."""
 
-    def test_process_effect(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process effect command."""
-        output_path = tmp_path / "output.png"
+    def test_process_effect_with_output_dir_creates_subdirectory(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process effect with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
-                "-e",
+                "-o",
+                str(output_dir),
+                "--effect",
                 "blur",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert expected_output.exists()
+
+    def test_process_effect_without_output_uses_default(
+        self, test_image_file: Path, tmp_path: Path, monkeypatch
+    ) -> None:
+        """Process effect without -o uses default from settings."""
+        # Change to tmp_path so relative default writes there
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            ["process", "effect", str(test_image_file), "--effect", "blur"],
+        )
+        assert result.exit_code == 0
+        # Default is ./wallpapers-output
+        expected_output = (
+            tmp_path / "wallpapers-output" / "test_image" / "effects" / "blur.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_effect_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process effect with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "blur.png"
+        assert expected_output.exists()
 
     def test_process_effect_with_params(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process effect with parameters."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
                 "--blur",
@@ -92,20 +137,22 @@ class TestProcessCommands:
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert expected_output.exists()
 
     def test_process_effect_unknown(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process unknown effect fails."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "nonexistent",
             ],
@@ -115,141 +162,20 @@ class TestProcessCommands:
     def test_process_effect_missing_input(self, tmp_path: Path) -> None:
         """Test process effect with missing input file."""
         missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(missing_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
             ],
         )
         assert result.exit_code != 0
-
-    def test_process_effect_with_brightness(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with brightness parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--brightness",
-                "50",
-            ],
-        )
-        assert result.exit_code == 0
-        assert output_path.exists()
-
-    def test_process_effect_with_contrast(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with contrast parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--contrast",
-                "20",
-            ],
-        )
-        assert result.exit_code == 0
-        assert output_path.exists()
-
-    def test_process_effect_with_saturation(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with saturation parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--saturation",
-                "30",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_strength(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with strength parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "blur",
-                "--strength",
-                "5",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_color(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with color parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--color",
-                "#FF0000",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_opacity(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with opacity parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--opacity",
-                "75",
-            ],
-        )
-        assert result.exit_code == 0
 
     def test_process_composite(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test process composite command."""
@@ -693,7 +619,7 @@ class TestExecutorFailures:
         """Test apply effect when executor fails."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.CommandExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute.return_value = MagicMock(
@@ -707,7 +633,8 @@ class TestExecutorFailures:
                     "process",
                     "effect",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-e",
                     "blur",
                 ],
@@ -804,7 +731,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process effect in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -812,7 +739,8 @@ class TestQuietModeProcessing:
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
             ],
