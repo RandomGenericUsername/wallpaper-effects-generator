@@ -212,19 +212,50 @@ def apply_effect(
 def apply_composite(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_file: Annotated[Path, typer.Argument(help="Output image file")],
     composite: Annotated[str, typer.Option("-c", "--composite", help="Composite")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Apply a composite effect (chain) to an image."""
+    """Apply a composite effect (chain) to an image.
+
+    Examples:
+        wallpaper-core process composite input.jpg --composite blur-brightness80
+        wallpaper-core process composite input.jpg -o /out --composite my-comp --flat
+    """
+    settings: CoreSettings = ctx.obj["settings"]
     output = ctx.obj["output"]
     config = ctx.obj["config"]
 
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    # Resolve output file path
+    output_file = resolve_output_path(
+        output_dir=output_dir,
+        input_file=input_file,
+        item_name=composite,
+        item_type=ItemType.COMPOSITE,
+        flat=flat,
+    )
+
     if dry_run:
         dry = CoreDryRun(console=output.console)
+
+        output.info(f"Would apply composite: {composite}")
+        output.info(f"Input: {input_file}")
+        output.info(f"Output: {output_file}")
 
         checks = dry.validate_core(
             input_path=input_file,

@@ -177,54 +177,109 @@ class TestProcessCommands:
         )
         assert result.exit_code != 0
 
-    def test_process_composite(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process composite command."""
-        output_path = tmp_path / "output.png"
+    def test_process_composite_with_output_dir(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process composite with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
-                "-c",
+                "-o",
+                str(output_dir),
+                "--composite",
                 "blur-brightness80",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = (
+            output_dir / "test_image" / "composites" / "blur-brightness80.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_composite_without_output_uses_default(
+        self, test_image_file: Path, tmp_path: Path, monkeypatch
+    ) -> None:
+        """Process composite without -o uses default from settings."""
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "--composite",
+                "blur-brightness80",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = (
+            tmp_path
+            / "wallpapers-output"
+            / "test_image"
+            / "composites"
+            / "blur-brightness80.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_composite_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process composite with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "blur-brightness80",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "blur-brightness80.png"
+        assert expected_output.exists()
+
+    def test_process_composite_unknown(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Test process unknown composite fails."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "-c",
+                "nonexistent-composite",
+            ],
+        )
+        assert result.exit_code != 0
 
     def test_process_composite_missing_input(self, tmp_path: Path) -> None:
         """Test process composite with missing input file."""
         missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(missing_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "blur-brightness80",
-            ],
-        )
-        assert result.exit_code != 0
-
-    def test_process_composite_unknown(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process unknown composite fails."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "composite",
-                str(test_image_file),
-                str(output_path),
-                "-c",
-                "nonexistent-composite",
             ],
         )
         assert result.exit_code != 0
@@ -455,28 +510,6 @@ class TestVerbosityFlags:
         assert result.exit_code == 0
 
 
-class TestApplyCompositeErrors:
-    """Tests for composite error handling."""
-
-    def test_apply_composite_unknown_composite_error(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test apply composite with unknown composite references missing composite."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "composite",
-                str(test_image_file),
-                str(output_path),
-                "-c",
-                "nonexistent-composite",
-            ],
-        )
-        assert result.exit_code != 0
-
-
 class TestApplyPresetErrors:
     """Tests for preset error handling."""
 
@@ -547,7 +580,7 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run composite in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -555,7 +588,8 @@ class TestDryRunErrorCases:
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "blur-brightness80",
                 "--dry-run",
@@ -567,14 +601,15 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run with unknown composite."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "nonexistent-composite",
                 "--dry-run",
@@ -723,7 +758,7 @@ class TestExecutorFailures:
         """Test apply composite when executor fails."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
@@ -737,7 +772,8 @@ class TestExecutorFailures:
                     "process",
                     "composite",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-c",
                     "blur-brightness80",
                 ],
@@ -827,7 +863,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process composite in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -835,7 +871,8 @@ class TestQuietModeProcessing:
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "blur-brightness80",
             ],
