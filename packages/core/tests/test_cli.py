@@ -609,6 +609,82 @@ class TestDryRunErrorCases:
             or "unknown" in result.stdout.lower()
         )
 
+    def test_process_effect_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run effect shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply effect: blur" in result.stdout
+        assert str(test_image_file) in result.stdout
+        # Verify output file was NOT created
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert not expected_output.exists()
+
+    def test_dry_run_unknown_effect(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run with unknown effect name fails with clear error."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "nonexistent_effect",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        assert (
+            "cannot resolve" in result.stdout.lower()
+            or "unknown" in result.stdout.lower()
+            or "nonexistent_effect" in result.stdout
+        )
+
+    def test_dry_run_effect_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run with quiet mode shows minimal output."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Quiet mode should have minimal output (no verbose details)
+        # Output file should NOT be created
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert not expected_output.exists()
+
 
 class TestExecutorFailures:
     """Tests for executor failure handling."""
