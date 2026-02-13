@@ -15,7 +15,6 @@ from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator
 from wallpaper_core.engine.chain import ChainExecutor
 
-
 app = typer.Typer(help="Batch generate effects")
 
 
