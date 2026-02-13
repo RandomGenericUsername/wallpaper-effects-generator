@@ -670,6 +670,34 @@ class TestDryRunErrorCases:
         expected_output = output_dir / "test_image" / "effects" / "blur.png"
         assert not expected_output.exists()
 
+    def test_process_composite_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run composite shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "blur-brightness80",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply composite: blur-brightness80" in result.stdout
+        assert str(test_image_file) in result.stdout
+        # Verify output file was NOT created
+        expected_output = (
+            output_dir / "test_image" / "composites" / "blur-brightness80.png"
+        )
+        assert not expected_output.exists()
+
     def test_dry_run_unknown_effect(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
