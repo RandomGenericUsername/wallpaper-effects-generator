@@ -43,9 +43,7 @@ class CoreDryRun(DryRunBase):
         magick_version = (
             "7 (magick)"
             if shutil.which("magick")
-            else "6 (convert)"
-            if shutil.which("convert")
-            else None
+            else "6 (convert)" if shutil.which("convert") else None
         )
         checks.append(
             ValidationCheck(
