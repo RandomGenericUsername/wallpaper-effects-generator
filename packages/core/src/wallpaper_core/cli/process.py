@@ -322,19 +322,50 @@ def apply_composite(
 def apply_preset(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_file: Annotated[Path, typer.Argument(help="Output image file")],
     preset: Annotated[str, typer.Option("-p", "--preset", help="Preset name")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     dry_run: Annotated[
         bool,
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Apply a preset to an image."""
+    """Apply a preset to an image.
+
+    Examples:
+        wallpaper-core process preset input.jpg --preset dark_blur
+        wallpaper-core process preset input.jpg -o /out --preset my-preset --flat
+    """
+    settings: CoreSettings = ctx.obj["settings"]
     output = ctx.obj["output"]
     config = ctx.obj["config"]
 
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    # Resolve output file path
+    output_file = resolve_output_path(
+        output_dir=output_dir,
+        input_file=input_file,
+        item_name=preset,
+        item_type=ItemType.PRESET,
+        flat=flat,
+    )
+
     if dry_run:
         dry = CoreDryRun(console=output.console)
+
+        output.info(f"Would apply preset: {preset}")
+        output.info(f"Input: {input_file}")
+        output.info(f"Output: {output_file}")
 
         checks = dry.validate_core(
             input_path=input_file,

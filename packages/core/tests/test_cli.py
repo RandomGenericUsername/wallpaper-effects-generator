@@ -284,34 +284,102 @@ class TestProcessCommands:
         )
         assert result.exit_code != 0
 
-    def test_process_preset(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process preset command."""
-        output_path = tmp_path / "output.png"
+    def test_process_preset_with_output_dir(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process preset with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
-                "-p",
+                "-o",
+                str(output_dir),
+                "--preset",
                 "dark_blur",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "presets" / "dark_blur.png"
+        assert expected_output.exists()
+
+    def test_process_preset_without_output_uses_default(
+        self, test_image_file: Path, tmp_path: Path, monkeypatch
+    ) -> None:
+        """Process preset without -o uses default from settings."""
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            ["process", "preset", str(test_image_file), "--preset", "dark_blur"],
+        )
+        assert result.exit_code == 0
+        expected_output = (
+            tmp_path / "wallpapers-output" / "test_image" / "presets" / "dark_blur.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_preset_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process preset with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_blur",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "dark_blur.png"
+        assert expected_output.exists()
+
+    def test_process_preset_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run preset shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply preset: dark_blur" in result.stdout
+        assert str(test_image_file) in result.stdout
+        # Verify output file was NOT created
+        expected_output = output_dir / "test_image" / "presets" / "dark_blur.png"
+        assert not expected_output.exists()
 
     def test_process_preset_missing_input(self, tmp_path: Path) -> None:
         """Test process preset with missing input file."""
         missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(missing_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
@@ -322,14 +390,15 @@ class TestProcessCommands:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process unknown preset fails."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
             ],
@@ -517,14 +586,15 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test apply preset with missing preset."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
             ],
@@ -535,7 +605,7 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path, sample_effects_config
     ) -> None:
         """Test apply preset that references unknown composite."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         # Note: This test invokes the real CLI which loads its own config,
         # so the preset modification won't affect the actual execution.
         # We're just testing the CLI behavior with the real config.
@@ -545,7 +615,8 @@ class TestApplyPresetErrors:
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
@@ -557,14 +628,15 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test apply preset that references unknown effect."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "subtle_blur",
             ],
@@ -625,14 +697,15 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run with unknown preset."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
                 "--dry-run",
@@ -814,7 +887,7 @@ class TestExecutorFailures:
         """Test apply preset with composite executor failure."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
@@ -828,7 +901,8 @@ class TestExecutorFailures:
                     "process",
                     "preset",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-p",
                     "dark_blur",
                 ],
@@ -911,7 +985,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process preset in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -919,7 +993,8 @@ class TestQuietModeProcessing:
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
