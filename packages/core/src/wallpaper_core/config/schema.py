@@ -48,6 +48,19 @@ class OutputSettings(BaseModel):
         default=Verbosity.NORMAL, description="Output verbosity level"
     )
 
+    default_dir: Path = Field(
+        default=Path("./wallpapers-output"),
+        description="Default output directory when -o/--output-dir not specified",
+    )
+
+    @field_validator("default_dir", mode="before")
+    @classmethod
+    def convert_str_to_path(cls, v: str | Path) -> Path:
+        """Convert string to Path if needed."""
+        if isinstance(v, Path):
+            return v
+        return Path(v)
+
 
 class ProcessingSettings(BaseModel):
     """Processing behavior settings."""

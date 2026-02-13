@@ -1,6 +1,7 @@
 """Tests for CoreSettings Pydantic schema."""
 
 import shutil
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -68,6 +69,33 @@ def test_output_settings_accepts_int() -> None:
     assert settings.verbosity == Verbosity.VERBOSE
 
 
+def test_output_settings_has_default_dir():
+    """OutputSettings has default_dir field."""
+    settings = OutputSettings()
+    assert hasattr(settings, "default_dir")
+    assert isinstance(settings.default_dir, Path)
+
+
+def test_output_settings_default_dir_default_value():
+    """OutputSettings.default_dir defaults to ./wallpapers-output."""
+    settings = OutputSettings()
+    assert settings.default_dir == Path("./wallpapers-output")
+
+
+def test_output_settings_default_dir_accepts_path():
+    """OutputSettings.default_dir accepts Path objects."""
+    custom_path = Path("/custom/output")
+    settings = OutputSettings(default_dir=custom_path)
+    assert settings.default_dir == custom_path
+
+
+def test_output_settings_default_dir_converts_string():
+    """OutputSettings.default_dir converts strings to Path."""
+    settings = OutputSettings(default_dir="/custom/output")
+    assert settings.default_dir == Path("/custom/output")
+    assert isinstance(settings.default_dir, Path)
+
+
 def test_processing_settings_defaults() -> None:
     """Test ProcessingSettings defaults to None for temp_dir."""
     settings = ProcessingSettings()
@@ -82,8 +110,6 @@ def test_processing_settings_converts_string_to_path() -> None:
 
 def test_processing_settings_accepts_path_object() -> None:
     """Test ProcessingSettings accepts Path object directly."""
-    from pathlib import Path
-
     path_obj = Path("/tmp/test")
     settings = ProcessingSettings(temp_dir=path_obj)
     assert settings.temp_dir == path_obj
