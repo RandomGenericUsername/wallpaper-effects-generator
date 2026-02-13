@@ -575,6 +575,11 @@ version = "1.0"
 engine = "$CONTAINER_ENGINE"
 image_name = "wallpaper-effects:latest"
 EOF
+    # Debug: Verify settings.toml was created
+    if [ "$VERBOSE" = "true" ]; then
+        echo "DEBUG: Created $TEST_CONTAINER_PROJECT/settings.toml:"
+        cat "$TEST_CONTAINER_PROJECT/settings.toml"
+    fi
 fi
 
 print_test "wallpaper-process install builds container image"
@@ -588,6 +593,13 @@ elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process install 2>&1";
     add_detail "• Container engine: $CONTAINER_ENGINE"
     add_detail "• Image built: wallpaper-effects:latest"
     add_detail "• Build location: $TEST_CONTAINER_PROJECT"
+    # Debug: Verify image exists after build
+    if [ "$VERBOSE" = "true" ]; then
+        echo "DEBUG: Images after install:"
+        $CONTAINER_ENGINE images | grep wallpaper || echo "No wallpaper images found"
+        echo "DEBUG: Checking if image exists:"
+        $CONTAINER_ENGINE inspect wallpaper-effects:latest > /dev/null 2>&1 && echo "Image found!" || echo "Image NOT found!"
+    fi
     test_passed
 else
     test_failed "container image build failed (wallpaper-effects:latest)" \
@@ -602,19 +614,32 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
-elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process effect \"$TEST_IMAGE\" \"$orch_effect_out\" blur 2>&1" && [ -f "$orch_effect_out" ]; then
-    file_size=$(stat -f%z "$orch_effect_out" 2>/dev/null || stat -c%s "$orch_effect_out" 2>/dev/null)
-    add_detail "• Command: wallpaper-process process effect <image> <output> blur"
-    add_detail "• Container engine: $CONTAINER_ENGINE"
-    add_detail "• Input: $TEST_IMAGE"
-    add_detail "• Output: $orch_effect_out"
-    add_detail "• File size: $file_size bytes"
-    add_detail "• Effect: blur (containerized execution)"
-    test_passed
 else
-    test_failed "containerized effect processing failed or output not created (expected: $orch_effect_out)" \
-        "cd $TEST_CONTAINER_PROJECT && wallpaper-process process effect ... blur" \
-        "$LAST_OUTPUT"
+    # Debug mode: show what's happening before the command
+    if [ "$VERBOSE" = "true" ]; then
+        echo "DEBUG: Before process effect command:"
+        echo "DEBUG: Current directory: $(pwd)"
+        echo "DEBUG: TEST_CONTAINER_PROJECT: $TEST_CONTAINER_PROJECT"
+        echo "DEBUG: Settings file exists: $(test -f "$TEST_CONTAINER_PROJECT/settings.toml" && echo "YES" || echo "NO")"
+        echo "DEBUG: Images available:"
+        $CONTAINER_ENGINE images | grep wallpaper || echo "No wallpaper images found"
+        echo "DEBUG: Running command from: $TEST_CONTAINER_PROJECT"
+    fi
+    # Run the actual command
+    if run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process process effect \"$TEST_IMAGE\" \"$orch_effect_out\" blur 2>&1" && [ -f "$orch_effect_out" ]; then
+        file_size=$(stat -f%z "$orch_effect_out" 2>/dev/null || stat -c%s "$orch_effect_out" 2>/dev/null)
+        add_detail "• Command: wallpaper-process process effect <image> <output> blur"
+        add_detail "• Container engine: $CONTAINER_ENGINE"
+        add_detail "• Input: $TEST_IMAGE"
+        add_detail "• Output: $orch_effect_out"
+        add_detail "• File size: $file_size bytes"
+        add_detail "• Effect: blur (containerized execution)"
+        test_passed
+    else
+        test_failed "containerized effect processing failed or output not created (expected: $orch_effect_out)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process process effect ... blur" \
+            "$LAST_OUTPUT"
+    fi
 fi
 
 print_test "wallpaper-process process composite (blackwhite-blur) creates output file via container"

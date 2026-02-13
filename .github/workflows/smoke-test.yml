@@ -92,13 +92,13 @@ jobs:
           echo "✓ Test wallpaper found"
 
       - name: Run smoke tests (standard mode)
-        if: inputs.verbose == false
+        if: inputs.verbose == false && github.event_name != 'push'
         run: |
           cd ${{ github.workspace }}
           ./tests/smoke/run-smoke-tests.sh tests/fixtures/test-wallpaper.jpg
 
       - name: Run smoke tests (verbose mode)
-        if: inputs.verbose == true
+        if: inputs.verbose == true || github.event_name == 'push'
         run: |
           cd ${{ github.workspace }}
           ./tests/smoke/run-smoke-tests.sh --verbose tests/fixtures/test-wallpaper.jpg
