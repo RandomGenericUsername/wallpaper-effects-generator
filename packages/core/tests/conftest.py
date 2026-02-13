@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.output import RichOutput
 from wallpaper_core.effects.schema import (
@@ -335,6 +336,7 @@ def reset_effects_configuration():
     """
     from layered_effects import _reset
     from layered_effects import configure as configure_effects
+
     from wallpaper_core.effects import get_package_effects_file
 
     # Reset before each test to ensure clean state
