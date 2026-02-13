@@ -168,3 +168,16 @@ def test_core_settings_nested_validation() -> None:
         CoreSettings(execution={"max_workers": -5})
 
     assert "max_workers" in str(exc_info.value)
+
+
+def test_output_settings_loads_from_package_defaults():
+    """OutputSettings loads default_dir from package settings.toml."""
+    # This test verifies the package settings.toml is properly configured
+    # by loading settings and checking the default value is applied
+    from layered_settings import configure, get_config
+
+    from wallpaper_core.cli.main import CoreOnlyConfig
+
+    configure(CoreOnlyConfig, app_name="wallpaper-effects-test")
+    config = get_config()
+    assert config.core.output.default_dir == Path("./wallpapers-output")

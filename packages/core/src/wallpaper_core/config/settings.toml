@@ -9,6 +9,7 @@ max_workers = 0  # 0 = auto-detect CPU count
 
 [output]
 verbosity = 1  # 0=QUIET, 1=NORMAL, 2=VERBOSE, 3=DEBUG
+default_dir = "./wallpapers-output"
 
 [processing]
 # temp_dir is optional, defaults to system temp
