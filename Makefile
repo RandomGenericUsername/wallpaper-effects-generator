@@ -276,7 +276,7 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
 			echo "PHASE 2: Smoke Tests (via act container)" | tee -a "$$LOG_FILE"; \
 			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
-			./bin/act workflow_dispatch -W .github/workflows/smoke-test.yml 2>&1 | tee -a "$$LOG_FILE"; \
+			./bin/act workflow_dispatch -W .github/workflows/smoke-test.yml --container-options "-v /tmp:/tmp" 2>&1 | tee -a "$$LOG_FILE"; \
 			SMOKE_EXIT=$$?; \
 			echo "" | tee -a "$$LOG_FILE"; \
 			if [ $$SMOKE_EXIT -ne 0 ]; then \
