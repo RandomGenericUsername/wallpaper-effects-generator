@@ -1,6 +1,8 @@
 name: Smoke Tests (Integration)
 
 on:
+  push:
+    branches: ["**"]
   workflow_dispatch:
     inputs:
       verbose:
