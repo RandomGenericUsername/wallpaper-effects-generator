@@ -409,6 +409,24 @@ class TestProcessCommands:
 class TestBatchCommands:
     """Tests for batch commands."""
 
+    def test_batch_effects_without_output_uses_default(
+        self, test_image_file: Path, tmp_path: Path, monkeypatch
+    ) -> None:
+        """Batch effects without -o uses default from settings."""
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            ["batch", "effects", str(test_image_file), "--sequential"],
+        )
+        assert result.exit_code == 0
+        # Default is ./wallpapers-output
+        expected_base = (
+            tmp_path / "wallpapers-output" / test_image_file.stem / "effects"
+        )
+        # Check that at least one effect was generated
+        assert expected_base.exists()
+        assert len(list(expected_base.glob("*.png"))) > 0
+
     def test_batch_effects(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects command."""
         result = runner.invoke(
@@ -417,6 +435,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -434,6 +453,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -449,6 +469,7 @@ class TestBatchCommands:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -463,6 +484,7 @@ class TestBatchCommands:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -478,6 +500,7 @@ class TestBatchCommands:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -492,6 +515,7 @@ class TestBatchCommands:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -507,6 +531,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(missing_file),
+                "-o",
                 str(tmp_path),
             ],
         )
@@ -520,6 +545,7 @@ class TestBatchCommands:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -535,6 +561,7 @@ class TestBatchCommands:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -1010,6 +1037,7 @@ class TestQuietModeProcessing:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--sequential",
             ],
@@ -1025,6 +1053,7 @@ class TestQuietModeProcessing:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--sequential",
             ],
@@ -1054,6 +1083,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -1078,6 +1108,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -1102,6 +1133,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -1118,6 +1150,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--strict",
             ],

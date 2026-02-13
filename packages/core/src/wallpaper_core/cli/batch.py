@@ -7,16 +7,14 @@ from typing import Annotated
 
 import typer
 
-from wallpaper_core.cli.process import (
-    _resolve_chain_commands,
-    _resolve_command,
-)
+from wallpaper_core.cli.process import _resolve_chain_commands, _resolve_command
 from wallpaper_core.config.schema import Verbosity
 from wallpaper_core.console.progress import BatchProgress
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator
 from wallpaper_core.engine.chain import ChainExecutor
+
 
 app = typer.Typer(help="Batch generate effects")
 
@@ -55,9 +53,9 @@ def _resolve_batch_items(
     items: list[dict[str, str]] = []
 
     # Collect items based on batch_type
-    item_groups: list[tuple[str, str, str | None]] = (
-        []
-    )  # (name, type, subdir_for_single_type)
+    item_groups: list[
+        tuple[str, str, str | None]
+    ] = []  # (name, type, subdir_for_single_type)
     if batch_type in ("effects", "all"):
         for name in config.effects:
             item_groups.append(
@@ -308,7 +306,14 @@ def _run_batch(
 def batch_effects(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -317,7 +322,21 @@ def batch_effects(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all effects for an image."""
+    """Generate all effects for an image.
+
+    Examples:
+        wallpaper-core batch effects input.jpg
+        wallpaper-core batch effects input.jpg -o /custom/output
+        wallpaper-core batch effects input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
     _run_batch(ctx, input_file, output_dir, "effects", parallel, strict, flat, dry_run)
 
 
