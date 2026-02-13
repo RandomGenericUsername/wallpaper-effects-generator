@@ -1,7 +1,10 @@
 """Tests for UnifiedConfig composition."""
 
+import shutil
+
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
+
 from wallpaper_orchestrator.config.settings import OrchestratorSettings
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 
@@ -17,8 +20,6 @@ def test_unified_config_defaults() -> None:
 
 def test_unified_config_access_core() -> None:
     """Test accessing core settings through UnifiedConfig."""
-    import shutil
-
     config = UnifiedConfig()
 
     assert config.core.execution.parallel is True

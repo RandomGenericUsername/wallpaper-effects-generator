@@ -1,7 +1,10 @@
 """Tests for CoreSettings Pydantic schema."""
 
+import shutil
+
 import pytest
 from pydantic import ValidationError
+
 from wallpaper_core.config.schema import (
     BackendSettings,
     CoreSettings,
@@ -79,8 +82,6 @@ def test_processing_settings_handles_none_temp_dir() -> None:
 
 def test_backend_settings_defaults() -> None:
     """Test BackendSettings default binary (auto-detects magick or convert)."""
-    import shutil
-
     settings = BackendSettings()
     # Should auto-detect either magick (v7) or convert (v6)
     assert settings.binary is not None
@@ -96,8 +97,6 @@ def test_backend_settings_custom_binary() -> None:
 
 def test_core_settings_defaults() -> None:
     """Test CoreSettings creates with all defaults."""
-    import shutil
-
     settings = CoreSettings()
     assert settings.version == "1.0"
     assert settings.execution.parallel is True
