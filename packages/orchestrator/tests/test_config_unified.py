@@ -1,5 +1,7 @@
 """Tests for UnifiedConfig composition."""
 
+import shutil
+
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
 
@@ -21,7 +23,9 @@ def test_unified_config_access_core() -> None:
     config = UnifiedConfig()
 
     assert config.core.execution.parallel is True
-    assert config.core.backend.binary == "magick"
+    # Should auto-detect either magick (v7) or convert (v6)
+    expected = shutil.which("magick") or shutil.which("convert") or "magick"
+    assert config.core.backend.binary == expected
     assert config.core.output.verbosity.name == "NORMAL"
 
 

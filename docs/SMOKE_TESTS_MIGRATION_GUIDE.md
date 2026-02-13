@@ -28,7 +28,7 @@ Your project should have:
 
 ```bash
 # Create smoke tests directory
-mkdir -p tools/smoke-tests
+mkdir -p tests/smoke
 mkdir -p tests/fixtures
 ```
 
@@ -54,106 +54,26 @@ Create or append to `.gitattributes`:
 tests/fixtures/* binary
 ```
 
-### Step 2: Create Wrapper Script
+### Step 2: Move Your Test Script
 
-Create `tools/smoke-tests/run.sh`:
-
-```bash
-#!/bin/bash
-##############################################################################
-# Smoke Tests Runner
-#
-# Wrapper script for running the comprehensive smoke test suite.
-# Handles wallpaper selection and test execution.
-#
-# Usage: ./tools/smoke-tests/run.sh [OPTIONS] [wallpaper-path]
-#
-# Options:
-#   -v, --verbose    Show detailed test information in summary
-#   -h, --help       Show this help message
-#
-# Arguments:
-#   wallpaper-path  Path to wallpaper image file
-#                   If not provided, uses default: tests/fixtures/test-wallpaper.jpg
-#
-##############################################################################
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-
-# Default wallpaper
-DEFAULT_WALLPAPER="$PROJECT_ROOT/tests/fixtures/test-wallpaper.jpg"
-TEST_WALLPAPER="$DEFAULT_WALLPAPER"
-VERBOSE=false
-
-# Parse options
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
-        -h|--help)
-            head -21 "$0" | tail -15
-            exit 0
-            ;;
-        -*)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
-        *)
-            # This is the wallpaper path
-            TEST_WALLPAPER="$1"
-            shift
-            ;;
-    esac
-done
-
-# Resolve to absolute path
-if [ -n "$TEST_WALLPAPER" ] && [ "$TEST_WALLPAPER" != "$DEFAULT_WALLPAPER" ]; then
-    TEST_WALLPAPER="$(cd "$(dirname "$TEST_WALLPAPER")" && pwd)/$(basename "$TEST_WALLPAPER")"
-fi
-
-# Check if file exists
-if [ ! -f "$TEST_WALLPAPER" ]; then
-    echo "Error: Wallpaper file not found: $TEST_WALLPAPER"
-    echo "Using default: $DEFAULT_WALLPAPER"
-    TEST_WALLPAPER="$DEFAULT_WALLPAPER"
-fi
-
-# Check if default wallpaper exists
-if [ ! -f "$TEST_WALLPAPER" ]; then
-    echo "Error: Default wallpaper not found at: $TEST_WALLPAPER"
-    echo "Please provide a wallpaper path or ensure tests/fixtures/test-wallpaper.jpg exists"
-    exit 1
-fi
-
-# Call the main test script
-MAIN_SCRIPT="$SCRIPT_DIR/dev/test-all-commands.sh"
-
-if [ ! -f "$MAIN_SCRIPT" ]; then
-    echo "Error: Main test script not found at: $MAIN_SCRIPT"
-    exit 1
-fi
-
-# Pass arguments to the main script
-if [ "$VERBOSE" = true ]; then
-    "$MAIN_SCRIPT" --verbose "$TEST_WALLPAPER"
-else
-    "$MAIN_SCRIPT" "$TEST_WALLPAPER"
-fi
-```
-
-Make it executable:
+Move your existing comprehensive test script to `tests/smoke/run-smoke-tests.sh`:
 
 ```bash
-chmod +x tools/smoke-tests/run.sh
+# Simply move your existing test script
+mv tools/dev/test-all-commands.sh tests/smoke/run-smoke-tests.sh
+
+# Or if you have a different location
+mv path/to/your/test-script.sh tests/smoke/run-smoke-tests.sh
+
+# Make sure it's executable
+chmod +x tests/smoke/run-smoke-tests.sh
 ```
 
-**Important Adaptations:**
-- Change `DEFAULT_WALLPAPER` path if your test asset is elsewhere
-- Change `MAIN_SCRIPT` path to point to your actual test script
-- Adapt argument parsing if your test script uses different flags
+**Important**: Your test script should:
+- Accept a wallpaper/test asset path as the first positional argument
+- Support `--verbose` flag (optional but recommended)
+- Support `--help` flag (optional but recommended)
+- Use `tests/fixtures/test-wallpaper.jpg` as default if no argument provided
 
 ### Step 3: Add Makefile Target
 
@@ -178,13 +98,13 @@ smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
 	@# Run smoke tests via wrapper script
 	@if [ "$(VERBOSE)" = "true" ] && [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh --verbose "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh --verbose "$(WALLPAPER)"; \
 	elif [ "$(VERBOSE)" = "true" ]; then \
-		./tools/smoke-tests/run.sh --verbose; \
+		./tests/smoke/run-smoke-tests.sh --verbose; \
 	elif [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh "$(WALLPAPER)"; \
+		./tests/smoke/run-smoke-tests.sh "$(WALLPAPER)"; \
 	else \
-		./tools/smoke-tests/run.sh; \
+		./tests/smoke/run-smoke-tests.sh; \
 	fi
 	@echo -e "$(GREEN)✓ Smoke tests completed$(NC)"
 ```
@@ -337,13 +257,13 @@ jobs:
         if: inputs.verbose == false
         run: |
           cd ${{ github.workspace }}
-          ./tools/smoke-tests/run.sh
+          ./tests/smoke/run-smoke-tests.sh
 
       - name: Run smoke tests (verbose mode)
         if: inputs.verbose == true
         run: |
           cd ${{ github.workspace }}
-          ./tools/smoke-tests/run.sh --verbose
+          ./tests/smoke/run-smoke-tests.sh --verbose
 ```
 
 **Important Adaptations:**
@@ -435,14 +355,11 @@ project-root/
 │       └── smoke-test.yml          # New: GitHub Actions smoke test workflow
 ├── .gitattributes                  # New/Modified: Binary file handling
 ├── tests/
-│   └── fixtures/
-│       └── test-wallpaper.jpg      # New: Test asset
-├── tools/
-│   ├── dev/
-│   │   └── test-all-commands.sh    # Existing: Main smoke test script
-│   └── smoke-tests/                # New directory
+│   ├── fixtures/
+│   │   └── test-wallpaper.jpg      # New: Test asset
+│   └── smoke/                      # New directory
 │       ├── README.md               # New: Smoke tests documentation
-│       └── run.sh                  # New: Wrapper script
+│       └── run-smoke-tests.sh      # Moved: Your main test script (from tools/dev/)
 ├── Makefile                        # Modified: Added smoke-test target, modified push
 └── DEVELOPMENT.md                  # Modified: Added smoke tests documentation
 ```
@@ -498,18 +415,15 @@ make push
 
 If your test script has different arguments:
 
-1. **Modify `tools/smoke-tests/run.sh`**:
-   - Change how arguments are passed to `MAIN_SCRIPT`
-   - Adapt option parsing in the `while` loop
-   - Update help text
+1. **Adapt your test script** to accept standard arguments:
+   - First positional argument: path to test asset
+   - `--verbose` flag: enable verbose output
+   - `--help` flag: show help message
 
-2. **Example**: If your script uses `--image` instead of positional argument:
-   ```bash
-   # In run.sh, change this:
-   "$MAIN_SCRIPT" --verbose "$TEST_WALLPAPER"
-
-   # To this:
-   "$MAIN_SCRIPT" --verbose --image "$TEST_WALLPAPER"
+2. **Or update Makefile** to pass arguments in your script's format:
+   ```makefile
+   # If your script uses --image flag instead
+   ./tests/smoke/run-smoke-tests.sh --image "$(WALLPAPER)"
    ```
 
 ### For Different Dependencies
@@ -535,7 +449,7 @@ If your project needs different dependencies:
 If you have different test assets (not images):
 
 1. **Update paths** in:
-   - `tools/smoke-tests/run.sh` (DEFAULT_WALLPAPER variable)
+   - `tests/smoke/run-smoke-tests.sh` (DEFAULT_WALLPAPER variable)
    - `Makefile` (smoke-test target comments)
    - `.gitattributes` (binary file patterns)
 
@@ -547,10 +461,10 @@ If you have different test assets (not images):
 
 ### Script Not Found
 
-If you get "Main test script not found":
-- Verify `MAIN_SCRIPT` path in `tools/smoke-tests/run.sh`
-- Ensure your test script exists at that location
-- Check permissions: `ls -l tools/dev/test-all-commands.sh`
+If you get "Script not found":
+- Verify script is at `tests/smoke/run-smoke-tests.sh`
+- Check it's executable: `chmod +x tests/smoke/run-smoke-tests.sh`
+- Check permissions: `ls -l tests/smoke/run-smoke-tests.sh`
 
 ### Dependency Check Fails
 
@@ -575,7 +489,7 @@ After migration, verify everything works:
 make help | grep smoke
 
 # 2. Test wrapper script directly
-./tools/smoke-tests/run.sh --help
+./tests/smoke/run-smoke-tests.sh --help
 
 # 3. Run smoke tests with defaults
 make smoke-test
@@ -597,7 +511,7 @@ make push SMOKE=true
 
 This migration adds:
 
-✅ **Clean separation**: Test script in `tools/dev/`, wrapper in `tools/smoke-tests/`
+✅ **Clean organization**: Test script in `tests/smoke/` with other test files
 ✅ **Flexible execution**: Default or custom wallpaper via `WALLPAPER=` flag
 ✅ **Verbose output**: Optional detailed test information
 ✅ **Hard-fail validation**: Clear error messages for missing dependencies

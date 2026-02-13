@@ -1,6 +1,8 @@
 name: Smoke Tests (Integration)
 
 on:
+  push:
+    branches: ["**"]
   workflow_dispatch:
     inputs:
       verbose:
@@ -17,29 +19,59 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Verify workspace
+        run: |
+          echo "Checking if files are present..."
+          ls -la
+          if [ -f "pyproject.toml" ]; then
+            echo "✓ pyproject.toml found"
+          else
+            echo "✗ pyproject.toml not found"
+            exit 1
+          fi
+
+      - name: Verify Python
+        run: |
+          python3 --version
+          which python3
 
       - name: Install uv
-        run: pip install uv
-
-      - name: Install dependencies
-        run: uv sync --dev --all-packages
+        run: |
+          # Container has externally-managed Python, so use --break-system-packages
+          pip3 install --break-system-packages uv
 
       - name: Install ImageMagick
         run: |
           echo "📦 Installing ImageMagick..."
-          apt-get update -qq 2>&1 | tail -5
-          apt-get install -y -qq imagemagick 2>&1 | tail -5
-          # Verify installation
-          echo "Verifying ImageMagick installation..."
-          if ! which magick; then
-            echo "ERROR: magick command not found after installation"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          echo "✓ ImageMagick installed"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ github.workspace }}
+          if [ ! -f "pyproject.toml" ]; then
+            echo "ERROR: pyproject.toml not found!"
+            echo "Workspace contents:"
+            find ${{ github.workspace }} -maxdepth 2 -type f
             exit 1
           fi
-          magick -version | head -1
+          uv sync --dev --all-packages
+
+      - name: Verify ImageMagick
+        run: |
+          echo "📦 Checking ImageMagick..."
+          # ImageMagick 6.x uses 'convert', 7.x uses 'magick'
+          if command -v magick &> /dev/null; then
+            echo "✓ ImageMagick 7.x found (magick command)"
+            magick -version | head -1
+          elif command -v convert &> /dev/null; then
+            echo "✓ ImageMagick 6.x found (convert command)"
+            convert -version | head -1
+          else
+            echo "ERROR: ImageMagick not found"
+            exit 1
+          fi
 
       - name: Check Docker availability
         run: |
@@ -60,13 +92,13 @@ jobs:
           echo "✓ Test wallpaper found"
 
       - name: Run smoke tests (standard mode)
-        if: inputs.verbose == false
+        if: inputs.verbose == false && github.event_name != 'push'
         run: |
           cd ${{ github.workspace }}
-          ./tools/dev/test-all-commands.sh tests/fixtures/test-wallpaper.jpg
+          ./tests/smoke/run-smoke-tests.sh tests/fixtures/test-wallpaper.jpg
 
       - name: Run smoke tests (verbose mode)
-        if: inputs.verbose == true
+        if: inputs.verbose == true || github.event_name == 'push'
         run: |
           cd ${{ github.workspace }}
-          ./tools/dev/test-all-commands.sh --verbose tests/fixtures/test-wallpaper.jpg
+          ./tests/smoke/run-smoke-tests.sh --verbose tests/fixtures/test-wallpaper.jpg

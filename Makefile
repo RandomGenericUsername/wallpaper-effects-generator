@@ -196,9 +196,9 @@ build-orchestrator: ## Build orchestrator package
 ##@ Smoke Testing
 smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(BLUE)Running smoke tests...$(NC)"
-	@# Check dependencies
-	@if ! command -v magick &> /dev/null; then \
-		echo -e "$(RED)✗ ImageMagick (magick) not found$(NC)"; \
+	@# Check dependencies (support both ImageMagick 6 and 7)
+	@if ! command -v magick &> /dev/null && ! command -v convert &> /dev/null; then \
+		echo -e "$(RED)✗ ImageMagick not found (neither 'magick' nor 'convert')$(NC)"; \
 		echo -e "$(RED)  Install: sudo apt-get install imagemagick$(NC)"; \
 		exit 1; \
 	fi
@@ -209,15 +209,13 @@ smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 		exit 1; \
 	fi
 	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
-	@# Run smoke tests via wrapper script
-	@if [ "$(VERBOSE)" = "true" ] && [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh --verbose "$(WALLPAPER)"; \
-	elif [ "$(VERBOSE)" = "true" ]; then \
-		./tools/smoke-tests/run.sh --verbose; \
-	elif [ -n "$(WALLPAPER)" ]; then \
-		./tools/smoke-tests/run.sh "$(WALLPAPER)"; \
+	@# Set default wallpaper if not provided
+	@DEFAULT_WALLPAPER="tests/fixtures/test-wallpaper.jpg"; \
+	TEST_WALLPAPER="$${WALLPAPER:-$$DEFAULT_WALLPAPER}"; \
+	if [ "$(VERBOSE)" = "true" ]; then \
+		./tests/smoke/run-smoke-tests.sh --verbose "$$TEST_WALLPAPER"; \
 	else \
-		./tools/smoke-tests/run.sh; \
+		./tests/smoke/run-smoke-tests.sh "$$TEST_WALLPAPER"; \
 	fi
 	@echo -e "$(GREEN)✓ Smoke tests completed$(NC)"
 
@@ -242,9 +240,9 @@ pipeline: ## Validate pipeline - simulate GitHub Actions workflows locally
 	@echo -e ""
 
 push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
-	@echo -e "$(BLUE)Setting up GitHub Actions locally...$(NC)"
+	@echo -e "Setting up GitHub Actions locally..."
 	@if [ ! -f ./bin/act ]; then \
-		echo -e "$(BLUE)Downloading act (GitHub Actions CLI)...$(NC)"; \
+		echo -e "Downloading act (GitHub Actions CLI)..."; \
 		mkdir -p ./bin; \
 		curl -sL https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_x86_64.tar.gz -o /tmp/act.tar.gz; \
 		tar -xzf /tmp/act.tar.gz -C ./bin; \
@@ -253,52 +251,71 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 	else \
 		echo -e "$(GREEN)✓ act already available$(NC)"; \
 	fi
-	@echo -e ""
+	@echo ""
 	@mkdir -p .logs
 	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
 	LOG_FILE=".logs/make-push-$$TIMESTAMP.log"; \
 	if [ "$(SMOKE)" = "true" ]; then \
-		echo -e "$(BLUE)Running GitHub Actions with SMOKE TESTS enabled...$(NC)"; \
-		echo -e "$(BLUE)This includes standard CI + end-to-end smoke tests$(NC)"; \
-		echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
-		echo -e ""; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo "Running GitHub Actions with SMOKE TESTS enabled"; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo "Phase 1: Standard CI (4 package workflows)"; \
+		echo "Phase 2: Smoke Tests (end-to-end integration)"; \
+		echo "Logs: $$LOG_FILE"; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo ""; \
+		echo "───────────────────────────────────────────────────────────"; \
+		echo "PHASE 1: Standard CI Workflows"; \
+		echo "───────────────────────────────────────────────────────────"; \
 		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
 		STANDARD_EXIT=$$?; \
+		echo "" | tee -a "$$LOG_FILE"; \
 		if [ $$STANDARD_EXIT -eq 0 ]; then \
-			echo -e "" | tee -a "$$LOG_FILE"; \
-			echo -e "$(BLUE)Standard CI passed. Running smoke tests...$(NC)" | tee -a "$$LOG_FILE"; \
-			$(MAKE) smoke-test 2>&1 | tee -a "$$LOG_FILE"; \
+			echo -e "$(GREEN)✓ Phase 1 complete: Standard CI passed$(NC)" | tee -a "$$LOG_FILE"; \
+			echo "" | tee -a "$$LOG_FILE"; \
+			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
+			echo "PHASE 2: Smoke Tests (via act container)" | tee -a "$$LOG_FILE"; \
+			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
+			./bin/act workflow_dispatch -W .github/workflows/smoke-test.yml --container-options "-v /tmp:/tmp" 2>&1 | tee -a "$$LOG_FILE"; \
 			SMOKE_EXIT=$$?; \
+			echo "" | tee -a "$$LOG_FILE"; \
 			if [ $$SMOKE_EXIT -ne 0 ]; then \
-				echo -e "$(RED)✗ Smoke tests failed$(NC)" | tee -a "$$LOG_FILE"; \
+				echo -e "$(RED)✗ Phase 2 failed: Smoke tests failed$(NC)" | tee -a "$$LOG_FILE"; \
 				EXIT_CODE=$$SMOKE_EXIT; \
 			else \
-				echo -e "$(GREEN)✓ Smoke tests passed$(NC)" | tee -a "$$LOG_FILE"; \
+				echo -e "$(GREEN)✓ Phase 2 complete: Smoke tests passed$(NC)" | tee -a "$$LOG_FILE"; \
 				EXIT_CODE=0; \
 			fi; \
 		else \
-			echo -e "$(RED)✗ Standard CI failed, skipping smoke tests$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(RED)✗ Phase 1 failed: Standard CI failed$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(YELLOW)⊘ Phase 2 skipped: Smoke tests not run$(NC)" | tee -a "$$LOG_FILE"; \
 			EXIT_CODE=$$STANDARD_EXIT; \
 		fi; \
 	else \
-		echo -e "$(BLUE)Running standard GitHub Actions workflows...$(NC)"; \
-		echo -e "$(BLUE)Logs will be saved to: $$LOG_FILE$(NC)"; \
-		echo -e "$(BLUE)Tip: Add SMOKE=true to include smoke tests$(NC)"; \
-		echo -e ""; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo "Running Standard GitHub Actions Workflows"; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo "Workflows: 4 package workflows (Settings, Core, Templates, Orchestrator)"; \
+		echo "Logs: $$LOG_FILE"; \
+		echo -e "$(YELLOW)Tip:$(NC) Add SMOKE=true to include smoke tests"; \
+		echo "═══════════════════════════════════════════════════════════"; \
+		echo ""; \
 		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
 		EXIT_CODE=$$?; \
 	fi; \
-	echo -e ""; \
+	echo ""; \
+	echo "═══════════════════════════════════════════════════════════"; \
 	if [ $$EXIT_CODE -eq 0 ]; then \
 		echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
 	else \
 		echo -e "$(RED)✗ GitHub Actions simulation failed (exit code: $$EXIT_CODE)$(NC)"; \
 	fi; \
-	echo -e ""; \
-	echo -e "$(GREEN)📋 Full logs saved to: $$LOG_FILE$(NC)"; \
-	echo -e "$(GREEN)Review logs with: cat $$LOG_FILE$(NC)"; \
-	echo -e "$(GREEN)Search logs with: grep 'PASSED\|FAILED' $$LOG_FILE$(NC)"; \
-	echo -e ""; \
+	echo "═══════════════════════════════════════════════════════════"; \
+	echo ""; \
+	echo -e "$(GREEN)📋 Full logs saved to:$(NC) $$LOG_FILE"; \
+	echo -e "$(GREEN)Review logs:$(NC) cat $$LOG_FILE"; \
+	echo -e "$(GREEN)Search logs:$(NC) grep 'PASSED\|FAILED' $$LOG_FILE"; \
+	echo ""; \
 	exit $$EXIT_CODE
 
 ##@ Cleanup

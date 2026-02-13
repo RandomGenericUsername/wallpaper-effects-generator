@@ -16,8 +16,8 @@ This directory contains the infrastructure for running comprehensive smoke tests
 
 ## Files
 
-- **run.sh** - Wrapper script for executing smoke tests with wallpaper parameter handling
-- **../dev/test-all-commands.sh** - Main comprehensive smoke test script (85+ test cases)
+- **run-smoke-tests.sh** - Comprehensive smoke test script (85+ test cases)
+- **README.md** - This documentation file
 
 ## Usage
 
@@ -41,19 +41,19 @@ make smoke-test WALLPAPER=/path/to/wallpaper.jpg VERBOSE=true
 
 ```bash
 # Use default wallpaper from tests/fixtures/test-wallpaper.jpg
-./tools/smoke-tests/run.sh
+./tests/smoke/run-smoke-tests.sh
 
 # Use custom wallpaper
-./tools/smoke-tests/run.sh /path/to/wallpaper.jpg
+./tests/smoke/run-smoke-tests.sh /path/to/wallpaper.jpg
 
 # Verbose mode with default wallpaper
-./tools/smoke-tests/run.sh --verbose
+./tests/smoke/run-smoke-tests.sh --verbose
 
 # Verbose mode with custom wallpaper
-./tools/smoke-tests/run.sh --verbose /path/to/wallpaper.jpg
+./tests/smoke/run-smoke-tests.sh --verbose /path/to/wallpaper.jpg
 
 # Help
-./tools/smoke-tests/run.sh --help
+./tests/smoke/run-smoke-tests.sh --help
 ```
 
 ## Requirements
@@ -196,9 +196,9 @@ The workflow in `.github/workflows/smoke-test.yml` runs when manually triggered:
 
 ## Modifying Tests
 
-The main test script (`tools/dev/test-all-commands.sh`) should not be modified for simple test runs. To add new tests:
+To add new tests or modify existing ones:
 
-1. Edit `tools/dev/test-all-commands.sh` directly
+1. Edit `tests/smoke/run-smoke-tests.sh` directly
 2. Follow the existing test pattern
 3. Run `make smoke-test` to verify changes
 4. Update documentation if adding new test categories
@@ -206,16 +206,12 @@ The main test script (`tools/dev/test-all-commands.sh`) should not be modified f
 ## File Locations
 
 ```
-tools/
-├── dev/
-│   └── test-all-commands.sh      # Main test script (85+ tests)
-└── smoke-tests/
-    ├── README.md                  # This file
-    └── run.sh                      # Wrapper script
-
 tests/
-└── fixtures/
-    └── test-wallpaper.jpg         # Default test image (2.0M)
+├── fixtures/
+│   └── test-wallpaper.jpg         # Default test image (2.0M)
+└── smoke/
+    ├── README.md                  # This file
+    └── run-smoke-tests.sh         # Main test script (85+ tests)
 
 .github/workflows/
 └── smoke-test.yml                 # GitHub Actions workflow

@@ -1,5 +1,7 @@
 """Tests for CoreSettings Pydantic schema."""
 
+import shutil
+
 import pytest
 from pydantic import ValidationError
 
@@ -79,9 +81,12 @@ def test_processing_settings_handles_none_temp_dir() -> None:
 
 
 def test_backend_settings_defaults() -> None:
-    """Test BackendSettings default binary."""
+    """Test BackendSettings default binary (auto-detects magick or convert)."""
     settings = BackendSettings()
-    assert settings.binary == "magick"
+    # Should auto-detect either magick (v7) or convert (v6)
+    assert settings.binary is not None
+    expected = shutil.which("magick") or shutil.which("convert") or "magick"
+    assert settings.binary == expected
 
 
 def test_backend_settings_custom_binary() -> None:
@@ -97,7 +102,9 @@ def test_core_settings_defaults() -> None:
     assert settings.execution.parallel is True
     assert settings.output.verbosity == Verbosity.NORMAL
     assert settings.processing.temp_dir is None
-    assert settings.backend.binary == "magick"
+    # Should auto-detect either magick (v7) or convert (v6)
+    expected = shutil.which("magick") or shutil.which("convert") or "magick"
+    assert settings.backend.binary == expected
 
 
 def test_core_settings_from_dict() -> None:

@@ -323,3 +323,33 @@ def mock_subprocess_for_integration_tests():
         patch("shutil.which", side_effect=mock_which),
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def reset_effects_configuration():
+    """
+    Auto-use fixture that resets effects configuration between tests.
+
+    This prevents test pollution where one test's effects configuration
+    (especially temporary directories with invalid files) affects other tests.
+    Restores default configuration after reset.
+    """
+    from layered_effects import _reset
+    from layered_effects import configure as configure_effects
+
+    from wallpaper_core.effects import get_package_effects_file
+
+    # Reset before each test to ensure clean state
+    _reset()
+
+    # Re-configure with default settings (package effects only, no project root)
+    # This matches the CLI's default configuration
+    configure_effects(package_effects_file=get_package_effects_file())
+
+    yield
+
+    # Reset after each test to clean up
+    _reset()
+
+    # Re-configure for next test
+    configure_effects(package_effects_file=get_package_effects_file())

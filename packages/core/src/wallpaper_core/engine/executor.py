@@ -27,17 +27,23 @@ class ExecutionResult:
 class CommandExecutor:
     """Execute shell commands for effects."""
 
-    def __init__(self, output: RichOutput | None = None) -> None:
+    def __init__(
+        self, output: RichOutput | None = None, binary: str | None = None
+    ) -> None:
         """Initialize CommandExecutor.
 
         Args:
             output: RichOutput instance for logging
+            binary: ImageMagick binary (auto-detect magick/convert if None)
         """
         self.output = output
+        self.binary = (
+            binary or shutil.which("magick") or shutil.which("convert") or "magick"
+        )
 
     def is_magick_available(self) -> bool:
-        """Check if ImageMagick is available."""
-        return shutil.which("magick") is not None
+        """Check if ImageMagick is available (v6 or v7)."""
+        return shutil.which("magick") is not None or shutil.which("convert") is not None
 
     def execute(
         self,
@@ -81,6 +87,9 @@ class CommandExecutor:
         for key, value in substitutions.items():
             command = command.replace(f'"${key}"', f'"{value}"')
             command = command.replace(f"${key}", value)
+
+        # Replace 'magick' with detected binary (supports IM 6.x 'convert')
+        command = command.replace("magick ", f"{self.binary} ", 1)
 
         if self.output:
             self.output.command(command)
