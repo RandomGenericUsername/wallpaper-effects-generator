@@ -3,6 +3,7 @@
 import subprocess  # nosec: necessary for container management
 
 import typer
+from layered_settings import get_config
 from rich.console import Console
 
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
@@ -24,9 +25,7 @@ def uninstall(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview without executing"
-    ),  # noqa: B008
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Remove container image for wallpaper effects processing.
 
@@ -47,7 +46,9 @@ def uninstall(
     try:
         # Determine container engine
         if engine is None:
-            container_engine = "docker"
+            # Load from config if not specified
+            config = get_config()
+            container_engine = config.orchestrator.container.engine  # type: ignore[attr-defined]
         else:
             container_engine = engine.lower()
             if container_engine not in ["docker", "podman"]:

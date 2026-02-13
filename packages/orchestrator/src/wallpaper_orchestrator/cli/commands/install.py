@@ -4,6 +4,7 @@ import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
 import typer
+from layered_settings import get_config
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -20,9 +21,7 @@ def install(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview without executing"
-    ),  # noqa: B008
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
 ) -> None:
     """Build container image for wallpaper effects processing.
 
@@ -40,7 +39,9 @@ def install(
     try:
         # Determine container engine
         if engine is None:
-            container_engine = "docker"
+            # Load from config if not specified
+            config = get_config()
+            container_engine = config.orchestrator.container.engine  # type: ignore[attr-defined]
         else:
             container_engine = engine.lower()
             if container_engine not in ["docker", "podman"]:
