@@ -25,7 +25,9 @@ def uninstall(
         help="Container engine to use (docker or podman). "
         "Uses config default if not specified.",
     ),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without executing"),  # noqa: B008
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Preview without executing"
+    ),  # noqa: B008
 ) -> None:
     """Remove container image for wallpaper effects processing.
 
