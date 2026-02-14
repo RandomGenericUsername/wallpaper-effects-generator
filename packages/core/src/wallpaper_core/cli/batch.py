@@ -15,6 +15,7 @@ from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator
 from wallpaper_core.engine.chain import ChainExecutor
 
+
 app = typer.Typer(help="Batch generate effects")
 
 
@@ -343,7 +344,14 @@ def batch_effects(
 def batch_composites(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -352,7 +360,21 @@ def batch_composites(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all composites for an image."""
+    """Generate all composites for an image.
+
+    Examples:
+        wallpaper-core batch composites input.jpg
+        wallpaper-core batch composites input.jpg -o /custom/output
+        wallpaper-core batch composites input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
     _run_batch(
         ctx,
         input_file,
@@ -369,7 +391,14 @@ def batch_composites(
 def batch_presets(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -378,7 +407,21 @@ def batch_presets(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all presets for an image."""
+    """Generate all presets for an image.
+
+    Examples:
+        wallpaper-core batch presets input.jpg
+        wallpaper-core batch presets input.jpg -o /custom/output
+        wallpaper-core batch presets input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
     _run_batch(ctx, input_file, output_dir, "presets", parallel, strict, flat, dry_run)
 
 
@@ -386,7 +429,14 @@ def batch_presets(
 def batch_all(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -395,5 +445,19 @@ def batch_all(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all effects, composites, and presets for an image."""
+    """Generate all effects, composites, and presets for an image.
+
+    Examples:
+        wallpaper-core batch all input.jpg
+        wallpaper-core batch all input.jpg -o /custom/output
+        wallpaper-core batch all input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
     _run_batch(ctx, input_file, output_dir, "all", parallel, strict, flat, dry_run)
