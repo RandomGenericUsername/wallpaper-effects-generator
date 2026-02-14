@@ -8,7 +8,7 @@ from typing import Annotated
 import typer
 
 from wallpaper_core.cli.process import _resolve_chain_commands, _resolve_command
-from wallpaper_core.config.schema import Verbosity
+from wallpaper_core.config.schema import ItemType, Verbosity
 from wallpaper_core.console.progress import BatchProgress
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects.schema import EffectsConfig
@@ -54,14 +54,14 @@ def _resolve_batch_items(
 
     # Collect items based on batch_type
     item_groups: list[
-        tuple[str, str, str | None]
+        tuple[str, ItemType, str | None]
     ] = []  # (name, type, subdir_for_single_type)
     if batch_type in ("effects", "all"):
         for name in config.effects:
             item_groups.append(
                 (
                     name,
-                    "effect",
+                    ItemType.EFFECT,
                     "effects" if batch_type != "all" or not flat else None,
                 )
             )
@@ -70,7 +70,7 @@ def _resolve_batch_items(
             item_groups.append(
                 (
                     name,
-                    "composite",
+                    ItemType.COMPOSITE,
                     "composites" if batch_type != "all" or not flat else None,
                 )
             )
@@ -79,7 +79,7 @@ def _resolve_batch_items(
             item_groups.append(
                 (
                     name,
-                    "preset",
+                    ItemType.PRESET,
                     "presets" if batch_type != "all" or not flat else None,
                 )
             )
@@ -92,12 +92,7 @@ def _resolve_batch_items(
             if flat:
                 out_path = base_dir / f"{name}{suffix}"
             else:
-                subdir_map = {
-                    "effect": "effects",
-                    "composite": "composites",
-                    "preset": "presets",
-                }
-                out_path = base_dir / subdir_map.get(item_type, "") / f"{name}{suffix}"
+                out_path = base_dir / item_type.subdir_name / f"{name}{suffix}"
         else:
             # generate_batch: base_dir varies based on flat/subdir settings
             base_dir = output_dir / image_name
@@ -106,7 +101,7 @@ def _resolve_batch_items(
             out_path = base_dir / f"{name}{suffix}"
 
         # Resolve command(s)
-        if item_type == "effect":
+        if item_type == ItemType.EFFECT:
             effect_def = config.effects.get(name)
             if effect_def is not None:
                 params = chain_executor._get_params_with_defaults(name, {})
@@ -129,7 +124,7 @@ def _resolve_batch_items(
                 }
             )
 
-        elif item_type == "composite":
+        elif item_type == ItemType.COMPOSITE:
             composite_def = config.composites.get(name)
             if composite_def is not None:
                 chain_cmds = _resolve_chain_commands(
@@ -153,7 +148,7 @@ def _resolve_batch_items(
                 }
             )
 
-        elif item_type == "preset":
+        elif item_type == ItemType.PRESET:
             preset_def = config.presets.get(name)
             if preset_def is not None:
                 if preset_def.composite:
