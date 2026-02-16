@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.main import app
 
 
@@ -88,22 +87,25 @@ class TestBatchCommands:
         assert "--output-dir" in result.stdout or "-o" in result.stdout
 
     def test_batch_effects_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path, monkeypatch
+        self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Batch effects without -o uses default from settings."""
-        monkeypatch.chdir(tmp_path)
         result = runner.invoke(
             app,
             ["batch", "effects", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        # Default is ./wallpapers-output
+        # Default is /tmp/wallpaper-effects
         expected_base = (
-            tmp_path / "wallpapers-output" / test_image_file.stem / "effects"
+            Path("/tmp/wallpaper-effects") / test_image_file.stem / "effects"
         )
         # Check that at least one effect was generated
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
+        # Cleanup
+        import shutil
+
+        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_effects_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -149,20 +151,23 @@ class TestBatchCommands:
         assert len(list(base_dir.glob("*.png"))) > 0
 
     def test_batch_composites_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path, monkeypatch
+        self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Batch composites without -o uses default from settings."""
-        monkeypatch.chdir(tmp_path)
         result = runner.invoke(
             app,
             ["batch", "composites", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
         expected_base = (
-            tmp_path / "wallpapers-output" / test_image_file.stem / "composites"
+            Path("/tmp/wallpaper-effects") / test_image_file.stem / "composites"
         )
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
+        # Cleanup
+        import shutil
+
+        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_composites_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -186,20 +191,23 @@ class TestBatchCommands:
         assert len(list(composites_dir.glob("*.png"))) > 0
 
     def test_batch_presets_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path, monkeypatch
+        self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Batch presets without -o uses default from settings."""
-        monkeypatch.chdir(tmp_path)
         result = runner.invoke(
             app,
             ["batch", "presets", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
         expected_base = (
-            tmp_path / "wallpapers-output" / test_image_file.stem / "presets"
+            Path("/tmp/wallpaper-effects") / test_image_file.stem / "presets"
         )
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
+        # Cleanup
+        import shutil
+
+        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_presets_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -223,22 +231,25 @@ class TestBatchCommands:
         assert len(list(presets_dir.glob("*.png"))) > 0
 
     def test_batch_all_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path, monkeypatch
+        self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Batch all without -o uses default from settings."""
-        monkeypatch.chdir(tmp_path)
         result = runner.invoke(
             app,
             ["batch", "all", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        expected_base = tmp_path / "wallpapers-output" / test_image_file.stem
+        expected_base = Path("/tmp/wallpaper-effects") / test_image_file.stem
         assert expected_base.exists()
         # Check multiple subdirectories exist
         assert (expected_base / "effects").exists()
         assert (expected_base / "composites").exists() or (
             expected_base / "presets"
         ).exists()
+        # Cleanup
+        import shutil
+
+        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_all_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
