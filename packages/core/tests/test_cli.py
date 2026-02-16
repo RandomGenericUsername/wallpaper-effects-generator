@@ -355,7 +355,8 @@ class TestProcessCommands:
         assert result.exit_code == 0
         # Verify dry-run output contains key info
         assert "Would apply preset: dark_blur" in result.stdout
-        assert str(test_image_file) in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
         # Verify output file was NOT created
         expected_output = output_dir / "test_image" / "presets" / "dark_blur.png"
         assert not expected_output.exists()
@@ -797,7 +798,8 @@ class TestDryRunErrorCases:
         assert result.exit_code == 0
         # Verify dry-run output contains key info
         assert "Would apply effect: blur" in result.stdout
-        assert str(test_image_file) in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
         # Verify output file was NOT created
         expected_output = output_dir / "test_image" / "effects" / "blur.png"
         assert not expected_output.exists()
@@ -823,7 +825,8 @@ class TestDryRunErrorCases:
         assert result.exit_code == 0
         # Verify dry-run output contains key info
         assert "Would apply composite: blur-brightness80" in result.stdout
-        assert str(test_image_file) in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
         # Verify output file was NOT created
         expected_output = (
             output_dir / "test_image" / "composites" / "blur-brightness80.png"
