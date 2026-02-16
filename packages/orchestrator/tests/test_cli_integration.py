@@ -87,7 +87,7 @@ class TestBatchCommands:
         assert "--output-dir" in result.stdout or "-o" in result.stdout
 
     def test_batch_effects_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path
+        self, test_image_file: Path, use_tmp_default_output: Path
     ) -> None:
         """Batch effects without -o uses default from settings."""
         result = runner.invoke(
@@ -95,17 +95,11 @@ class TestBatchCommands:
             ["batch", "effects", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        # Default is /tmp/wallpaper-effects
-        expected_base = (
-            Path("/tmp/wallpaper-effects") / test_image_file.stem / "effects"
-        )
+        # Default is overridden to tmp_path for test isolation
+        expected_base = use_tmp_default_output / test_image_file.stem / "effects"
         # Check that at least one effect was generated
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
-        # Cleanup
-        import shutil
-
-        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_effects_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -151,7 +145,7 @@ class TestBatchCommands:
         assert len(list(base_dir.glob("*.png"))) > 0
 
     def test_batch_composites_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path
+        self, test_image_file: Path, use_tmp_default_output: Path
     ) -> None:
         """Batch composites without -o uses default from settings."""
         result = runner.invoke(
@@ -159,15 +153,9 @@ class TestBatchCommands:
             ["batch", "composites", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        expected_base = (
-            Path("/tmp/wallpaper-effects") / test_image_file.stem / "composites"
-        )
+        expected_base = use_tmp_default_output / test_image_file.stem / "composites"
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
-        # Cleanup
-        import shutil
-
-        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_composites_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -191,7 +179,7 @@ class TestBatchCommands:
         assert len(list(composites_dir.glob("*.png"))) > 0
 
     def test_batch_presets_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path
+        self, test_image_file: Path, use_tmp_default_output: Path
     ) -> None:
         """Batch presets without -o uses default from settings."""
         result = runner.invoke(
@@ -199,15 +187,9 @@ class TestBatchCommands:
             ["batch", "presets", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        expected_base = (
-            Path("/tmp/wallpaper-effects") / test_image_file.stem / "presets"
-        )
+        expected_base = use_tmp_default_output / test_image_file.stem / "presets"
         assert expected_base.exists()
         assert len(list(expected_base.glob("*.png"))) > 0
-        # Cleanup
-        import shutil
-
-        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_presets_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
@@ -231,7 +213,7 @@ class TestBatchCommands:
         assert len(list(presets_dir.glob("*.png"))) > 0
 
     def test_batch_all_without_output_uses_default(
-        self, test_image_file: Path, tmp_path: Path
+        self, test_image_file: Path, use_tmp_default_output: Path
     ) -> None:
         """Batch all without -o uses default from settings."""
         result = runner.invoke(
@@ -239,17 +221,13 @@ class TestBatchCommands:
             ["batch", "all", str(test_image_file), "--sequential"],
         )
         assert result.exit_code == 0
-        expected_base = Path("/tmp/wallpaper-effects") / test_image_file.stem
+        expected_base = use_tmp_default_output / test_image_file.stem
         assert expected_base.exists()
         # Check multiple subdirectories exist
         assert (expected_base / "effects").exists()
         assert (expected_base / "composites").exists() or (
             expected_base / "presets"
         ).exists()
-        # Cleanup
-        import shutil
-
-        shutil.rmtree(Path("/tmp/wallpaper-effects"), ignore_errors=True)
 
     def test_batch_all_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
