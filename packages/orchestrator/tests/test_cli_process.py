@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.main import app
 
 
@@ -40,17 +39,16 @@ def test_process_effect_with_output_dir(tmp_path: Path) -> None:
         )
 
         assert result.exit_code == 0
-        # Verify the call was made with a resolved path
+        # Verify the call was made with correct parameters
         mock_manager.run_process.assert_called_once()
         call_args = mock_manager.run_process.call_args
         assert call_args[1]["command_type"] == "effect"
         assert call_args[1]["command_name"] == "blur"
         assert call_args[1]["input_path"] == input_file
-        # Output path should be hierarchical: output_dir/input_stem/effects/blur.jpg
-        output_path = call_args[1]["output_path"]
-        assert output_path.parent.name == "effects"
-        assert output_path.parent.parent.name == "input"
-        assert output_path.name == "blur.jpg"
+        # Output dir should be the specified output directory
+        output_dir_arg = call_args[1]["output_dir"]
+        assert output_dir_arg == output_dir
+        assert call_args[1]["flat"] is False
 
 
 def test_process_effect_without_output_dir(tmp_path: Path) -> None:
@@ -119,13 +117,10 @@ def test_process_effect_with_flat_flag(tmp_path: Path) -> None:
         )
 
         assert result.exit_code == 0
-        # Verify the call was made with a flat path
+        # Verify flat flag was passed
         call_args = mock_manager.run_process.call_args
-        output_path = call_args[1]["output_path"]
-        # Flat structure: output_dir/input_stem/blur.jpg
-        assert output_path.parent.name == "input"
-        assert output_path.parent.parent == output_dir
-        assert output_path.name == "blur.jpg"
+        assert call_args[1]["flat"] is True
+        assert call_args[1]["output_dir"] == output_dir
 
 
 def test_process_effect_dry_run(tmp_path: Path) -> None:
@@ -204,10 +199,9 @@ def test_process_composite_with_output_dir(tmp_path: Path) -> None:
         call_args = mock_manager.run_process.call_args
         assert call_args[1]["command_type"] == "composite"
         assert call_args[1]["command_name"] == "dark"
-        output_path = call_args[1]["output_path"]
-        assert output_path.parent.name == "composites"
-        assert output_path.parent.parent.name == "input"
-        assert output_path.name == "dark.jpg"
+        output_dir_arg = call_args[1]["output_dir"]
+        assert output_dir_arg == output_dir
+        assert call_args[1]["flat"] is False
 
 
 def test_process_composite_without_output_dir(tmp_path: Path) -> None:
@@ -275,10 +269,8 @@ def test_process_composite_with_flat_flag(tmp_path: Path) -> None:
 
         assert result.exit_code == 0
         call_args = mock_manager.run_process.call_args
-        output_path = call_args[1]["output_path"]
-        assert output_path.parent.name == "input"
-        assert output_path.parent.parent == output_dir
-        assert output_path.name == "dark.jpg"
+        assert call_args[1]["flat"] is True
+        assert call_args[1]["output_dir"] == output_dir
 
 
 def test_process_composite_dry_run(tmp_path: Path) -> None:
@@ -353,10 +345,9 @@ def test_process_preset_with_output_dir(tmp_path: Path) -> None:
         call_args = mock_manager.run_process.call_args
         assert call_args[1]["command_type"] == "preset"
         assert call_args[1]["command_name"] == "dark_vibrant"
-        output_path = call_args[1]["output_path"]
-        assert output_path.parent.name == "presets"
-        assert output_path.parent.parent.name == "input"
-        assert output_path.name == "dark_vibrant.jpg"
+        output_dir_arg = call_args[1]["output_dir"]
+        assert output_dir_arg == output_dir
+        assert call_args[1]["flat"] is False
 
 
 def test_process_preset_without_output_dir(tmp_path: Path) -> None:
@@ -424,10 +415,8 @@ def test_process_preset_with_flat_flag(tmp_path: Path) -> None:
 
         assert result.exit_code == 0
         call_args = mock_manager.run_process.call_args
-        output_path = call_args[1]["output_path"]
-        assert output_path.parent.name == "input"
-        assert output_path.parent.parent == output_dir
-        assert output_path.name == "dark_vibrant.jpg"
+        assert call_args[1]["flat"] is True
+        assert call_args[1]["output_dir"] == output_dir
 
 
 def test_process_preset_dry_run(tmp_path: Path) -> None:

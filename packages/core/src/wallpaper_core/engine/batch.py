@@ -125,7 +125,10 @@ class BatchGenerator:
 
         result.total = len(items)
         image_name = input_path.stem
-        base_dir = output_dir / image_name
+
+        # Flat mode: output directly to output_dir
+        # Normal mode: output to output_dir/image-stem
+        base_dir = output_dir if flat else output_dir / image_name
 
         # Process items
         if self.parallel:
@@ -150,9 +153,10 @@ class BatchGenerator:
         """Generate a batch of items of the same type."""
         items = [(name, item_type) for name in names]
         image_name = input_path.stem
-        base_dir = output_dir / image_name
-        if subdir:
-            base_dir = base_dir / subdir
+
+        # Flat mode: output directly to output_dir
+        # Normal mode: output to output_dir/image-stem/subdir
+        base_dir = output_dir if subdir is None else output_dir / image_name / subdir
 
         if self.parallel:
             result = self._process_parallel(input_path, base_dir, items, True, progress)

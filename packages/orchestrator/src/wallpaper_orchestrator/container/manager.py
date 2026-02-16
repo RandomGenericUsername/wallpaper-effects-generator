@@ -88,7 +88,8 @@ class ContainerManager:
         command_type: str,
         command_name: str,
         input_path: Path,
-        output_path: Path,
+        output_dir: Path,
+        flat: bool = False,
         additional_args: list[str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
         """Execute wallpaper-core command inside container.
@@ -97,7 +98,8 @@ class ContainerManager:
             command_type: Type of command (effect/composite/preset)
             command_name: Name of effect/composite/preset
             input_path: Path to input image on host
-            output_path: Path for output image on host
+            output_dir: Output directory on host
+            flat: Use flat output structure
             additional_args: Additional CLI arguments to pass
 
         Returns:
@@ -133,7 +135,6 @@ class ContainerManager:
             )
 
         # Ensure output directory exists
-        output_dir = output_path.parent
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
         except PermissionError as e:
@@ -173,11 +174,16 @@ class ContainerManager:
                 "process",
                 command_type,
                 "/input/image.jpg",
-                f"/output/{output_path.name}",
                 f"--{command_type}",
                 command_name,
+                "-o",
+                "/output",
             ]
         )
+
+        # Add --flat flag if requested
+        if flat:
+            cmd.append("--flat")
 
         # Add additional arguments if provided
         if additional_args:

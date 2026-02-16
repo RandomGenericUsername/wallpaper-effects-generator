@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -119,7 +118,7 @@ def test_run_process_invalid_command_type(
             command_type="invalid",
             command_name="test",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -136,7 +135,7 @@ def test_run_process_empty_command_name(
             command_type="effect",
             command_name="",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -160,5 +159,5 @@ def test_run_process_permission_error(
                 command_type="effect",
                 command_name="blur",
                 input_path=input_file,
-                output_path=output_file,
+                output_dir=output_file.parent,
             )

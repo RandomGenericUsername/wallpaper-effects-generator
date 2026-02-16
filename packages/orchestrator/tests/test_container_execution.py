@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -39,7 +38,7 @@ def test_run_process_effect_builds_correct_command(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
         # Verify subprocess was called
@@ -99,7 +98,7 @@ def test_run_process_validates_image_exists(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -118,7 +117,7 @@ def test_run_process_validates_input_exists(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -141,7 +140,7 @@ def test_run_process_creates_output_directory(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
         # Verify output directory was created
@@ -167,7 +166,7 @@ def test_run_process_uses_absolute_paths(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
         call_args = mock_run.call_args[0][0]
@@ -198,7 +197,7 @@ def test_run_process_returns_container_exit_code(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
         assert result.returncode == 42
@@ -224,7 +223,7 @@ def test_run_process_with_podman_engine(tmp_path: Path) -> None:
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
         call_args = mock_run.call_args[0][0]
@@ -249,7 +248,7 @@ def test_run_process_with_additional_args(
             command_type="effect",
             command_name="blur",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
             additional_args=["--intensity", "5"],
         )
 

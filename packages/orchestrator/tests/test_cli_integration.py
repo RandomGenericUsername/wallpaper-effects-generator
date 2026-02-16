@@ -139,10 +139,9 @@ class TestBatchCommands:
             ],
         )
         assert result.exit_code == 0
-        # With flat, no effects subdirectory
-        base_dir = output_dir / test_image_file.stem
-        assert base_dir.exists()
-        assert len(list(base_dir.glob("*.png"))) > 0
+        # With flat, files go directly to output_dir (no subdirectories)
+        assert output_dir.exists()
+        assert len(list(output_dir.glob("*.png"))) > 0
 
     def test_batch_composites_without_output_uses_default(
         self, test_image_file: Path, use_tmp_default_output: Path
@@ -268,10 +267,9 @@ class TestBatchCommands:
             ],
         )
         assert result.exit_code == 0
-        base_dir = output_dir / test_image_file.stem
-        assert base_dir.exists()
-        # With flat, all files should be at the same level
-        assert len(list(base_dir.glob("*.png"))) > 0
+        # With flat, files go directly to output_dir (no subdirectories)
+        assert output_dir.exists()
+        assert len(list(output_dir.glob("*.png"))) > 0
 
 
 # Fixtures

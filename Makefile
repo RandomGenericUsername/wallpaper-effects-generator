@@ -155,7 +155,7 @@ test-settings: ## Test settings package
 
 test-core: ## Test core package
 	@echo -e "$(BLUE)Testing core package...$(NC)"
-	cd $(CORE_DIR) && $(UV) run pytest -n auto --color=yes --cov=src --cov-report=term
+	cd $(CORE_DIR) && $(UV) run pytest --color=yes --cov=src --cov-report=term
 	cd $(CORE_DIR) && $(UV) run coverage report --fail-under=95
 	@echo -e "$(GREEN)✓ Core package tests passed$(NC)"
 

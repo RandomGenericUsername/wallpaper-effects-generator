@@ -8,17 +8,17 @@ from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_settings import configure, get_config
 from rich.console import Console
+from wallpaper_orchestrator.cli.commands import install, uninstall
+from wallpaper_orchestrator.config.unified import UnifiedConfig
+from wallpaper_orchestrator.container.manager import ContainerManager
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
+
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
 from wallpaper_core.cli.path_utils import resolve_output_path
 from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects import get_package_effects_file
-
-from wallpaper_orchestrator.cli.commands import install, uninstall
-from wallpaper_orchestrator.config.unified import UnifiedConfig
-from wallpaper_orchestrator.container.manager import ContainerManager
-from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 
 # Configure layered_settings at module import
@@ -98,7 +98,7 @@ def process_effect(
 
             # Build host command string
             abs_input = input_file.absolute()
-            abs_output_dir = output_file.parent.absolute()
+            abs_output_dir = output_dir.absolute()
             cmd_parts = [manager.engine, "run", "--rm"]
             if manager.engine == "podman":
                 cmd_parts.append("--userns=keep-id")
@@ -112,11 +112,14 @@ def process_effect(
                     "process",
                     "effect",
                     "/input/image.jpg",
-                    f"/output/{output_file.name}",
                     "--effect",
                     effect,
+                    "-o",
+                    "/output",
                 ]
             )
+            if flat:
+                cmd_parts.append("--flat")
             host_command = " ".join(cmd_parts)
 
             # Resolve inner ImageMagick command
@@ -128,10 +131,18 @@ def process_effect(
 
                 chain_exec = ChainExecutor(effects_config)
                 params = chain_exec._get_params_with_defaults(effect, {})
+                # Compute expected output path based on flat flag
+                if flat:
+                    expected_output = Path(f"/output/{effect}{input_file.suffix}")
+                else:
+                    image_stem = input_file.stem
+                    expected_output = Path(
+                        f"/output/{image_stem}/effects/{effect}{input_file.suffix}"
+                    )
                 inner_command = _resolve_command(
                     effect_def.command,
                     Path("/input/image.jpg"),
-                    Path(f"/output/{output_file.name}"),
+                    expected_output,
                     params,
                 )
             else:
@@ -178,7 +189,8 @@ def process_effect(
             command_type="effect",
             command_name=effect,
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_dir,
+            flat=flat,
         )
 
         if result.returncode != 0:
@@ -243,7 +255,7 @@ def process_composite(
 
             # Build host command string
             abs_input = input_file.absolute()
-            abs_output_dir = output_file.parent.absolute()
+            abs_output_dir = output_dir.absolute()
             cmd_parts = [manager.engine, "run", "--rm"]
             if manager.engine == "podman":
                 cmd_parts.append("--userns=keep-id")
@@ -257,11 +269,14 @@ def process_composite(
                     "process",
                     "composite",
                     "/input/image.jpg",
-                    f"/output/{output_file.name}",
                     "--composite",
                     composite,
+                    "-o",
+                    "/output",
                 ]
             )
+            if flat:
+                cmd_parts.append("--flat")
             host_command = " ".join(cmd_parts)
 
             # Resolve inner commands (composite is a chain)
@@ -270,11 +285,20 @@ def process_composite(
             if composite_def:
                 from wallpaper_core.cli.process import _resolve_chain_commands
 
+                # Compute expected output path based on flat flag
+                if flat:
+                    expected_output = Path(f"/output/{composite}{input_file.suffix}")
+                else:
+                    image_stem = input_file.stem
+                    expected_output = Path(
+                        f"/output/{image_stem}/composites/{composite}{input_file.suffix}"
+                    )
+
                 inner_commands = _resolve_chain_commands(
                     composite_def.chain,
                     effects_config,
                     Path("/input/image.jpg"),
-                    Path(f"/output/{output_file.name}"),
+                    expected_output,
                 )
                 inner_command = (
                     " && ".join(inner_commands) if inner_commands else "<empty chain>"
@@ -321,7 +345,8 @@ def process_composite(
             command_type="composite",
             command_name=composite,
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_dir,
+            flat=flat,
         )
 
         if result.returncode != 0:
@@ -386,7 +411,7 @@ def process_preset(
 
             # Build host command string
             abs_input = input_file.absolute()
-            abs_output_dir = output_file.parent.absolute()
+            abs_output_dir = output_dir.absolute()
             cmd_parts = [manager.engine, "run", "--rm"]
             if manager.engine == "podman":
                 cmd_parts.append("--userns=keep-id")
@@ -400,12 +425,24 @@ def process_preset(
                     "process",
                     "preset",
                     "/input/image.jpg",
-                    f"/output/{output_file.name}",
                     "--preset",
                     preset,
+                    "-o",
+                    "/output",
                 ]
             )
+            if flat:
+                cmd_parts.append("--flat")
             host_command = " ".join(cmd_parts)
+
+            # Compute expected output path based on flat flag
+            if flat:
+                expected_output = Path(f"/output/{preset}{input_file.suffix}")
+            else:
+                image_stem = input_file.stem
+                expected_output = Path(
+                    f"/output/{image_stem}/presets/{preset}{input_file.suffix}"
+                )
 
             # Resolve inner command (preset points to effect or composite)
             effects_config = load_effects()
@@ -424,7 +461,7 @@ def process_preset(
                         inner_command = _resolve_command(
                             effect_def.command,
                             Path("/input/image.jpg"),
-                            Path(f"/output/{output_file.name}"),
+                            expected_output,
                             params,
                         )
                     else:
@@ -438,7 +475,7 @@ def process_preset(
                             composite_def.chain,
                             effects_config,
                             Path("/input/image.jpg"),
-                            Path(f"/output/{output_file.name}"),
+                            expected_output,
                         )
                         inner_command = (
                             " && ".join(inner_commands)
@@ -493,7 +530,8 @@ def process_preset(
             command_type="preset",
             command_name=preset,
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_dir,
+            flat=flat,
         )
 
         if result.returncode != 0:
