@@ -77,9 +77,9 @@ def test_output_settings_has_default_dir():
 
 
 def test_output_settings_default_dir_default_value():
-    """OutputSettings.default_dir defaults to ./wallpapers-output."""
+    """OutputSettings.default_dir defaults to /tmp/wallpaper-effects."""
     settings = OutputSettings()
-    assert settings.default_dir == Path("./wallpapers-output")
+    assert settings.default_dir == Path("/tmp/wallpaper-effects")
 
 
 def test_output_settings_default_dir_accepts_path():
@@ -180,4 +180,4 @@ def test_output_settings_loads_from_package_defaults():
 
     configure(CoreOnlyConfig, app_name="wallpaper-effects-test")
     config = get_config()
-    assert config.core.output.default_dir == Path("./wallpapers-output")
+    assert config.core.output.default_dir == Path("/tmp/wallpaper-effects")

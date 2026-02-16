@@ -49,7 +49,7 @@ class OutputSettings(BaseModel):
     )
 
     default_dir: Path = Field(
-        default=Path("./wallpapers-output"),
+        default=Path("/tmp/wallpaper-effects"),  # nosec B108 - configurable default path
         description="Default output directory when -o/--output-dir not specified",
     )
 

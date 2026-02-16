@@ -10,6 +10,7 @@ max_workers = 0      # 0 = auto-detect CPU count
 
 [core.output]
 verbosity = 1        # 0=quiet, 1=normal, 2=verbose, 3=debug
+# default_dir = "/tmp/wallpaper-effects"  # Default output directory for generated wallpapers
 
 [core.backend]
 binary = "magick"    # ImageMagick binary name
