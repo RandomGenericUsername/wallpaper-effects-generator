@@ -43,19 +43,16 @@ repos:
     hooks:
       - id: isort
         name: Sort imports with isort
-        args: [--profile=black, --line-length=88, --lines-after-imports=2]
+        args: [--profile=black, --line-length=88]
         stages: [pre-commit]
 
-  # Ruff linting (checks and fixes)
+  # Ruff linting (checks only, no import sorting)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.2.1
     hooks:
       - id: ruff
         name: Lint with Ruff
         args: [--fix, --line-length=88, --ignore=I]
-        stages: [pre-commit]
-      - id: ruff-format
-        name: Format with Ruff (fallback)
         stages: [pre-commit]
 
   # Type checking with mypy

@@ -11,7 +11,6 @@ from wallpaper_core.config.schema import ItemType
 from wallpaper_core.engine.chain import ChainExecutor
 from wallpaper_core.engine.executor import CommandExecutor, ExecutionResult
 
-
 if TYPE_CHECKING:
     from wallpaper_core.console.output import RichOutput
     from wallpaper_core.console.progress import BatchProgress

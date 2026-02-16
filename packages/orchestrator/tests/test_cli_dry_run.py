@@ -3,9 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.main import app
-
 
 runner = CliRunner()
 

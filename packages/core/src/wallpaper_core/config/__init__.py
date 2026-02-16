@@ -14,7 +14,6 @@ from wallpaper_core.config.schema import (
     Verbosity,
 )
 
-
 # Register CoreSettings with layered_settings
 SchemaRegistry.register(
     namespace="core",

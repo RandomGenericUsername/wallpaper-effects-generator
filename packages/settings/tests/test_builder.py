@@ -3,11 +3,10 @@
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel
-
 from layered_settings.builder import ConfigBuilder
 from layered_settings.errors import SettingsValidationError
 from layered_settings.layers import LayerSource
+from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):

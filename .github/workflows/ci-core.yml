@@ -30,11 +30,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --all-packages
 
-      - name: Ruff check
-        run: |
-          cd packages/core
-          uv run ruff check --line-length=88 .
-
       - name: Black check
         run: |
           cd packages/core

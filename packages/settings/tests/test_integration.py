@@ -8,10 +8,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from pydantic import BaseModel
-
 from layered_settings import SchemaRegistry, configure, get_config
 from layered_settings.errors import SettingsError
+from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):

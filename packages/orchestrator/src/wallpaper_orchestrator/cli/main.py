@@ -20,7 +20,6 @@ from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects import get_package_effects_file
 
-
 # Configure layered_settings at module import
 configure(UnifiedConfig, app_name="wallpaper-effects")
 

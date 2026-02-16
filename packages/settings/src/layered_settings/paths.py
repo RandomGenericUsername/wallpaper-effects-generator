@@ -18,7 +18,6 @@ from pathlib import Path
 
 from layered_settings.constants import APP_NAME, EFFECTS_FILENAME, SETTINGS_FILENAME
 
-
 # =============================================================================
 # XDG Base Directory Specification
 # =============================================================================

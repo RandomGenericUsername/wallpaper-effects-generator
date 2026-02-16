@@ -14,7 +14,6 @@ from wallpaper_core.effects.schema import ChainStep, EffectsConfig
 from wallpaper_core.engine.chain import ChainExecutor
 from wallpaper_core.engine.executor import CommandExecutor
 
-
 app = typer.Typer(help="Process a single image with effects")
 
 

@@ -15,7 +15,6 @@ from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator
 from wallpaper_core.engine.chain import ChainExecutor
 
-
 app = typer.Typer(help="Batch generate effects")
 
 
@@ -53,9 +52,9 @@ def _resolve_batch_items(
     items: list[dict[str, str]] = []
 
     # Collect items based on batch_type
-    item_groups: list[
-        tuple[str, ItemType, str | None]
-    ] = []  # (name, type, subdir_for_single_type)
+    item_groups: list[tuple[str, ItemType, str | None]] = (
+        []
+    )  # (name, type, subdir_for_single_type)
     if batch_type in ("effects", "all"):
         for name in config.effects:
             item_groups.append(

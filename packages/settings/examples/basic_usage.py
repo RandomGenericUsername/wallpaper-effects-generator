@@ -11,10 +11,8 @@ This example demonstrates:
 
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
 from layered_settings import SchemaRegistry, configure, get_config
-
+from pydantic import BaseModel, Field
 
 # Step 1: Define your configuration schemas using Pydantic
 # =========================================================
@@ -33,7 +31,9 @@ class DatabaseSettings(BaseModel):
 class ServerSettings(BaseModel):
     """Web server settings."""
 
-    host: str = Field(default="0.0.0.0", description="Server bind address")  # nosec B104
+    host: str = Field(
+        default="0.0.0.0", description="Server bind address"  # nosec B104
+    )
     port: int = Field(default=8000, description="Server port")
     workers: int = Field(default=4, description="Number of worker processes")
     debug: bool = Field(default=False, description="Enable debug mode")
