@@ -62,7 +62,11 @@ def _resolve_batch_items(
                 (
                     name,
                     ItemType.EFFECT,
-                    "effects" if batch_type != "all" or not flat else None,
+                    (
+                        ItemType.EFFECT.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
     if batch_type in ("composites", "all"):
@@ -71,7 +75,11 @@ def _resolve_batch_items(
                 (
                     name,
                     ItemType.COMPOSITE,
-                    "composites" if batch_type != "all" or not flat else None,
+                    (
+                        ItemType.COMPOSITE.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
     if batch_type in ("presets", "all"):
@@ -80,7 +88,11 @@ def _resolve_batch_items(
                 (
                     name,
                     ItemType.PRESET,
-                    "presets" if batch_type != "all" or not flat else None,
+                    (
+                        ItemType.PRESET.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
 
@@ -117,7 +129,7 @@ def _resolve_batch_items(
             items.append(
                 {
                     "name": name,
-                    "type": "effect",
+                    "type": item_type.value,
                     "output_path": str(out_path),
                     "command": cmd,
                     "params": param_str,
@@ -141,7 +153,7 @@ def _resolve_batch_items(
             items.append(
                 {
                     "name": name,
-                    "type": "composite",
+                    "type": item_type.value,
                     "output_path": str(out_path),
                     "command": cmd,
                     "params": chain_str,
@@ -166,7 +178,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": cmd,
                             "preset_type": "composite",
@@ -191,7 +203,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": cmd,
                             "preset_type": "effect",
@@ -202,7 +214,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": f"# Preset '{name}' has no effect or composite",
                             "preset_type": "\u2014",
