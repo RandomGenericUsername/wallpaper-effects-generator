@@ -1,5 +1,6 @@
 """Container manager for orchestrating wallpaper effects processing."""
 
+import os
 import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
@@ -161,10 +162,16 @@ class ContainerManager:
             "--rm",
         ]
 
-        # Rootless podman needs --userns=keep-id for correct
-        # UID mapping with host-mounted volumes
+        # User mapping for mounted volumes:
+        # - Podman: use --userns=keep-id for rootless containers
+        # - Docker: use --user to match host UID/GID
         if self.engine == "podman":
             cmd.append("--userns=keep-id")
+        else:
+            # Docker needs explicit user mapping for volume permissions
+            uid = os.getuid()
+            gid = os.getgid()
+            cmd.extend(["--user", f"{uid}:{gid}"])
 
         cmd.extend(
             [
