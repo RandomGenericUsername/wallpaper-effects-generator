@@ -225,7 +225,7 @@ def _resolve_batch_items(
                 items.append(
                     {
                         "name": name,
-                        "type": "preset",
+                        "type": item_type.value,
                         "output_path": str(out_path),
                         "command": f"# Unknown preset: {name}",
                         "preset_type": "\u2014",
