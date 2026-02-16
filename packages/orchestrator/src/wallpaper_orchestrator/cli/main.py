@@ -8,17 +8,17 @@ from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_settings import configure, get_config
 from rich.console import Console
+from wallpaper_orchestrator.cli.commands import install, uninstall
+from wallpaper_orchestrator.config.unified import UnifiedConfig
+from wallpaper_orchestrator.container.manager import ContainerManager
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
+
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
 from wallpaper_core.cli.path_utils import resolve_output_path
 from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects import get_package_effects_file
-
-from wallpaper_orchestrator.cli.commands import install, uninstall
-from wallpaper_orchestrator.config.unified import UnifiedConfig
-from wallpaper_orchestrator.container.manager import ContainerManager
-from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 # Configure layered_settings at module import
 configure(UnifiedConfig, app_name="wallpaper-effects")
@@ -83,12 +83,15 @@ def process_effect(
             output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
 
         # Resolve output file path
+        # Note: Process commands always use explicit_output=False to maintain
+        # image stem subdirectory for organization
         output_file = resolve_output_path(
             output_dir=output_dir,
             input_file=input_file,
             item_name=effect,
             item_type=ItemType.EFFECT,
             flat=flat,
+            explicit_output=False,
         )
 
         if dry_run:
@@ -236,6 +239,7 @@ def process_composite(
         manager = ContainerManager(config)  # type: ignore[arg-type]
 
         # Resolve output_dir
+        explicit_output = output_dir is not None
         if output_dir is None:
             output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
 
@@ -246,6 +250,7 @@ def process_composite(
             item_name=composite,
             item_type=ItemType.COMPOSITE,
             flat=flat,
+            explicit_output=explicit_output,
         )
 
         if dry_run:
@@ -392,6 +397,7 @@ def process_preset(
         manager = ContainerManager(config)  # type: ignore[arg-type]
 
         # Resolve output_dir
+        explicit_output = output_dir is not None
         if output_dir is None:
             output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
 
@@ -402,6 +408,7 @@ def process_preset(
             item_name=preset,
             item_type=ItemType.PRESET,
             flat=flat,
+            explicit_output=explicit_output,
         )
 
         if dry_run:

@@ -113,12 +113,15 @@ def apply_effect(
         output_dir = settings.output.default_dir
 
     # Resolve output file path
+    # Note: Process commands always use explicit_output=False to maintain
+    # image stem subdirectory for organization
     output_file = resolve_output_path(
         output_dir=output_dir,
         input_file=input_file,
         item_name=effect,
         item_type=ItemType.EFFECT,
         flat=flat,
+        explicit_output=False,
     )
 
     # Build params from CLI options
@@ -241,12 +244,15 @@ def apply_composite(
         output_dir = settings.output.default_dir
 
     # Resolve output file path
+    # Note: Process commands always use explicit_output=False to maintain
+    # image stem subdirectory for organization
     output_file = resolve_output_path(
         output_dir=output_dir,
         input_file=input_file,
         item_name=composite,
         item_type=ItemType.COMPOSITE,
         flat=flat,
+        explicit_output=False,
     )
 
     if dry_run:
@@ -351,12 +357,15 @@ def apply_preset(
         output_dir = settings.output.default_dir
 
     # Resolve output file path
+    # Note: Process commands always use explicit_output=False to maintain
+    # image stem subdirectory for organization
     output_file = resolve_output_path(
         output_dir=output_dir,
         input_file=input_file,
         item_name=preset,
         item_type=ItemType.PRESET,
         flat=flat,
+        explicit_output=False,
     )
 
     if dry_run:

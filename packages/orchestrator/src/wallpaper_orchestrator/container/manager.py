@@ -57,7 +57,8 @@ class ContainerManager:
         mounts = []
 
         # Input image file (read-only)
-        mounts.append(f"{image_path.absolute()}:/input/image.png:ro")
+        # Preserve original filename so output paths use correct image stem
+        mounts.append(f"{image_path.absolute()}:/input/{image_path.name}:ro")
 
         # Output directory (read-write)
         mounts.append(f"{output_dir.absolute()}:/output:rw")
@@ -148,7 +149,8 @@ class ContainerManager:
         abs_output_dir = output_dir.absolute()
 
         # Build volume mounts
-        input_mount = f"{abs_input}:/input/image.jpg:ro"
+        # Preserve original filename so output paths use correct image stem
+        input_mount = f"{abs_input}:/input/{input_path.name}:ro"
         output_mount = f"{abs_output_dir}:/output:rw"
 
         # Build container command
@@ -173,7 +175,7 @@ class ContainerManager:
                 self.get_image_name(),
                 "process",
                 command_type,
-                "/input/image.jpg",
+                f"/input/{input_path.name}",
                 f"--{command_type}",
                 command_name,
                 "-o",

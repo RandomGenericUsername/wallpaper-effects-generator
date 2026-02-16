@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -55,7 +54,7 @@ def test_build_volume_mounts(manager: ContainerManager, tmp_path: Path) -> None:
     mounts = manager.build_volume_mounts(input_image, output_dir)
 
     assert len(mounts) == 2
-    assert f"{input_image}:/input/image.png:ro" in mounts
+    assert f"{input_image}:/input/input.jpg:ro" in mounts  # Uses actual filename
     assert f"{output_dir}:/output:rw" in mounts
 
 

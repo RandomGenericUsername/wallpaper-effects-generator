@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
@@ -73,7 +72,7 @@ def test_run_process_effect_builds_correct_command(
         # Verify core command
         assert "process" in call_args
         assert "effect" in call_args
-        assert "/input/image.jpg" in call_args
+        assert "/input/input.jpg" in call_args  # Uses actual filename
         assert "blur" in call_args
 
         # Verify result
