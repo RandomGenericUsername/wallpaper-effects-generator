@@ -8,17 +8,17 @@ from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_settings import configure, get_config
 from rich.console import Console
-from wallpaper_orchestrator.cli.commands import install, uninstall
-from wallpaper_orchestrator.config.unified import UnifiedConfig
-from wallpaper_orchestrator.container.manager import ContainerManager
-from wallpaper_orchestrator.dry_run import OrchestratorDryRun
-
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
 from wallpaper_core.cli.path_utils import resolve_output_path
 from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects import get_package_effects_file
+
+from wallpaper_orchestrator.cli.commands import install, uninstall
+from wallpaper_orchestrator.config.unified import UnifiedConfig
+from wallpaper_orchestrator.container.manager import ContainerManager
+from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 # Configure layered_settings at module import
 configure(UnifiedConfig, app_name="wallpaper-effects")
