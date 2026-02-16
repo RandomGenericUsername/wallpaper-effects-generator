@@ -1,6 +1,7 @@
 """Main CLI entry point for wallpaper_orchestrator."""
 
 from pathlib import Path
+from typing import Annotated
 
 import typer
 from layered_effects import configure as configure_effects
@@ -9,6 +10,8 @@ from layered_settings import configure, get_config
 from rich.console import Console
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
+from wallpaper_core.cli.path_utils import resolve_output_path
+from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects import get_package_effects_file
 
@@ -16,6 +19,7 @@ from wallpaper_orchestrator.cli.commands import install, uninstall
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
+
 
 # Configure layered_settings at module import
 configure(UnifiedConfig, app_name="wallpaper-effects")
@@ -50,22 +54,43 @@ process_app = typer.Typer(
 
 @process_app.command("effect")
 def process_effect(
-    input_file: Path = typer.Argument(..., help="Input image file"),  # noqa: B008
-    output_file: Path = typer.Argument(..., help="Output image file"),  # noqa: B008
-    effect: str = typer.Argument(..., help="Effect name to apply"),  # noqa: B008
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview without executing"
-    ),  # noqa: B008
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    effect: Annotated[str, typer.Option("--effect", help="Effect name to apply")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
 ) -> None:
     """Apply single effect to image (runs in container).
 
     Examples:
-        wallpaper-process process effect input.jpg output.jpg blur
-        wallpaper-process process effect photo.png blurred.png gaussian_blur
+        wallpaper-process process effect input.jpg --effect blur
+        wallpaper-process process effect input.jpg -o /out --effect blur --flat
     """
     try:
         config = get_config()
         manager = ContainerManager(config)  # type: ignore[arg-type]
+
+        # Resolve output_dir
+        if output_dir is None:
+            output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
+
+        # Resolve output file path
+        output_file = resolve_output_path(
+            output_dir=output_dir,
+            input_file=input_file,
+            item_name=effect,
+            item_type=ItemType.EFFECT,
+            flat=flat,
+        )
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -174,21 +199,43 @@ def process_effect(
 
 @process_app.command("composite")
 def process_composite(
-    input_file: Path = typer.Argument(..., help="Input image file"),  # noqa: B008
-    output_file: Path = typer.Argument(..., help="Output image file"),  # noqa: B008
-    composite: str = typer.Argument(..., help="Composite name to apply"),  # noqa: B008
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview without executing"
-    ),  # noqa: B008
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    composite: Annotated[str, typer.Option("--composite", help="Composite name")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
 ) -> None:
     """Apply composite effect to image (runs in container).
 
     Examples:
-        wallpaper-process process composite input.jpg output.jpg dark
+        wallpaper-process process composite input.jpg --composite dark
+        wallpaper-process process composite input.jpg -o /out --composite dark --flat
     """
     try:
         config = get_config()
         manager = ContainerManager(config)  # type: ignore[arg-type]
+
+        # Resolve output_dir
+        if output_dir is None:
+            output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
+
+        # Resolve output file path
+        output_file = resolve_output_path(
+            output_dir=output_dir,
+            input_file=input_file,
+            item_name=composite,
+            item_type=ItemType.COMPOSITE,
+            flat=flat,
+        )
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -295,21 +342,43 @@ def process_composite(
 
 @process_app.command("preset")
 def process_preset(
-    input_file: Path = typer.Argument(..., help="Input image file"),  # noqa: B008
-    output_file: Path = typer.Argument(..., help="Output image file"),  # noqa: B008
-    preset: str = typer.Argument(..., help="Preset name to apply"),  # noqa: B008
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview without executing"
-    ),  # noqa: B008
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    preset: Annotated[str, typer.Option("--preset", help="Preset name to apply")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
 ) -> None:
     """Apply preset to image (runs in container).
 
     Examples:
-        wallpaper-process process preset input.jpg output.jpg dark_vibrant
+        wallpaper-process process preset input.jpg --preset dark_vibrant
+        wallpaper-process process preset input.jpg -o /out --preset dark_vibrant --flat
     """
     try:
         config = get_config()
         manager = ContainerManager(config)  # type: ignore[arg-type]
+
+        # Resolve output_dir
+        if output_dir is None:
+            output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
+
+        # Resolve output file path
+        output_file = resolve_output_path(
+            output_dir=output_dir,
+            input_file=input_file,
+            item_name=preset,
+            item_type=ItemType.PRESET,
+            flat=flat,
+        )
 
         if dry_run:
             renderer = OrchestratorDryRun(console=console)
@@ -363,9 +432,7 @@ def process_preset(
                 elif preset_def.composite:
                     composite_def = effects_config.composites.get(preset_def.composite)
                     if composite_def:
-                        from wallpaper_core.cli.process import (
-                            _resolve_chain_commands,
-                        )
+                        from wallpaper_core.cli.process import _resolve_chain_commands
 
                         inner_commands = _resolve_chain_commands(
                             composite_def.chain,

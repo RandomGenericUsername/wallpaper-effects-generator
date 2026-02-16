@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from wallpaper_orchestrator.cli.main import app
 
+
 runner = CliRunner()
 
 
@@ -45,7 +46,6 @@ class TestProcessEffectContainerDryRun:
     def test_dry_run_shows_both_commands(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -60,7 +60,7 @@ class TestProcessEffectContainerDryRun:
                     "process",
                     "effect",
                     str(input_file),
-                    str(output_file),
+                    "--effect",
                     "blur",
                     "--dry-run",
                 ],
@@ -75,7 +75,6 @@ class TestProcessEffectContainerDryRun:
     def test_dry_run_no_container_spawned(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -90,7 +89,7 @@ class TestProcessEffectContainerDryRun:
                     "process",
                     "effect",
                     str(input_file),
-                    str(output_file),
+                    "--effect",
                     "blur",
                     "--dry-run",
                 ],
@@ -103,7 +102,6 @@ class TestProcessCompositeContainerDryRun:
     def test_dry_run_shows_both_commands(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -118,7 +116,7 @@ class TestProcessCompositeContainerDryRun:
                     "process",
                     "composite",
                     str(input_file),
-                    str(output_file),
+                    "--composite",
                     "blur-brightness80",
                     "--dry-run",
                 ],
@@ -133,7 +131,6 @@ class TestProcessCompositeContainerDryRun:
     def test_dry_run_composite_with_podman(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -148,7 +145,7 @@ class TestProcessCompositeContainerDryRun:
                     "process",
                     "composite",
                     str(input_file),
-                    str(output_file),
+                    "--composite",
                     "blur-brightness80",
                     "--dry-run",
                 ],
@@ -163,7 +160,6 @@ class TestProcessPresetContainerDryRun:
     def test_dry_run_preset_shows_commands(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -178,7 +174,7 @@ class TestProcessPresetContainerDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "dark_blur",
                     "--dry-run",
                 ],
@@ -191,7 +187,6 @@ class TestProcessPresetContainerDryRun:
     def test_dry_run_unknown_preset(self, tmp_path):
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -206,7 +201,7 @@ class TestProcessPresetContainerDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "nonexistent-preset",
                     "--dry-run",
                 ],
@@ -223,7 +218,6 @@ class TestProcessPresetContainerDryRun:
         """Test dry-run for preset with unknown effect."""
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -238,7 +232,7 @@ class TestProcessPresetContainerDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "dark_blur",
                     "--dry-run",
                 ],
@@ -250,7 +244,6 @@ class TestProcessPresetContainerDryRun:
         """Test dry-run for preset with unknown composite."""
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -265,7 +258,7 @@ class TestProcessPresetContainerDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "dark_vibrant",
                     "--dry-run",
                 ],
@@ -279,7 +272,6 @@ class TestProcessEffectDryRunEdgeCases:
         """Test dry-run for effect not found in config."""
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -294,7 +286,7 @@ class TestProcessEffectDryRunEdgeCases:
                     "process",
                     "effect",
                     str(input_file),
-                    str(output_file),
+                    "--effect",
                     "nonexistent-effect",
                     "--dry-run",
                 ],
@@ -309,7 +301,6 @@ class TestProcessCompositeEdgeCases:
         """Test dry-run for composite not found in config."""
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
             mock_manager = MagicMock()
@@ -324,7 +315,7 @@ class TestProcessCompositeEdgeCases:
                     "process",
                     "composite",
                     str(input_file),
-                    str(output_file),
+                    "--composite",
                     "nonexistent-composite",
                     "--dry-run",
                 ],
@@ -345,7 +336,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         # Mock the container manager to use podman
         with patch(
@@ -362,7 +352,7 @@ class TestPodmanDryRun:
                     "process",
                     "effect",
                     str(input_file),
-                    str(output_file),
+                    "--effect",
                     "blur",
                     "--dry-run",
                 ],
@@ -377,7 +367,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         # Mock the container manager to use podman
         with patch(
@@ -394,7 +383,7 @@ class TestPodmanDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "dark_blur",
                     "--dry-run",
                 ],
@@ -408,7 +397,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         result = runner.invoke(
             app,
@@ -416,7 +404,7 @@ class TestPodmanDryRun:
                 "process",
                 "preset",
                 str(input_file),
-                str(output_file),
+                "--preset",
                 "subtle_blur",
                 "--dry-run",
             ],
@@ -429,7 +417,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         result = runner.invoke(
             app,
@@ -437,7 +424,7 @@ class TestPodmanDryRun:
                 "process",
                 "preset",
                 str(input_file),
-                str(output_file),
+                "--preset",
                 "dark_blur",
                 "--dry-run",
             ],
@@ -451,15 +438,10 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with preset referencing unknown effect
         with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
-            from wallpaper_core.effects.schema import (
-                Effect,
-                EffectsConfig,
-                Preset,
-            )
+            from wallpaper_core.effects.schema import Effect, EffectsConfig, Preset
 
             effects_config = EffectsConfig(
                 version="1.0",
@@ -479,7 +461,7 @@ class TestPodmanDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "bad_preset",
                     "--dry-run",
                 ],
@@ -494,7 +476,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with preset referencing unknown composite
         with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
@@ -517,7 +498,7 @@ class TestPodmanDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "bad_preset",
                     "--dry-run",
                 ],
@@ -532,7 +513,6 @@ class TestPodmanDryRun:
 
         input_file = tmp_path / "input.jpg"
         input_file.touch()
-        output_file = tmp_path / "output.jpg"
 
         # Mock load_effects to return config with invalid preset
         with patch("wallpaper_orchestrator.cli.main.load_effects") as mock_load:
@@ -552,7 +532,7 @@ class TestPodmanDryRun:
                     "process",
                     "preset",
                     str(input_file),
-                    str(output_file),
+                    "--preset",
                     "invalid_preset",
                     "--dry-run",
                 ],
