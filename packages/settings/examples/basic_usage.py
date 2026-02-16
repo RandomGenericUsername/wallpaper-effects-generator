@@ -11,8 +11,9 @@ This example demonstrates:
 
 from pathlib import Path
 
-from layered_settings import SchemaRegistry, configure, get_config
 from pydantic import BaseModel, Field
+
+from layered_settings import SchemaRegistry, configure, get_config
 
 # Step 1: Define your configuration schemas using Pydantic
 # =========================================================
