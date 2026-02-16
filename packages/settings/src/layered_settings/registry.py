@@ -8,8 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from layered_settings.errors import SettingsRegistryError
 from pydantic import BaseModel
+
+from layered_settings.errors import SettingsRegistryError
 
 
 @dataclass(frozen=True)

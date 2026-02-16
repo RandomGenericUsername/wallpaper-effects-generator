@@ -8,9 +8,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from pydantic import BaseModel
+
 from layered_settings import SchemaRegistry, configure, get_config
 from layered_settings.errors import SettingsError
-from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):
@@ -184,18 +185,22 @@ class TestFullWorkflow:
 
         # Step 1: Register schemas with package defaults
         core_defaults = tmp_path / "core_defaults.toml"
-        core_defaults.write_text("""
+        core_defaults.write_text(
+            """
 parallel = false
 workers = 8
 timeout = 60.0
-""")
+"""
+        )
 
         effects_defaults = tmp_path / "effects_defaults.toml"
-        effects_defaults.write_text("""
+        effects_defaults.write_text(
+            """
 blur = 10
 brightness = 0.8
 filters = ["sharpen", "contrast"]
-""")
+"""
+        )
 
         SchemaRegistry.register("core", CoreSettings, core_defaults)
         SchemaRegistry.register("effects", EffectsSettings, effects_defaults)
@@ -230,14 +235,16 @@ filters = ["sharpen", "contrast"]
 
         # Step 2: Create project settings.toml (namespaced format)
         project_settings = tmp_path / "settings.toml"
-        project_settings.write_text("""
+        project_settings.write_text(
+            """
 [core]
 workers = 16
 timeout = 120.0
 
 [effects]
 blur = 20
-""")
+"""
+        )
 
         # Step 3: Configure and get config
         configure(root_model=AppConfig, app_name="test-app")
@@ -266,10 +273,12 @@ blur = 20
         user_config_dir = tmp_path / ".config" / "test-app"
         user_config_dir.mkdir(parents=True)
         user_config = user_config_dir / "settings.toml"
-        user_config.write_text("""
+        user_config.write_text(
+            """
 [core]
 workers = 32
-""")
+"""
+        )
 
         # Mock Path.home() to return tmp_path
         with patch("layered_settings.layers.Path.home", return_value=tmp_path):
