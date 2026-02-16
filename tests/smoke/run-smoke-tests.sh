@@ -1369,7 +1369,7 @@ fi
 print_header "Testing Core CLI Dry-Run Commands"
 
 print_test "wallpaper-core process effect --dry-run shows ImageMagick command without executing"
-dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/dry-run-test.jpg --effect blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" --effect blur -o /tmp/dry-run-test.jpg --dry-run 2>&1)
 exit_code=$?
 if [ $exit_code -eq 0 ] && echo "$dry_run_output" | grep -qE "(magick|convert)"; then
     sample_cmd=$(echo "$dry_run_output" | grep -E "(magick|convert)" | head -1 | cut -c1-60)
@@ -1402,7 +1402,7 @@ else
 fi
 
 print_test "wallpaper-core process effect --dry-run shows validation checks"
-dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" --effect blur -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(Validation|✓|✗)"; then
     check_count=$(echo "$dry_run_output" | grep -cE "(✓|✗)" || echo "0")
     add_detail "• Validation checks displayed: $check_count"
@@ -1415,7 +1415,7 @@ else
 fi
 
 print_test "wallpaper-core process effect --dry-run with missing input shows warning"
-dry_run_output=$(wallpaper-core process effect /nonexistent/file.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process effect /nonexistent/file.jpg --effect blur -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
     warning_line=$(echo "$dry_run_output" | grep -m1 "not found\|✗" | head -c 80)
     add_detail "• Test: Nonexistent input file /nonexistent/file.jpg"
@@ -1429,7 +1429,7 @@ else
 fi
 
 print_test "wallpaper-core process effect --dry-run with unknown effect shows warning"
-dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect nonexistent_effect --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process effect "$TEST_IMAGE" --effect nonexistent_effect -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(not found|✗)" && [ $? -ne 1 ]; then
     warning_line=$(echo "$dry_run_output" | grep -m1 "not found\|✗" | head -c 80)
     add_detail "• Test: Unknown effect 'nonexistent_effect'"
@@ -1443,7 +1443,7 @@ else
 fi
 
 print_test "wallpaper-core process effect -q --dry-run shows only command in quiet mode"
-dry_run_output=$(wallpaper-core -q process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core -q process effect "$TEST_IMAGE" --effect blur -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(magick|convert)" && ! echo "$dry_run_output" | grep -q "Validation"; then
     add_detail "• Flag: -q (quiet mode)"
     add_detail "• Output: Command only, no validation details"
@@ -1456,7 +1456,7 @@ else
 fi
 
 print_test "wallpaper-core process composite --dry-run shows chain commands"
-dry_run_output=$(wallpaper-core process composite "$TEST_IMAGE" /tmp/test.jpg --composite blackwhite-blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process composite "$TEST_IMAGE" --composite blackwhite-blur -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qi "blur" && echo "$dry_run_output" | grep -qi "blackwhite"; then
     add_detail "• Composite: blackwhite-blur (2-effect chain)"
     add_detail "• Output shows: Both effects in chain"
@@ -1485,7 +1485,7 @@ else
 fi
 
 print_test "wallpaper-core process preset --dry-run shows resolved command"
-dry_run_output=$(wallpaper-core process preset "$TEST_IMAGE" /tmp/test.jpg --preset dark_blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process preset "$TEST_IMAGE" --preset dark_blur -o /tmp/test.jpg --dry-run 2>&1)
 if echo "$dry_run_output" | grep -qE "(magick|convert)"; then
     add_detail "• Preset: dark_blur"
     add_detail "• Output shows: Resolved ImageMagick command"
@@ -2000,7 +2000,7 @@ fi
 
 print_test "Dry-run edge case parameter defaults and overrides displayed correctly"
 # Test with default parameter
-dry_run_default=$(wallpaper-core process effect "$TEST_IMAGE" /tmp/test.jpg --effect blur --dry-run 2>&1)
+dry_run_default=$(wallpaper-core process effect "$TEST_IMAGE" --effect blur -o /tmp/test.jpg --dry-run 2>&1)
 # Check that output shows parameter value (either default notation or actual value)
 if echo "$dry_run_default" | grep -qE "(blur|0x8|param)"; then
     add_detail "• Effect: blur with default parameters"
@@ -2047,7 +2047,7 @@ fi
 
 print_test "Dry-run edge case validation for all preconditions displayed"
 # With missing input, multiple validation checks should appear
-dry_run_output=$(wallpaper-core process effect /nonexistent.jpg /tmp/test.jpg --effect blur --dry-run 2>&1)
+dry_run_output=$(wallpaper-core process effect /nonexistent.jpg --effect blur -o /tmp/test.jpg --dry-run 2>&1)
 validation_checks=$(echo "$dry_run_output" | grep -cE "(✓|✗)" || echo "0")
 if [ "$validation_checks" -ge 2 ]; then
     add_detail "• Test: Missing input file /nonexistent.jpg"
