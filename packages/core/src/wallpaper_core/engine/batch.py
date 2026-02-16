@@ -156,12 +156,13 @@ class BatchGenerator:
         # Flat mode: output directly to output_dir
         # Normal mode: output to output_dir/image-stem/subdir
         base_dir = output_dir if subdir is None else output_dir / image_name / subdir
+        flat = subdir is None
 
         if self.parallel:
-            result = self._process_parallel(input_path, base_dir, items, True, progress)
+            result = self._process_parallel(input_path, base_dir, items, flat, progress)
         else:
             result = self._process_sequential(
-                input_path, base_dir, items, True, progress
+                input_path, base_dir, items, flat, progress
             )
 
         result.output_dir = base_dir
