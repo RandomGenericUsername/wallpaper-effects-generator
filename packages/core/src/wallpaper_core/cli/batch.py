@@ -244,6 +244,7 @@ def _run_batch(
     strict: bool,
     flat: bool,
     dry_run: bool = False,
+    explicit_output: bool = False,
 ) -> None:
     """Run batch generation."""
     output = ctx.obj["output"]
@@ -296,7 +297,13 @@ def _run_batch(
     output.info(f"Generating {total} {batch_type}...")
 
     with BatchProgress(total, f"Generating {batch_type}") as progress:
-        result = method(input_file, output_dir, flat=flat, progress=progress)
+        result = method(
+            input_file,
+            output_dir,
+            flat=flat,
+            progress=progress,
+            explicit_output=explicit_output,
+        )
 
     output.newline()
     if result.success:
@@ -340,10 +347,21 @@ def batch_effects(
     settings: CoreSettings = ctx.obj["settings"]
 
     # Resolve output_dir
+    explicit_output = output_dir is not None
     if output_dir is None:
         output_dir = settings.output.default_dir
 
-    _run_batch(ctx, input_file, output_dir, "effects", parallel, strict, flat, dry_run)
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "effects",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )
 
 
 @app.command("composites")
@@ -378,6 +396,7 @@ def batch_composites(
     settings: CoreSettings = ctx.obj["settings"]
 
     # Resolve output_dir
+    explicit_output = output_dir is not None
     if output_dir is None:
         output_dir = settings.output.default_dir
 
@@ -390,6 +409,7 @@ def batch_composites(
         strict,
         flat,
         dry_run,
+        explicit_output,
     )
 
 
@@ -425,10 +445,21 @@ def batch_presets(
     settings: CoreSettings = ctx.obj["settings"]
 
     # Resolve output_dir
+    explicit_output = output_dir is not None
     if output_dir is None:
         output_dir = settings.output.default_dir
 
-    _run_batch(ctx, input_file, output_dir, "presets", parallel, strict, flat, dry_run)
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "presets",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )
 
 
 @app.command("all")
@@ -463,7 +494,18 @@ def batch_all(
     settings: CoreSettings = ctx.obj["settings"]
 
     # Resolve output_dir
+    explicit_output = output_dir is not None
     if output_dir is None:
         output_dir = settings.output.default_dir
 
-    _run_batch(ctx, input_file, output_dir, "all", parallel, strict, flat, dry_run)
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "all",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )

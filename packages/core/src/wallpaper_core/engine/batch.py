@@ -67,12 +67,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all atomic effects with default params."""
         effects = list(self.config.effects.keys())
         subdir = None if flat else "effects"
         return self._generate_batch(
-            input_path, output_dir, effects, ItemType.EFFECT, subdir, progress
+            input_path,
+            output_dir,
+            effects,
+            ItemType.EFFECT,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all_composites(
@@ -81,12 +88,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all composite effects."""
         composites = list(self.config.composites.keys())
         subdir = None if flat else "composites"
         return self._generate_batch(
-            input_path, output_dir, composites, ItemType.COMPOSITE, subdir, progress
+            input_path,
+            output_dir,
+            composites,
+            ItemType.COMPOSITE,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all_presets(
@@ -95,12 +109,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all presets."""
         presets = list(self.config.presets.keys())
         subdir = None if flat else "presets"
         return self._generate_batch(
-            input_path, output_dir, presets, ItemType.PRESET, subdir, progress
+            input_path,
+            output_dir,
+            presets,
+            ItemType.PRESET,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all(
@@ -109,6 +130,7 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all effects, composites, and presets."""
         result = BatchResult(output_dir=output_dir)
@@ -125,9 +147,13 @@ class BatchGenerator:
         result.total = len(items)
         image_name = input_path.stem
 
-        # Flat mode: output directly to output_dir
+        # Flat mode with explicit output: output directly to output_dir
+        # Flat mode with default output: output to output_dir/image-stem
         # Normal mode: output to output_dir/image-stem
-        base_dir = output_dir if flat else output_dir / image_name
+        if flat and explicit_output:
+            base_dir = output_dir
+        else:
+            base_dir = output_dir if flat else output_dir / image_name
 
         # Process items
         if self.parallel:
@@ -148,14 +174,20 @@ class BatchGenerator:
         item_type: ItemType,
         subdir: str | None,
         progress: BatchProgress | None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate a batch of items of the same type."""
         items = [(name, item_type) for name in names]
         image_name = input_path.stem
 
-        # Flat mode: output directly to output_dir
-        # Normal mode: output to output_dir/image-stem/subdir
-        base_dir = output_dir if subdir is None else output_dir / image_name / subdir
+        # Determine base directory based on flat mode and explicit output
+        # flat=True with explicit output: output_dir (no subdirs)
+        # flat=True with default output: output_dir/image-stem (no type subdir)
+        # flat=False: output_dir/image-stem (type subdir added by _get_output_path)
+        if subdir is None and explicit_output:
+            base_dir = output_dir
+        else:
+            base_dir = output_dir / image_name
         flat = subdir is None
 
         if self.parallel:
@@ -271,7 +303,18 @@ class BatchGenerator:
         input_path: Path,
         flat: bool,
     ) -> Path:
-        """Get output path for an item."""
+        """Get output path for an item.
+
+        Args:
+            base_dir: Base directory (output_dir/image-stem)
+            name: Item name
+            item_type: Type of item (for subdirectory)
+            input_path: Input file (for suffix)
+            flat: Whether to use flat structure (no type subdirectory)
+
+        Returns:
+            Complete output path including filename
+        """
         suffix = input_path.suffix or ".png"
         if flat:
             return base_dir / f"{name}{suffix}"
