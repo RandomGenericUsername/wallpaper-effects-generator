@@ -1,10 +1,23 @@
 """Pydantic schemas for core settings."""
 
 import shutil
-from enum import IntEnum
+from enum import Enum, IntEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
+
+
+class ItemType(str, Enum):
+    """Type of wallpaper item for output path resolution."""
+
+    EFFECT = "effect"
+    COMPOSITE = "composite"
+    PRESET = "preset"
+
+    @property
+    def subdir_name(self) -> str:
+        """Get the plural subdirectory name for this item type."""
+        return self.value + "s"
 
 
 class Verbosity(IntEnum):
@@ -33,6 +46,13 @@ class OutputSettings(BaseModel):
 
     verbosity: Verbosity = Field(
         default=Verbosity.NORMAL, description="Output verbosity level"
+    )
+
+    default_dir: Path = Field(
+        default=Path(
+            "/tmp/wallpaper-effects"
+        ),  # nosec B108 - configurable default path
+        description="Default output directory when -o/--output-dir not specified",
     )
 
 

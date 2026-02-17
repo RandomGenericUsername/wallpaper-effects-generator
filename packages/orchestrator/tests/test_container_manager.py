@@ -55,7 +55,7 @@ def test_build_volume_mounts(manager: ContainerManager, tmp_path: Path) -> None:
     mounts = manager.build_volume_mounts(input_image, output_dir)
 
     assert len(mounts) == 2
-    assert f"{input_image}:/input/image.png:ro" in mounts
+    assert f"{input_image}:/input/input.jpg:ro" in mounts  # Uses actual filename
     assert f"{output_dir}:/output:rw" in mounts
 
 
@@ -119,7 +119,7 @@ def test_run_process_invalid_command_type(
             command_type="invalid",
             command_name="test",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -136,7 +136,7 @@ def test_run_process_empty_command_name(
             command_type="effect",
             command_name="",
             input_path=input_file,
-            output_path=output_file,
+            output_dir=output_file.parent,
         )
 
 
@@ -160,5 +160,5 @@ def test_run_process_permission_error(
                 command_type="effect",
                 command_name="blur",
                 input_path=input_file,
-                output_path=output_file,
+                output_dir=output_file.parent,
             )

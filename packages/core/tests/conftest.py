@@ -353,3 +353,28 @@ def reset_effects_configuration():
 
     # Re-configure for next test
     configure_effects(package_effects_file=get_package_effects_file())
+
+
+@pytest.fixture
+def use_tmp_default_output(tmp_path: Path, monkeypatch):
+    """
+    Fixture that overrides the default output directory with tmp_path.
+
+    This allows tests to verify default output behavior while maintaining
+    test isolation, preventing race conditions during parallel execution.
+    """
+    from layered_settings import get_config
+
+    # Get the current config
+    config = get_config()
+
+    # Patch the output.default_dir setting
+    test_default = tmp_path / "wallpapers-output"
+    original_default = config.core.output.default_dir
+
+    monkeypatch.setattr(config.core.output, "default_dir", test_default)
+
+    yield test_default
+
+    # Restore original
+    monkeypatch.setattr(config.core.output, "default_dir", original_default)

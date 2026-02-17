@@ -57,7 +57,8 @@ class ContainerManager:
         mounts = []
 
         # Input image file (read-only)
-        mounts.append(f"{image_path.absolute()}:/input/image.png:ro")
+        # Preserve original filename so output paths use correct image stem
+        mounts.append(f"{image_path.absolute()}:/input/{image_path.name}:ro")
 
         # Output directory (read-write)
         mounts.append(f"{output_dir.absolute()}:/output:rw")
@@ -88,7 +89,8 @@ class ContainerManager:
         command_type: str,
         command_name: str,
         input_path: Path,
-        output_path: Path,
+        output_dir: Path,
+        flat: bool = False,
         additional_args: list[str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
         """Execute wallpaper-core command inside container.
@@ -97,7 +99,8 @@ class ContainerManager:
             command_type: Type of command (effect/composite/preset)
             command_name: Name of effect/composite/preset
             input_path: Path to input image on host
-            output_path: Path for output image on host
+            output_dir: Output directory on host
+            flat: Use flat output structure
             additional_args: Additional CLI arguments to pass
 
         Returns:
@@ -132,22 +135,25 @@ class ContainerManager:
                 "Please check the file path is correct."
             )
 
-        # Ensure output directory exists
-        output_dir = output_path.parent
+        # Ensure output directory exists and is writable by the container user
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
+            # Make writable by any user so the container's non-root user
+            # (wallpaper, UID 1000) can create subdirectories in the mount
+            abs_output_dir = output_dir.absolute()
+            abs_output_dir.chmod(0o777)
         except PermissionError as e:
             raise PermissionError(
                 f"Cannot create output directory: {output_dir}\n"
                 "Please check directory permissions."
             ) from e
 
-        # Convert paths to absolute
+        # Convert input path to absolute
         abs_input = input_path.absolute()
-        abs_output_dir = output_dir.absolute()
 
         # Build volume mounts
-        input_mount = f"{abs_input}:/input/image.jpg:ro"
+        # Preserve original filename so output paths use correct image stem
+        input_mount = f"{abs_input}:/input/{input_path.name}:ro"
         output_mount = f"{abs_output_dir}:/output:rw"
 
         # Build container command
@@ -172,12 +178,17 @@ class ContainerManager:
                 self.get_image_name(),
                 "process",
                 command_type,
-                "/input/image.jpg",
-                f"/output/{output_path.name}",
+                f"/input/{input_path.name}",
                 f"--{command_type}",
                 command_name,
+                "-o",
+                "/output",
             ]
         )
+
+        # Add --flat flag if requested
+        if flat:
+            cmd.append("--flat")
 
         # Add additional arguments if provided
         if additional_args:

@@ -1,6 +1,7 @@
 """Tests for error hierarchy in layered_settings."""
 
 import pytest
+
 from layered_settings.errors import (
     SettingsError,
     SettingsFileError,

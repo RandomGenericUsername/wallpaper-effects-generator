@@ -7,11 +7,8 @@ from typing import Annotated
 
 import typer
 
-from wallpaper_core.cli.process import (
-    _resolve_chain_commands,
-    _resolve_command,
-)
-from wallpaper_core.config.schema import Verbosity
+from wallpaper_core.cli.process import _resolve_chain_commands, _resolve_command
+from wallpaper_core.config.schema import ItemType, Verbosity
 from wallpaper_core.console.progress import BatchProgress
 from wallpaper_core.dry_run import CoreDryRun
 from wallpaper_core.effects.schema import EffectsConfig
@@ -55,7 +52,7 @@ def _resolve_batch_items(
     items: list[dict[str, str]] = []
 
     # Collect items based on batch_type
-    item_groups: list[tuple[str, str, str | None]] = (
+    item_groups: list[tuple[str, ItemType, str | None]] = (
         []
     )  # (name, type, subdir_for_single_type)
     if batch_type in ("effects", "all"):
@@ -63,8 +60,12 @@ def _resolve_batch_items(
             item_groups.append(
                 (
                     name,
-                    "effect",
-                    "effects" if batch_type != "all" or not flat else None,
+                    ItemType.EFFECT,
+                    (
+                        ItemType.EFFECT.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
     if batch_type in ("composites", "all"):
@@ -72,8 +73,12 @@ def _resolve_batch_items(
             item_groups.append(
                 (
                     name,
-                    "composite",
-                    "composites" if batch_type != "all" or not flat else None,
+                    ItemType.COMPOSITE,
+                    (
+                        ItemType.COMPOSITE.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
     if batch_type in ("presets", "all"):
@@ -81,8 +86,12 @@ def _resolve_batch_items(
             item_groups.append(
                 (
                     name,
-                    "preset",
-                    "presets" if batch_type != "all" or not flat else None,
+                    ItemType.PRESET,
+                    (
+                        ItemType.PRESET.subdir_name
+                        if batch_type != "all" or not flat
+                        else None
+                    ),
                 )
             )
 
@@ -94,12 +103,7 @@ def _resolve_batch_items(
             if flat:
                 out_path = base_dir / f"{name}{suffix}"
             else:
-                subdir_map = {
-                    "effect": "effects",
-                    "composite": "composites",
-                    "preset": "presets",
-                }
-                out_path = base_dir / subdir_map.get(item_type, "") / f"{name}{suffix}"
+                out_path = base_dir / item_type.subdir_name / f"{name}{suffix}"
         else:
             # generate_batch: base_dir varies based on flat/subdir settings
             base_dir = output_dir / image_name
@@ -108,7 +112,7 @@ def _resolve_batch_items(
             out_path = base_dir / f"{name}{suffix}"
 
         # Resolve command(s)
-        if item_type == "effect":
+        if item_type == ItemType.EFFECT:
             effect_def = config.effects.get(name)
             if effect_def is not None:
                 params = chain_executor._get_params_with_defaults(name, {})
@@ -124,14 +128,14 @@ def _resolve_batch_items(
             items.append(
                 {
                     "name": name,
-                    "type": "effect",
+                    "type": item_type.value,
                     "output_path": str(out_path),
                     "command": cmd,
                     "params": param_str,
                 }
             )
 
-        elif item_type == "composite":
+        elif item_type == ItemType.COMPOSITE:
             composite_def = config.composites.get(name)
             if composite_def is not None:
                 chain_cmds = _resolve_chain_commands(
@@ -148,14 +152,14 @@ def _resolve_batch_items(
             items.append(
                 {
                     "name": name,
-                    "type": "composite",
+                    "type": item_type.value,
                     "output_path": str(out_path),
                     "command": cmd,
                     "params": chain_str,
                 }
             )
 
-        elif item_type == "preset":
+        elif item_type == ItemType.PRESET:
             preset_def = config.presets.get(name)
             if preset_def is not None:
                 if preset_def.composite:
@@ -173,7 +177,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": cmd,
                             "preset_type": "composite",
@@ -198,7 +202,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": cmd,
                             "preset_type": "effect",
@@ -209,7 +213,7 @@ def _resolve_batch_items(
                     items.append(
                         {
                             "name": name,
-                            "type": "preset",
+                            "type": item_type.value,
                             "output_path": str(out_path),
                             "command": f"# Preset '{name}' has no effect or composite",
                             "preset_type": "\u2014",
@@ -220,7 +224,7 @@ def _resolve_batch_items(
                 items.append(
                     {
                         "name": name,
-                        "type": "preset",
+                        "type": item_type.value,
                         "output_path": str(out_path),
                         "command": f"# Unknown preset: {name}",
                         "preset_type": "\u2014",
@@ -240,6 +244,7 @@ def _run_batch(
     strict: bool,
     flat: bool,
     dry_run: bool = False,
+    explicit_output: bool = False,
 ) -> None:
     """Run batch generation."""
     output = ctx.obj["output"]
@@ -292,7 +297,13 @@ def _run_batch(
     output.info(f"Generating {total} {batch_type}...")
 
     with BatchProgress(total, f"Generating {batch_type}") as progress:
-        result = method(input_file, output_dir, flat=flat, progress=progress)
+        result = method(
+            input_file,
+            output_dir,
+            flat=flat,
+            progress=progress,
+            explicit_output=explicit_output,
+        )
 
     output.newline()
     if result.success:
@@ -308,7 +319,14 @@ def _run_batch(
 def batch_effects(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -317,15 +335,47 @@ def batch_effects(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all effects for an image."""
-    _run_batch(ctx, input_file, output_dir, "effects", parallel, strict, flat, dry_run)
+    """Generate all effects for an image.
+
+    Examples:
+        wallpaper-core batch effects input.jpg
+        wallpaper-core batch effects input.jpg -o /custom/output
+        wallpaper-core batch effects input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    explicit_output = output_dir is not None
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "effects",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )
 
 
 @app.command("composites")
 def batch_composites(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -334,7 +384,22 @@ def batch_composites(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all composites for an image."""
+    """Generate all composites for an image.
+
+    Examples:
+        wallpaper-core batch composites input.jpg
+        wallpaper-core batch composites input.jpg -o /custom/output
+        wallpaper-core batch composites input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    explicit_output = output_dir is not None
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
     _run_batch(
         ctx,
         input_file,
@@ -344,6 +409,7 @@ def batch_composites(
         strict,
         flat,
         dry_run,
+        explicit_output,
     )
 
 
@@ -351,7 +417,14 @@ def batch_composites(
 def batch_presets(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -360,15 +433,47 @@ def batch_presets(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all presets for an image."""
-    _run_batch(ctx, input_file, output_dir, "presets", parallel, strict, flat, dry_run)
+    """Generate all presets for an image.
+
+    Examples:
+        wallpaper-core batch presets input.jpg
+        wallpaper-core batch presets input.jpg -o /custom/output
+        wallpaper-core batch presets input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    explicit_output = output_dir is not None
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "presets",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )
 
 
 @app.command("all")
 def batch_all(
     ctx: typer.Context,
     input_file: Annotated[Path, typer.Argument(help="Input image file")],
-    output_dir: Annotated[Path, typer.Argument(help="Output directory")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
@@ -377,5 +482,30 @@ def batch_all(
         typer.Option("--dry-run", help="Show what would be done without executing"),
     ] = False,
 ) -> None:
-    """Generate all effects, composites, and presets for an image."""
-    _run_batch(ctx, input_file, output_dir, "all", parallel, strict, flat, dry_run)
+    """Generate all effects, composites, and presets for an image.
+
+    Examples:
+        wallpaper-core batch all input.jpg
+        wallpaper-core batch all input.jpg -o /custom/output
+        wallpaper-core batch all input.jpg --flat
+    """
+    from wallpaper_core.config.schema import CoreSettings
+
+    settings: CoreSettings = ctx.obj["settings"]
+
+    # Resolve output_dir
+    explicit_output = output_dir is not None
+    if output_dir is None:
+        output_dir = settings.output.default_dir
+
+    _run_batch(
+        ctx,
+        input_file,
+        output_dir,
+        "all",
+        parallel,
+        strict,
+        flat,
+        dry_run,
+        explicit_output,
+    )

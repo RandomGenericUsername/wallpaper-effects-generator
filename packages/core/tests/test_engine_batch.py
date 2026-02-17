@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from wallpaper_core.config.schema import ItemType
 from wallpaper_core.effects.schema import EffectsConfig
 from wallpaper_core.engine.batch import BatchGenerator, BatchResult
 
@@ -282,3 +283,44 @@ class TestBatchGenerator:
 
         assert result.total > 0
         assert result.succeeded > 0
+
+    def test_get_output_path_uses_itemtype_enum(
+        self,
+        sample_effects_config: EffectsConfig,
+        test_image_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        """Test that _get_output_path uses ItemType enum correctly."""
+        generator = BatchGenerator(config=sample_effects_config)
+        base_dir = tmp_path / "test"
+
+        # Test EFFECT type
+        effect_path = generator._get_output_path(
+            base_dir, "test_effect", ItemType.EFFECT, test_image_file, flat=False
+        )
+        assert (
+            effect_path == base_dir / "effects" / f"test_effect{test_image_file.suffix}"
+        )
+
+        # Test COMPOSITE type
+        composite_path = generator._get_output_path(
+            base_dir, "test_composite", ItemType.COMPOSITE, test_image_file, flat=False
+        )
+        assert (
+            composite_path
+            == base_dir / "composites" / f"test_composite{test_image_file.suffix}"
+        )
+
+        # Test PRESET type
+        preset_path = generator._get_output_path(
+            base_dir, "test_preset", ItemType.PRESET, test_image_file, flat=False
+        )
+        assert (
+            preset_path == base_dir / "presets" / f"test_preset{test_image_file.suffix}"
+        )
+
+        # Test flat mode
+        flat_path = generator._get_output_path(
+            base_dir, "test_flat", ItemType.EFFECT, test_image_file, flat=True
+        )
+        assert flat_path == base_dir / f"test_flat{test_image_file.suffix}"

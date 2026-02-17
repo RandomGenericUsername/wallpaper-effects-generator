@@ -14,8 +14,9 @@ Layer priority (lowest to highest):
 import tempfile
 from pathlib import Path
 
-from layered_settings import SchemaRegistry, configure, get_config
 from pydantic import BaseModel, Field
+
+from layered_settings import SchemaRegistry, configure, get_config
 
 
 # Define configuration schemas

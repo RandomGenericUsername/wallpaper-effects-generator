@@ -3,8 +3,9 @@
 from io import StringIO
 
 import pytest
-from layered_settings.dry_run import DryRunBase, ValidationCheck
 from rich.console import Console
+
+from layered_settings.dry_run import DryRunBase, ValidationCheck
 
 
 @pytest.fixture

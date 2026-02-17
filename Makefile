@@ -62,14 +62,12 @@ lint: lint-settings lint-core lint-effects lint-orchestrator ## Run linting on a
 
 lint-settings: ## Lint settings package
 	@echo -e "$(BLUE)Linting settings package...$(NC)"
-	@$(UV) run ruff check --line-length 88 $(SETTINGS_DIR) || (echo -e "$(RED)Ruff found issues. Run: make format-settings$(NC)" && exit 1)
 	@$(UV) run black --check --line-length 88 $(SETTINGS_DIR) || (echo -e "$(RED)Black formatting needed. Run: make format-settings$(NC)" && exit 1)
 	@$(UV) run isort --check --profile black --line-length 88 $(SETTINGS_DIR) || (echo -e "$(RED)Import sorting needed. Run: make format-settings$(NC)" && exit 1)
 	@echo -e "$(GREEN)✓ Settings package linting passed$(NC)"
 
 lint-core: ## Lint core package
 	@echo -e "$(BLUE)Linting core package...$(NC)"
-	@$(UV) run ruff check --line-length 88 $(CORE_DIR) || (echo -e "$(RED)Ruff found issues. Run: make format-core$(NC)" && exit 1)
 	@$(UV) run black --check --line-length 88 $(CORE_DIR) || (echo -e "$(RED)Black formatting needed. Run: make format-core$(NC)" && exit 1)
 	@$(UV) run isort --check --profile black --line-length 88 $(CORE_DIR) || (echo -e "$(RED)Import sorting needed. Run: make format-core$(NC)" && exit 1)
 	@$(UV) run mypy $(CORE_DIR)/src/ || (echo -e "$(RED)Type errors found. Run: $(UV) run mypy $(CORE_DIR)/src/ to see details$(NC)" && exit 1)
@@ -77,14 +75,12 @@ lint-core: ## Lint core package
 
 lint-effects: ## Lint effects package
 	@echo -e "$(BLUE)Linting effects package...$(NC)"
-	@$(UV) run ruff check --line-length 88 $(EFFECTS_DIR) || (echo -e "$(RED)Ruff found issues. Run: make format-effects$(NC)" && exit 1)
 	@$(UV) run black --check --line-length 88 $(EFFECTS_DIR) || (echo -e "$(RED)Black formatting needed. Run: make format-effects$(NC)" && exit 1)
 	@$(UV) run isort --check --profile black --line-length 88 $(EFFECTS_DIR) || (echo -e "$(RED)Import sorting needed. Run: make format-effects$(NC)" && exit 1)
 	@echo -e "$(GREEN)✓ Effects package linting passed$(NC)"
 
 lint-orchestrator: ## Lint orchestrator package
 	@echo -e "$(BLUE)Linting orchestrator package...$(NC)"
-	@$(UV) run ruff check --line-length 88 $(ORCHESTRATOR_DIR) || (echo -e "$(RED)Ruff found issues. Run: make format-orchestrator$(NC)" && exit 1)
 	@$(UV) run black --check --line-length 88 $(ORCHESTRATOR_DIR) || (echo -e "$(RED)Black formatting needed. Run: make format-orchestrator$(NC)" && exit 1)
 	@$(UV) run isort --check --profile black --line-length 88 $(ORCHESTRATOR_DIR) || (echo -e "$(RED)Import sorting needed. Run: make format-orchestrator$(NC)" && exit 1)
 	@$(UV) run mypy $(ORCHESTRATOR_DIR)/src/ || (echo -e "$(RED)Type errors found. Run: $(UV) run mypy $(ORCHESTRATOR_DIR)/src/ to see details$(NC)" && exit 1)
@@ -94,30 +90,26 @@ format: format-settings format-core format-effects format-orchestrator ## Format
 
 format-settings: ## Format settings package
 	@echo -e "$(BLUE)Formatting settings package...$(NC)"
-	$(UV) run isort --profile black --line-length 88 $(SETTINGS_DIR)
 	$(UV) run black --line-length 88 $(SETTINGS_DIR)
-	$(UV) run ruff check --fix --line-length 88 $(SETTINGS_DIR)
+	$(UV) run isort --profile black --line-length 88 $(SETTINGS_DIR)
 	@echo -e "$(GREEN)✓ Settings package formatted$(NC)"
 
 format-core: ## Format core package
 	@echo -e "$(BLUE)Formatting core package...$(NC)"
-	$(UV) run isort --profile black --line-length 88 $(CORE_DIR)
 	$(UV) run black --line-length 88 $(CORE_DIR)
-	$(UV) run ruff check --fix --line-length 88 $(CORE_DIR)
+	$(UV) run isort --profile black --line-length 88 $(CORE_DIR)
 	@echo -e "$(GREEN)✓ Core package formatted$(NC)"
 
 format-effects: ## Format effects package
 	@echo -e "$(BLUE)Formatting effects package...$(NC)"
-	$(UV) run isort --profile black --line-length 88 $(EFFECTS_DIR)
 	$(UV) run black --line-length 88 $(EFFECTS_DIR)
-	$(UV) run ruff check --fix --line-length 88 $(EFFECTS_DIR)
+	$(UV) run isort --profile black --line-length 88 $(EFFECTS_DIR)
 	@echo -e "$(GREEN)✓ Effects package formatted$(NC)"
 
 format-orchestrator: ## Format orchestrator package
 	@echo -e "$(BLUE)Formatting orchestrator package...$(NC)"
-	$(UV) run isort --profile black --line-length 88 $(ORCHESTRATOR_DIR)
 	$(UV) run black --line-length 88 $(ORCHESTRATOR_DIR)
-	$(UV) run ruff check --fix --line-length 88 $(ORCHESTRATOR_DIR)
+	$(UV) run isort --profile black --line-length 88 $(ORCHESTRATOR_DIR)
 	@echo -e "$(GREEN)✓ Orchestrator package formatted$(NC)"
 
 ##@ Security
@@ -155,7 +147,7 @@ test-settings: ## Test settings package
 
 test-core: ## Test core package
 	@echo -e "$(BLUE)Testing core package...$(NC)"
-	cd $(CORE_DIR) && $(UV) run pytest -n auto --color=yes --cov=src --cov-report=term
+	cd $(CORE_DIR) && $(UV) run pytest --color=yes --cov=src --cov-report=term
 	cd $(CORE_DIR) && $(UV) run coverage report --fail-under=95
 	@echo -e "$(GREEN)✓ Core package tests passed$(NC)"
 

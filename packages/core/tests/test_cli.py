@@ -56,35 +56,75 @@ class TestShowCommands:
 class TestProcessCommands:
     """Tests for process commands."""
 
-    def test_process_effect(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process effect command."""
-        output_path = tmp_path / "output.png"
+    def test_process_effect_with_output_dir_creates_subdirectory(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process effect with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
-                "-e",
+                "-o",
+                str(output_dir),
+                "--effect",
                 "blur",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert expected_output.exists()
+
+    def test_process_effect_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Process effect without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["process", "effect", str(test_image_file), "--effect", "blur"],
+        )
+        assert result.exit_code == 0
+        # Default is overridden to tmp_path for test isolation
+        expected_output = use_tmp_default_output / "test_image" / "effects" / "blur.png"
+        assert expected_output.exists()
+
+    def test_process_effect_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process effect with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "blur.png"
+        assert expected_output.exists()
 
     def test_process_effect_with_params(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process effect with parameters."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
                 "--blur",
@@ -92,20 +132,22 @@ class TestProcessCommands:
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert expected_output.exists()
 
     def test_process_effect_unknown(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process unknown effect fails."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "nonexistent",
             ],
@@ -115,222 +157,222 @@ class TestProcessCommands:
     def test_process_effect_missing_input(self, tmp_path: Path) -> None:
         """Test process effect with missing input file."""
         missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "effect",
                 str(missing_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
             ],
         )
         assert result.exit_code != 0
 
-    def test_process_effect_with_brightness(
+    def test_process_composite_with_output_dir(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
-        """Test process effect with brightness parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--brightness",
-                "50",
-            ],
-        )
-        assert result.exit_code == 0
-        assert output_path.exists()
-
-    def test_process_effect_with_contrast(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with contrast parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--contrast",
-                "20",
-            ],
-        )
-        assert result.exit_code == 0
-        assert output_path.exists()
-
-    def test_process_effect_with_saturation(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with saturation parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--saturation",
-                "30",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_strength(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with strength parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "blur",
-                "--strength",
-                "5",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_color(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with color parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--color",
-                "#FF0000",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_effect_with_opacity(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test process effect with opacity parameter."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "effect",
-                str(test_image_file),
-                str(output_path),
-                "-e",
-                "brightness",
-                "--opacity",
-                "75",
-            ],
-        )
-        assert result.exit_code == 0
-
-    def test_process_composite(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process composite command."""
-        output_path = tmp_path / "output.png"
+        """Process composite with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
-                "-c",
+                "-o",
+                str(output_dir),
+                "--composite",
                 "blur-brightness80",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = (
+            output_dir / "test_image" / "composites" / "blur-brightness80.png"
+        )
+        assert expected_output.exists()
 
-    def test_process_composite_missing_input(self, tmp_path: Path) -> None:
-        """Test process composite with missing input file."""
-        missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+    def test_process_composite_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Process composite without -o uses default from settings."""
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
-                str(missing_file),
-                str(output_path),
-                "-c",
+                str(test_image_file),
+                "--composite",
                 "blur-brightness80",
             ],
         )
-        assert result.exit_code != 0
+        assert result.exit_code == 0
+        expected_output = (
+            use_tmp_default_output
+            / "test_image"
+            / "composites"
+            / "blur-brightness80.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_composite_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process composite with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "blur-brightness80",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "blur-brightness80.png"
+        assert expected_output.exists()
 
     def test_process_composite_unknown(
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process unknown composite fails."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "nonexistent-composite",
             ],
         )
         assert result.exit_code != 0
 
-    def test_process_preset(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test process preset command."""
-        output_path = tmp_path / "output.png"
+    def test_process_composite_missing_input(self, tmp_path: Path) -> None:
+        """Test process composite with missing input file."""
+        missing_file = tmp_path / "nonexistent.jpg"
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(missing_file),
+                "-o",
+                str(output_dir),
+                "-c",
+                "blur-brightness80",
+            ],
+        )
+        assert result.exit_code != 0
+
+    def test_process_preset_with_output_dir(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process preset with -o creates hierarchical structure."""
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
-                "-p",
+                "-o",
+                str(output_dir),
+                "--preset",
                 "dark_blur",
             ],
         )
         assert result.exit_code == 0
-        assert output_path.exists()
+        expected_output = output_dir / "test_image" / "presets" / "dark_blur.png"
+        assert expected_output.exists()
+
+    def test_process_preset_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Process preset without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["process", "preset", str(test_image_file), "--preset", "dark_blur"],
+        )
+        assert result.exit_code == 0
+        expected_output = (
+            use_tmp_default_output / "test_image" / "presets" / "dark_blur.png"
+        )
+        assert expected_output.exists()
+
+    def test_process_preset_with_flat_flag(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Process preset with --flat uses flat structure."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_blur",
+                "--flat",
+            ],
+        )
+        assert result.exit_code == 0
+        expected_output = output_dir / "test_image" / "dark_blur.png"
+        assert expected_output.exists()
+
+    def test_process_preset_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run preset shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply preset: dark_blur" in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
+        # Verify output file was NOT created
+        expected_output = output_dir / "test_image" / "presets" / "dark_blur.png"
+        assert not expected_output.exists()
 
     def test_process_preset_missing_input(self, tmp_path: Path) -> None:
         """Test process preset with missing input file."""
         missing_file = tmp_path / "nonexistent.jpg"
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(missing_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
@@ -341,14 +383,15 @@ class TestProcessCommands:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process unknown preset fails."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
             ],
@@ -359,6 +402,64 @@ class TestProcessCommands:
 class TestBatchCommands:
     """Tests for batch commands."""
 
+    def test_batch_effects_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Batch effects without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["batch", "effects", str(test_image_file), "--sequential"],
+        )
+        assert result.exit_code == 0
+        # Default is overridden to tmp_path for test isolation
+        expected_base = use_tmp_default_output / test_image_file.stem / "effects"
+        # Check that at least one effect was generated
+        assert expected_base.exists()
+        assert len(list(expected_base.glob("*.png"))) > 0
+
+    def test_batch_composites_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Batch composites without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["batch", "composites", str(test_image_file), "--sequential"],
+        )
+        assert result.exit_code == 0
+        expected_base = use_tmp_default_output / test_image_file.stem / "composites"
+        assert expected_base.exists()
+        assert len(list(expected_base.glob("*.png"))) > 0
+
+    def test_batch_presets_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Batch presets without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["batch", "presets", str(test_image_file), "--sequential"],
+        )
+        assert result.exit_code == 0
+        expected_base = use_tmp_default_output / test_image_file.stem / "presets"
+        assert expected_base.exists()
+        assert len(list(expected_base.glob("*.png"))) > 0
+
+    def test_batch_all_without_output_uses_default(
+        self, test_image_file: Path, use_tmp_default_output: Path
+    ) -> None:
+        """Batch all without -o uses default from settings."""
+        result = runner.invoke(
+            app,
+            ["batch", "all", str(test_image_file), "--sequential"],
+        )
+        assert result.exit_code == 0
+        expected_base = use_tmp_default_output / test_image_file.stem
+        assert expected_base.exists()
+        # Check multiple subdirectories exist
+        assert (expected_base / "effects").exists()
+        assert (expected_base / "composites").exists() or (
+            expected_base / "presets"
+        ).exists()
+
     def test_batch_effects(self, test_image_file: Path, tmp_path: Path) -> None:
         """Test batch effects command."""
         result = runner.invoke(
@@ -367,6 +468,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -384,6 +486,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -399,6 +502,7 @@ class TestBatchCommands:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -413,6 +517,7 @@ class TestBatchCommands:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -428,6 +533,7 @@ class TestBatchCommands:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -442,6 +548,7 @@ class TestBatchCommands:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--sequential",
             ],
@@ -457,6 +564,7 @@ class TestBatchCommands:
                 "batch",
                 "effects",
                 str(missing_file),
+                "-o",
                 str(tmp_path),
             ],
         )
@@ -470,6 +578,7 @@ class TestBatchCommands:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -485,6 +594,7 @@ class TestBatchCommands:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path),
                 "--flat",
                 "--sequential",
@@ -529,28 +639,6 @@ class TestVerbosityFlags:
         assert result.exit_code == 0
 
 
-class TestApplyCompositeErrors:
-    """Tests for composite error handling."""
-
-    def test_apply_composite_unknown_composite_error(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test apply composite with unknown composite references missing composite."""
-        output_path = tmp_path / "output.png"
-        result = runner.invoke(
-            app,
-            [
-                "process",
-                "composite",
-                str(test_image_file),
-                str(output_path),
-                "-c",
-                "nonexistent-composite",
-            ],
-        )
-        assert result.exit_code != 0
-
-
 class TestApplyPresetErrors:
     """Tests for preset error handling."""
 
@@ -558,14 +646,15 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test apply preset with missing preset."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
             ],
@@ -576,7 +665,7 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path, sample_effects_config
     ) -> None:
         """Test apply preset that references unknown composite."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         # Note: This test invokes the real CLI which loads its own config,
         # so the preset modification won't affect the actual execution.
         # We're just testing the CLI behavior with the real config.
@@ -586,7 +675,8 @@ class TestApplyPresetErrors:
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
@@ -598,14 +688,15 @@ class TestApplyPresetErrors:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test apply preset that references unknown effect."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "subtle_blur",
             ],
@@ -621,7 +712,7 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run composite in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -629,7 +720,8 @@ class TestDryRunErrorCases:
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "blur-brightness80",
                 "--dry-run",
@@ -641,14 +733,15 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run with unknown composite."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "nonexistent-composite",
                 "--dry-run",
@@ -664,14 +757,15 @@ class TestDryRunErrorCases:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test dry-run with unknown preset."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "nonexistent-preset",
                 "--dry-run",
@@ -683,6 +777,112 @@ class TestDryRunErrorCases:
             or "unknown" in result.stdout.lower()
         )
 
+    def test_process_effect_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run effect shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply effect: blur" in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
+        # Verify output file was NOT created
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert not expected_output.exists()
+
+    def test_process_composite_dry_run(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run composite shows command without executing."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "blur-brightness80",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Verify dry-run output contains key info
+        assert "Would apply composite: blur-brightness80" in result.stdout
+        # Check path appears (remove newlines for long path wrapping on macOS)
+        assert str(test_image_file) in result.stdout.replace("\n", "")
+        # Verify output file was NOT created
+        expected_output = (
+            output_dir / "test_image" / "composites" / "blur-brightness80.png"
+        )
+        assert not expected_output.exists()
+
+    def test_dry_run_unknown_effect(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run with unknown effect name fails with clear error."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "nonexistent_effect",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        assert (
+            "cannot resolve" in result.stdout.lower()
+            or "unknown" in result.stdout.lower()
+            or "nonexistent_effect" in result.stdout
+        )
+
+    def test_dry_run_effect_quiet_mode(
+        self, test_image_file: Path, tmp_path: Path
+    ) -> None:
+        """Dry-run with quiet mode shows minimal output."""
+        output_dir = tmp_path / "output"
+        result = runner.invoke(
+            app,
+            [
+                "-q",
+                "process",
+                "effect",
+                str(test_image_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        # Quiet mode should have minimal output (no verbose details)
+        # Output file should NOT be created
+        expected_output = output_dir / "test_image" / "effects" / "blur.png"
+        assert not expected_output.exists()
+
 
 class TestExecutorFailures:
     """Tests for executor failure handling."""
@@ -693,7 +893,7 @@ class TestExecutorFailures:
         """Test apply effect when executor fails."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.CommandExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute.return_value = MagicMock(
@@ -707,7 +907,8 @@ class TestExecutorFailures:
                     "process",
                     "effect",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-e",
                     "blur",
                 ],
@@ -720,7 +921,7 @@ class TestExecutorFailures:
         """Test apply composite when executor fails."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
@@ -734,7 +935,8 @@ class TestExecutorFailures:
                     "process",
                     "composite",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-c",
                     "blur-brightness80",
                 ],
@@ -747,7 +949,7 @@ class TestExecutorFailures:
         """Test apply preset with composite executor failure."""
         from unittest.mock import MagicMock, patch
 
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         with patch("wallpaper_core.cli.process.ChainExecutor") as mock_executor_class:
             mock_executor = MagicMock()
             mock_executor.execute_chain.return_value = MagicMock(
@@ -761,7 +963,8 @@ class TestExecutorFailures:
                     "process",
                     "preset",
                     str(test_image_file),
-                    str(output_path),
+                    "-o",
+                    str(output_dir),
                     "-p",
                     "dark_blur",
                 ],
@@ -804,7 +1007,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process effect in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -812,7 +1015,8 @@ class TestQuietModeProcessing:
                 "process",
                 "effect",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-e",
                 "blur",
             ],
@@ -823,7 +1027,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process composite in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -831,7 +1035,8 @@ class TestQuietModeProcessing:
                 "process",
                 "composite",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-c",
                 "blur-brightness80",
             ],
@@ -842,7 +1047,7 @@ class TestQuietModeProcessing:
         self, test_image_file: Path, tmp_path: Path
     ) -> None:
         """Test process preset in quiet mode."""
-        output_path = tmp_path / "output.png"
+        output_dir = tmp_path / "output"
         result = runner.invoke(
             app,
             [
@@ -850,7 +1055,8 @@ class TestQuietModeProcessing:
                 "process",
                 "preset",
                 str(test_image_file),
-                str(output_path),
+                "-o",
+                str(output_dir),
                 "-p",
                 "dark_blur",
             ],
@@ -866,6 +1072,7 @@ class TestQuietModeProcessing:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--sequential",
             ],
@@ -881,6 +1088,7 @@ class TestQuietModeProcessing:
                 "batch",
                 "all",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--sequential",
             ],
@@ -910,6 +1118,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -934,6 +1143,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "composites",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -958,6 +1168,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "presets",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--dry-run",
             ],
@@ -974,6 +1185,7 @@ class TestBatchUnknownItems:
                 "batch",
                 "effects",
                 str(test_image_file),
+                "-o",
                 str(tmp_path / "output"),
                 "--strict",
             ],

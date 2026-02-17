@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from wallpaper_core.config.schema import ItemType
 from wallpaper_core.engine.chain import ChainExecutor
 from wallpaper_core.engine.executor import CommandExecutor, ExecutionResult
 
@@ -66,12 +67,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all atomic effects with default params."""
         effects = list(self.config.effects.keys())
         subdir = None if flat else "effects"
         return self._generate_batch(
-            input_path, output_dir, effects, "effect", subdir, progress
+            input_path,
+            output_dir,
+            effects,
+            ItemType.EFFECT,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all_composites(
@@ -80,12 +88,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all composite effects."""
         composites = list(self.config.composites.keys())
         subdir = None if flat else "composites"
         return self._generate_batch(
-            input_path, output_dir, composites, "composite", subdir, progress
+            input_path,
+            output_dir,
+            composites,
+            ItemType.COMPOSITE,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all_presets(
@@ -94,12 +109,19 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all presets."""
         presets = list(self.config.presets.keys())
         subdir = None if flat else "presets"
         return self._generate_batch(
-            input_path, output_dir, presets, "preset", subdir, progress
+            input_path,
+            output_dir,
+            presets,
+            ItemType.PRESET,
+            subdir,
+            progress,
+            explicit_output,
         )
 
     def generate_all(
@@ -108,22 +130,30 @@ class BatchGenerator:
         output_dir: Path,
         flat: bool = False,
         progress: BatchProgress | None = None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate all effects, composites, and presets."""
         result = BatchResult(output_dir=output_dir)
 
         # Collect all items
-        items: list[tuple[str, str]] = []  # (name, type)
+        items: list[tuple[str, ItemType]] = []  # (name, type)
         for name in self.config.effects:
-            items.append((name, "effect"))
+            items.append((name, ItemType.EFFECT))
         for name in self.config.composites:
-            items.append((name, "composite"))
+            items.append((name, ItemType.COMPOSITE))
         for name in self.config.presets:
-            items.append((name, "preset"))
+            items.append((name, ItemType.PRESET))
 
         result.total = len(items)
         image_name = input_path.stem
-        base_dir = output_dir / image_name
+
+        # Flat mode with explicit output: output directly to output_dir
+        # Flat mode with default output: output to output_dir/image-stem
+        # Normal mode: output to output_dir/image-stem
+        if flat and explicit_output:
+            base_dir = output_dir
+        else:
+            base_dir = output_dir if flat else output_dir / image_name
 
         # Process items
         if self.parallel:
@@ -141,22 +171,30 @@ class BatchGenerator:
         input_path: Path,
         output_dir: Path,
         names: list[str],
-        item_type: str,
+        item_type: ItemType,
         subdir: str | None,
         progress: BatchProgress | None,
+        explicit_output: bool = False,
     ) -> BatchResult:
         """Generate a batch of items of the same type."""
         items = [(name, item_type) for name in names]
         image_name = input_path.stem
-        base_dir = output_dir / image_name
-        if subdir:
-            base_dir = base_dir / subdir
+
+        # Determine base directory based on flat mode and explicit output
+        # flat=True with explicit output: output_dir (no subdirs)
+        # flat=True with default output: output_dir/image-stem (no type subdir)
+        # flat=False: output_dir/image-stem (type subdir added by _get_output_path)
+        if subdir is None and explicit_output:
+            base_dir = output_dir
+        else:
+            base_dir = output_dir / image_name
+        flat = subdir is None
 
         if self.parallel:
-            result = self._process_parallel(input_path, base_dir, items, True, progress)
+            result = self._process_parallel(input_path, base_dir, items, flat, progress)
         else:
             result = self._process_sequential(
-                input_path, base_dir, items, True, progress
+                input_path, base_dir, items, flat, progress
             )
 
         result.output_dir = base_dir
@@ -166,7 +204,7 @@ class BatchGenerator:
         self,
         input_path: Path,
         base_dir: Path,
-        items: list[tuple[str, str]],
+        items: list[tuple[str, ItemType]],
         flat: bool,
         progress: BatchProgress | None,
     ) -> BatchResult:
@@ -200,7 +238,7 @@ class BatchGenerator:
         self,
         input_path: Path,
         base_dir: Path,
-        items: list[tuple[str, str]],
+        items: list[tuple[str, ItemType]],
         flat: bool,
         progress: BatchProgress | None,
     ) -> BatchResult:
@@ -261,35 +299,41 @@ class BatchGenerator:
         self,
         base_dir: Path,
         name: str,
-        item_type: str,
+        item_type: ItemType,
         input_path: Path,
         flat: bool,
     ) -> Path:
-        """Get output path for an item."""
+        """Get output path for an item.
+
+        Args:
+            base_dir: Base directory (output_dir/image-stem)
+            name: Item name
+            item_type: Type of item (for subdirectory)
+            input_path: Input file (for suffix)
+            flat: Whether to use flat structure (no type subdirectory)
+
+        Returns:
+            Complete output path including filename
+        """
         suffix = input_path.suffix or ".png"
         if flat:
             return base_dir / f"{name}{suffix}"
         else:
-            subdir = {
-                "effect": "effects",
-                "composite": "composites",
-                "preset": "presets",
-            }
-            return base_dir / subdir.get(item_type, "") / f"{name}{suffix}"
+            return base_dir / item_type.subdir_name / f"{name}{suffix}"
 
     def _process_item(
         self,
         name: str,
-        item_type: str,
+        item_type: ItemType,
         input_path: Path,
         output_path: Path,
     ) -> ExecutionResult:
         """Process a single item."""
-        if item_type == "effect":
+        if item_type == ItemType.EFFECT:
             return self._process_effect(name, input_path, output_path)
-        elif item_type == "composite":
+        elif item_type == ItemType.COMPOSITE:
             return self._process_composite(name, input_path, output_path)
-        elif item_type == "preset":
+        elif item_type == ItemType.PRESET:
             return self._process_preset(name, input_path, output_path)
         else:
             return ExecutionResult(
