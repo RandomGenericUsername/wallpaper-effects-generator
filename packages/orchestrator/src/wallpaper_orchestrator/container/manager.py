@@ -1,6 +1,5 @@
 """Container manager for orchestrating wallpaper effects processing."""
 
-import os
 import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
@@ -136,18 +135,21 @@ class ContainerManager:
                 "Please check the file path is correct."
             )
 
-        # Ensure output directory exists
+        # Ensure output directory exists and is writable by the container user
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
+            # Make writable by any user so the container's non-root user
+            # (wallpaper, UID 1000) can create subdirectories in the mount
+            abs_output_dir = output_dir.absolute()
+            abs_output_dir.chmod(0o777)
         except PermissionError as e:
             raise PermissionError(
                 f"Cannot create output directory: {output_dir}\n"
                 "Please check directory permissions."
             ) from e
 
-        # Convert paths to absolute
+        # Convert input path to absolute
         abs_input = input_path.absolute()
-        abs_output_dir = output_dir.absolute()
 
         # Build volume mounts
         # Preserve original filename so output paths use correct image stem
@@ -162,16 +164,10 @@ class ContainerManager:
             "--rm",
         ]
 
-        # User mapping for mounted volumes:
-        # - Podman: use --userns=keep-id for rootless containers
-        # - Docker: use --user to match host UID/GID
+        # Rootless podman needs --userns=keep-id for correct
+        # UID mapping with host-mounted volumes
         if self.engine == "podman":
             cmd.append("--userns=keep-id")
-        else:
-            # Docker needs explicit user mapping for volume permissions
-            uid = os.getuid()
-            gid = os.getgid()
-            cmd.extend(["--user", f"{uid}:{gid}"])
 
         cmd.extend(
             [
