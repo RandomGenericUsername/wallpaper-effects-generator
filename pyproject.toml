@@ -52,12 +52,13 @@ line-length = 88
 target-version = "py312"
 
 [tool.ruff.lint]
-# Disable all import sorting rules in ruff since we use isort
-ignore = ["I"]
-
-[tool.ruff.lint.isort]
-# Disable isort in ruff completely
-required-imports = []
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+]
 
 [tool.mypy]
 ignore_missing_imports = true
