@@ -2,11 +2,11 @@
 
 import shutil
 
-from wallpaper_core.config.schema import CoreSettings
-from wallpaper_core.effects.schema import EffectsConfig
-
 from wallpaper_orchestrator.config.settings import OrchestratorSettings
 from wallpaper_orchestrator.config.unified import UnifiedConfig
+
+from wallpaper_core.config.schema import CoreSettings
+from wallpaper_core.effects.schema import EffectsConfig
 
 
 def test_unified_config_defaults() -> None:

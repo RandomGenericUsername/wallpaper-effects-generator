@@ -3,10 +3,9 @@
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel, Field
-
 from layered_settings.errors import SettingsRegistryError
 from layered_settings.registry import SchemaEntry, SchemaRegistry
+from pydantic import BaseModel, Field
 
 
 class DummyConfig(BaseModel):

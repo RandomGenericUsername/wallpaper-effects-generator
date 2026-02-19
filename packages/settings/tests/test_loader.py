@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from layered_settings.errors import SettingsFileError
 from layered_settings.loader import FileLoader
 

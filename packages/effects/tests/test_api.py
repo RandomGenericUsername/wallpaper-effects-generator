@@ -35,7 +35,8 @@ def test_load_effects_returns_effects_config(tmp_path: Path):
     from layered_effects import configure, load_effects
 
     package_file = tmp_path / "effects.yaml"
-    package_file.write_text("""
+    package_file.write_text(
+        """
 version: "1.0"
 parameter_types:
   test_type:
@@ -47,7 +48,8 @@ effects:
     command: 'echo "test"'
 composites: {}
 presets: {}
-""")
+"""
+    )
 
     configure(package_effects_file=package_file)
     config = load_effects()
@@ -63,13 +65,15 @@ def test_load_effects_caches_result(tmp_path: Path):
     from layered_effects import configure, load_effects
 
     package_file = tmp_path / "effects.yaml"
-    package_file.write_text("""
+    package_file.write_text(
+        """
 version: "1.0"
 effects:
   test:
     description: "Test"
     command: "test"
-""")
+"""
+    )
 
     configure(package_effects_file=package_file)
 

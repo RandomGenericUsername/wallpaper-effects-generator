@@ -4,10 +4,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from pydantic import BaseModel
-
 from layered_settings.layers import LayerDiscovery, LayerSource
 from layered_settings.registry import SchemaRegistry
+from pydantic import BaseModel
 
 
 class DummyConfig(BaseModel):

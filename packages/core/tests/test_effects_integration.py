@@ -62,14 +62,16 @@ class TestLayeredEffectsConfiguration:
 
         # Create project effects.yaml
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 effects:
   custom_project:
     description: "Project custom effect"
     command: "convert $INPUT -blur 0x10 $OUTPUT"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -89,14 +91,16 @@ effects:
 
         # Create user effects.yaml
         user_effects = tmp_path / "user_effects.yaml"
-        user_effects.write_text("""
+        user_effects.write_text(
+            """
 version: "1.0"
 effects:
   blur:
     description: "My custom blur"
     command: "convert $INPUT -blur 0x50 $OUTPUT"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -116,7 +120,8 @@ effects:
         from wallpaper_core.effects import get_package_effects_file
 
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 parameter_types:
   custom_range:
@@ -124,7 +129,8 @@ parameter_types:
     min: 0
     max: 100
     default: 50
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),
@@ -169,13 +175,15 @@ class TestErrorHandling:
         from wallpaper_core.effects import get_package_effects_file
 
         project_effects = tmp_path / "effects.yaml"
-        project_effects.write_text("""
+        project_effects.write_text(
+            """
 version: "1.0"
 effects:
   bad_effect:
     description: "Missing command field"
     parameters: {}
-""")
+"""
+        )
 
         configure(
             package_effects_file=get_package_effects_file(),

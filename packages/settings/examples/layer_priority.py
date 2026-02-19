@@ -14,9 +14,8 @@ Layer priority (lowest to highest):
 import tempfile
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
 from layered_settings import SchemaRegistry, configure, get_config
+from pydantic import BaseModel, Field
 
 
 # Define configuration schemas
@@ -43,32 +42,38 @@ def demonstrate_layers() -> None:
 
         # 1. Create package defaults file (flat format)
         defaults_file = temp_path / "defaults.toml"
-        defaults_file.write_text("""
+        defaults_file.write_text(
+            """
 # Package defaults (flat format - no namespace prefix)
 workers = 4
 timeout = 30.0
 debug = false
-""")
+"""
+        )
 
         # 2. Create project settings file (namespaced format)
         project_file = temp_path / "settings.toml"
-        project_file.write_text("""
+        project_file.write_text(
+            """
 # Project settings (namespaced format)
 [core]
 workers = 8
 # Note: timeout and debug use package defaults
-""")
+"""
+        )
 
         # 3. Create user config directory and file (namespaced format)
         user_config_dir = temp_path / ".config" / "layer-demo"
         user_config_dir.mkdir(parents=True)
         user_file = user_config_dir / "settings.toml"
-        user_file.write_text("""
+        user_file.write_text(
+            """
 # User settings (namespaced format)
 [core]
 debug = true
 # Note: workers uses project value, timeout uses package default
-""")
+"""
+        )
 
         # Register schema with package defaults
         SchemaRegistry.clear()  # Clear any previous registrations

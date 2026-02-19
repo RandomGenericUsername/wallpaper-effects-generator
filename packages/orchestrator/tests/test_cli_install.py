@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.exceptions import Exit
 from typer.testing import CliRunner
-
 from wallpaper_orchestrator.cli.commands.install import install
 
 runner = CliRunner()

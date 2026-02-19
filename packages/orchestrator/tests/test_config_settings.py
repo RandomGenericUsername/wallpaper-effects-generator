@@ -2,7 +2,6 @@
 
 import pytest
 from pydantic import ValidationError
-
 from wallpaper_orchestrator.config.settings import (
     ContainerSettings,
     OrchestratorSettings,

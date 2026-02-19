@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 

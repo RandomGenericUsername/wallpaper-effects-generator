@@ -2,10 +2,10 @@
 
 from layered_effects import load_effects
 from pydantic import BaseModel, ConfigDict, Field
+from wallpaper_orchestrator.config.settings import OrchestratorSettings
+
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
-
-from wallpaper_orchestrator.config.settings import OrchestratorSettings
 
 
 def _load_effects_defaults() -> EffectsConfig:

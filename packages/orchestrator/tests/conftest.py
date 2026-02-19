@@ -101,6 +101,7 @@ def reset_effects_configuration():
     """
     from layered_effects import _reset
     from layered_effects import configure as configure_effects
+
     from wallpaper_core.effects import get_package_effects_file
 
     # Reset before each test to ensure clean state
