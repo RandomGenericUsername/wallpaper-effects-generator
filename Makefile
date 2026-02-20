@@ -243,31 +243,31 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 	else \
 		echo -e "$(GREEN)✓ act already available$(NC)"; \
 	fi
-	@echo ""
+	@echo -e ""
 	@mkdir -p .logs
 	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
 	LOG_FILE=".logs/make-push-$$TIMESTAMP.log"; \
 	if [ "$(SMOKE)" = "true" ]; then \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo "Running GitHub Actions with SMOKE TESTS enabled"; \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo "Phase 1: Standard CI (4 package workflows)"; \
-		echo "Phase 2: Smoke Tests (end-to-end integration)"; \
-		echo "Logs: $$LOG_FILE"; \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo ""; \
-		echo "───────────────────────────────────────────────────────────"; \
-		echo "PHASE 1: Standard CI Workflows"; \
-		echo "───────────────────────────────────────────────────────────"; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e "$(BLUE)Running GitHub Actions with SMOKE TESTS enabled$(NC)"; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e "$(BLUE)Phase 1: Standard CI (4 package workflows)$(NC)"; \
+		echo -e "$(BLUE)Phase 2: Smoke Tests (end-to-end integration)$(NC)"; \
+		echo -e "$(BLUE)Logs: $$LOG_FILE$(NC)"; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e ""; \
+		echo -e "$(BLUE)───────────────────────────────────────────────────────────$(NC)"; \
+		echo -e "$(BLUE)PHASE 1: Standard CI Workflows$(NC)"; \
+		echo -e "$(BLUE)───────────────────────────────────────────────────────────$(NC)"; \
 		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
 		STANDARD_EXIT=$$?; \
 		echo "" | tee -a "$$LOG_FILE"; \
 		if [ $$STANDARD_EXIT -eq 0 ]; then \
 			echo -e "$(GREEN)✓ Phase 1 complete: Standard CI passed$(NC)" | tee -a "$$LOG_FILE"; \
 			echo "" | tee -a "$$LOG_FILE"; \
-			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
-			echo "PHASE 2: Smoke Tests (via act container)" | tee -a "$$LOG_FILE"; \
-			echo "───────────────────────────────────────────────────────────" | tee -a "$$LOG_FILE"; \
+			echo -e "$(BLUE)───────────────────────────────────────────────────────────$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(BLUE)PHASE 2: Smoke Tests (via act container)$(NC)" | tee -a "$$LOG_FILE"; \
+			echo -e "$(BLUE)───────────────────────────────────────────────────────────$(NC)" | tee -a "$$LOG_FILE"; \
 			./bin/act workflow_dispatch -W .github/workflows/smoke-test.yml --container-options "-v /tmp:/tmp" 2>&1 | tee -a "$$LOG_FILE"; \
 			SMOKE_EXIT=$$?; \
 			echo "" | tee -a "$$LOG_FILE"; \
@@ -284,30 +284,30 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 			EXIT_CODE=$$STANDARD_EXIT; \
 		fi; \
 	else \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo "Running Standard GitHub Actions Workflows"; \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo "Workflows: 4 package workflows (Settings, Core, Templates, Orchestrator)"; \
-		echo "Logs: $$LOG_FILE"; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e "$(BLUE)Running Standard GitHub Actions Workflows$(NC)"; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e "$(BLUE)Workflows: 4 package workflows (Settings, Core, Templates, Orchestrator)$(NC)"; \
+		echo -e "$(BLUE)Logs: $$LOG_FILE$(NC)"; \
 		echo -e "$(YELLOW)Tip:$(NC) Add SMOKE=true to include smoke tests"; \
-		echo "═══════════════════════════════════════════════════════════"; \
-		echo ""; \
+		echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo -e ""; \
 		./bin/act push 2>&1 | tee "$$LOG_FILE"; \
 		EXIT_CODE=$$?; \
 	fi; \
-	echo ""; \
-	echo "═══════════════════════════════════════════════════════════"; \
+	echo -e ""; \
+	echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
 	if [ $$EXIT_CODE -eq 0 ]; then \
 		echo -e "$(GREEN)✓ GitHub Actions simulation complete$(NC)"; \
 	else \
 		echo -e "$(RED)✗ GitHub Actions simulation failed (exit code: $$EXIT_CODE)$(NC)"; \
 	fi; \
-	echo "═══════════════════════════════════════════════════════════"; \
-	echo ""; \
+	echo -e "$(BLUE)═══════════════════════════════════════════════════════════$(NC)"; \
+	echo -e ""; \
 	echo -e "$(GREEN)📋 Full logs saved to:$(NC) $$LOG_FILE"; \
 	echo -e "$(GREEN)Review logs:$(NC) cat $$LOG_FILE"; \
 	echo -e "$(GREEN)Search logs:$(NC) grep 'PASSED\|FAILED' $$LOG_FILE"; \
-	echo ""; \
+	echo -e ""; \
 	exit $$EXIT_CODE
 
 ##@ Cleanup
