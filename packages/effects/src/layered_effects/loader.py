@@ -4,8 +4,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from layered_effects.errors import EffectsLoadError
 from layered_settings.paths import USER_EFFECTS_FILE, get_project_effects_file
+
+from layered_effects.errors import EffectsLoadError
 
 
 class EffectsLoader:

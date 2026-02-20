@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from rich.console import Console
+
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 

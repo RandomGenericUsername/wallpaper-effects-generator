@@ -27,6 +27,8 @@ Basic usage:
 
 from typing import Any
 
+from pydantic import BaseModel
+
 from layered_settings.builder import ConfigBuilder
 from layered_settings.constants import APP_NAME, EFFECTS_FILENAME, SETTINGS_FILENAME
 from layered_settings.dry_run import DryRunBase, ValidationCheck
@@ -40,7 +42,6 @@ from layered_settings.paths import (
     get_project_settings_file,
 )
 from layered_settings.registry import SchemaRegistry
-from pydantic import BaseModel
 
 __version__ = "0.1.0"
 

@@ -119,8 +119,7 @@ class TestEffectsLoaderMerge:
 
         # Package layer: blur + brightness
         package_file = tmp_path / "package.yaml"
-        package_file.write_text(
-            """
+        package_file.write_text("""
 version: "1.0"
 effects:
   blur:
@@ -129,13 +128,11 @@ effects:
   brightness:
     description: "Package brightness"
     command: "brightness package"
-"""
-        )
+""")
 
         # User layer: blur (override) + neon (new)
         user_file = tmp_path / "user.yaml"
-        user_file.write_text(
-            """
+        user_file.write_text("""
 version: "1.0"
 effects:
   blur:
@@ -144,8 +141,7 @@ effects:
   neon:
     description: "User neon"
     command: "neon user"
-"""
-        )
+""")
 
         loader = EffectsLoader(
             package_effects_file=package_file,

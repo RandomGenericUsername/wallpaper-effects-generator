@@ -5,6 +5,7 @@ import subprocess  # nosec: necessary for container management
 import typer
 from layered_settings import get_config
 from rich.console import Console
+
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 console = Console()

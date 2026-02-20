@@ -44,16 +44,14 @@ def test_config_loads_project_settings() -> None:
         settings_file = project_dir / "settings.toml"
 
         # Write project settings
-        settings_file.write_text(
-            """
+        settings_file.write_text("""
 [core.execution]
 parallel = false
 max_workers = 8
 
 [core.backend]
 binary = "/custom/magick"
-"""
-        )
+""")
 
         # Configure with project root
         configure(CoreOnlyConfig, app_name="wallpaper-effects-test")

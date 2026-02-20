@@ -3,10 +3,11 @@
 from pathlib import Path
 
 import pytest
+from pydantic import BaseModel
+
 from layered_settings.builder import ConfigBuilder
 from layered_settings.errors import SettingsValidationError
 from layered_settings.layers import LayerSource
-from pydantic import BaseModel
 
 
 class CoreSettings(BaseModel):
@@ -67,13 +68,11 @@ class TestFlatFormatLoading:
         """build() should wrap flat format data in namespace key."""
         # Create flat format config file (package defaults)
         core_defaults = tmp_path / "core_defaults.toml"
-        core_defaults.write_text(
-            """
+        core_defaults.write_text("""
 parallel = false
 workers = 8
 timeout = 60.0
-"""
-        )
+""")
 
         layer = LayerSource(
             name="package-defaults-core",
@@ -97,22 +96,18 @@ timeout = 60.0
         """build() should handle multiple flat format layers for different namespaces."""
         # Create flat core defaults
         core_defaults = tmp_path / "core_defaults.toml"
-        core_defaults.write_text(
-            """
+        core_defaults.write_text("""
 parallel = true
 workers = 16
-"""
-        )
+""")
 
         # Create flat effects defaults
         effects_defaults = tmp_path / "effects_defaults.toml"
-        effects_defaults.write_text(
-            """
+        effects_defaults.write_text("""
 blur = 10
 brightness = 1.5
 filters = ["sharpen", "contrast"]
-"""
-        )
+""")
 
         layers = [
             LayerSource(
@@ -145,8 +140,7 @@ class TestNamespacedFormatLoading:
     def test_build_with_namespaced_layer(self, tmp_path: Path) -> None:
         """build() should use namespaced data as-is."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 parallel = false
 workers = 2
@@ -154,8 +148,7 @@ workers = 2
 [effects]
 blur = 20
 brightness = 0.8
-"""
-        )
+""")
 
         layer = LayerSource(
             name="project-root",
@@ -177,12 +170,10 @@ brightness = 0.8
     def test_build_with_partial_namespaced_layer(self, tmp_path: Path) -> None:
         """build() should handle namespaced files that only define some namespaces."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = 12
-"""
-        )
+""")
 
         layer = LayerSource(
             name="user-config",
@@ -211,31 +202,25 @@ class TestLayerMerging:
         """build() should merge layers in order, with later layers overriding earlier ones."""
         # Layer 1: Package defaults (flat)
         core_defaults = tmp_path / "core_defaults.toml"
-        core_defaults.write_text(
-            """
+        core_defaults.write_text("""
 parallel = true
 workers = 4
 timeout = 30.0
-"""
-        )
+""")
 
         # Layer 2: Project config (namespaced, overrides workers)
         project_config = tmp_path / "project.toml"
-        project_config.write_text(
-            """
+        project_config.write_text("""
 [core]
 workers = 8
-"""
-        )
+""")
 
         # Layer 3: User config (namespaced, overrides parallel)
         user_config = tmp_path / "user.toml"
-        user_config.write_text(
-            """
+        user_config.write_text("""
 [core]
 parallel = false
-"""
-        )
+""")
 
         layers = [
             LayerSource(
@@ -274,25 +259,21 @@ parallel = false
         """build() should deep merge nested structures, not replace them."""
         # Layer 1: Set some core values
         layer1 = tmp_path / "layer1.toml"
-        layer1.write_text(
-            """
+        layer1.write_text("""
 [core]
 parallel = true
 workers = 4
-"""
-        )
+""")
 
         # Layer 2: Set different core values
         layer2 = tmp_path / "layer2.toml"
-        layer2.write_text(
-            """
+        layer2.write_text("""
 [core]
 timeout = 60.0
 
 [effects]
 blur = 15
-"""
-        )
+""")
 
         layers = [
             LayerSource(
@@ -325,21 +306,17 @@ blur = 15
         """build() should replace lists atomically, not merge element-wise."""
         # Layer 1: Set filters list
         layer1 = tmp_path / "layer1.toml"
-        layer1.write_text(
-            """
+        layer1.write_text("""
 [effects]
 filters = ["blur", "sharpen"]
-"""
-        )
+""")
 
         # Layer 2: Override filters list
         layer2 = tmp_path / "layer2.toml"
-        layer2.write_text(
-            """
+        layer2.write_text("""
 [effects]
 filters = ["contrast"]
-"""
-        )
+""")
 
         layers = [
             LayerSource(
@@ -371,13 +348,11 @@ class TestCLIOverrides:
     def test_build_applies_cli_overrides(self, tmp_path: Path) -> None:
         """build() should apply CLI overrides using dotted notation."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 parallel = true
 workers = 4
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -423,12 +398,10 @@ workers = 4
         """build() should ensure CLI overrides take precedence over all layers."""
         # Create config file
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = 8
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -468,12 +441,10 @@ workers = 8
     def test_build_with_none_cli_overrides(self, tmp_path: Path) -> None:
         """build() should handle None cli_overrides parameter."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = 8
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -493,12 +464,10 @@ workers = 8
     def test_build_with_empty_cli_overrides(self, tmp_path: Path) -> None:
         """build() should handle empty cli_overrides dict."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = 8
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -522,8 +491,7 @@ class TestValidation:
     def test_build_validates_with_pydantic(self, tmp_path: Path) -> None:
         """build() should validate final config with Pydantic."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 parallel = true
 workers = 4
@@ -533,8 +501,7 @@ timeout = 30.0
 blur = 5
 brightness = 1.0
 filters = []
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -557,12 +524,10 @@ filters = []
         """build() should raise SettingsValidationError when validation fails."""
         config_file = tmp_path / "settings.toml"
         # workers should be int, not string
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = "invalid"
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -584,13 +549,11 @@ workers = "invalid"
         """build() should include validation error details in SettingsValidationError."""
         config_file = tmp_path / "settings.toml"
         # Multiple validation errors
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 workers = "not_a_number"
 timeout = "not_a_float"
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",
@@ -633,44 +596,36 @@ class TestIntegration:
         """build() should handle realistic scenario with multiple layers and CLI overrides."""
         # Package defaults (flat)
         core_defaults = tmp_path / "core_defaults.toml"
-        core_defaults.write_text(
-            """
+        core_defaults.write_text("""
 parallel = true
 workers = 4
 timeout = 30.0
-"""
-        )
+""")
 
         effects_defaults = tmp_path / "effects_defaults.toml"
-        effects_defaults.write_text(
-            """
+        effects_defaults.write_text("""
 blur = 5
 brightness = 1.0
 filters = []
-"""
-        )
+""")
 
         # Project config (namespaced)
         project_config = tmp_path / "project.toml"
-        project_config.write_text(
-            """
+        project_config.write_text("""
 [core]
 workers = 8
 
 [effects]
 blur = 10
 filters = ["sharpen"]
-"""
-        )
+""")
 
         # User config (namespaced)
         user_config = tmp_path / "user.toml"
-        user_config.write_text(
-            """
+        user_config.write_text("""
 [core]
 parallel = false
-"""
-        )
+""")
 
         layers = [
             LayerSource(
@@ -727,16 +682,14 @@ parallel = false
     def test_build_with_yaml_files(self, tmp_path: Path) -> None:
         """build() should work with YAML files."""
         config_file = tmp_path / "settings.yaml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 core:
   parallel: false
   workers: 12
 effects:
   blur: 8
   brightness: 0.9
-"""
-        )
+""")
 
         layer = LayerSource(
             name="yaml-config",
@@ -758,8 +711,7 @@ effects:
     def test_build_preserves_data_types(self, tmp_path: Path) -> None:
         """build() should preserve data types through loading and merging."""
         config_file = tmp_path / "settings.toml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 [core]
 parallel = true
 workers = 4
@@ -769,8 +721,7 @@ timeout = 30.5
 blur = 5
 brightness = 1.0
 filters = ["a", "b", "c"]
-"""
-        )
+""")
 
         layer = LayerSource(
             name="config",

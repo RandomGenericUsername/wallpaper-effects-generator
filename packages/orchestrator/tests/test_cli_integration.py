@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
+
 from wallpaper_orchestrator.cli.main import app
 
 runner = CliRunner()

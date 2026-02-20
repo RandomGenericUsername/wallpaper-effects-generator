@@ -1,6 +1,7 @@
 """Integration tests for wallpaper_orchestrator."""
 
 from layered_settings import configure, get_config
+
 from wallpaper_orchestrator.config.unified import UnifiedConfig
 from wallpaper_orchestrator.container.manager import ContainerManager
 
