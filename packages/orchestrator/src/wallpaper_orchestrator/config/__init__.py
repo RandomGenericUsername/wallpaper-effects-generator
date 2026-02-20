@@ -3,7 +3,6 @@
 from pathlib import Path
 
 from layered_settings import SchemaRegistry
-
 from wallpaper_orchestrator.config.settings import (
     ContainerSettings,
     OrchestratorSettings,

@@ -31,9 +31,7 @@ jobs:
         run: uv sync --dev --all-packages
 
       - name: Ruff check
-        run: |
-          cd packages/settings
-          uv run ruff check --line-length 88 .
+        run: uv run ruff check packages/settings
 
       - name: Black check
         run: |

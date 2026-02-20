@@ -4,10 +4,10 @@ import subprocess  # nosec: necessary for container management
 from pathlib import Path
 
 import typer
-from layered_settings import get_config
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from layered_settings import get_config
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 console = Console()

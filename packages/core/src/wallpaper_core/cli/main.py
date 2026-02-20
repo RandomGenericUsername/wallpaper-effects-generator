@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from pydantic import BaseModel
+
 from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_effects.errors import (
@@ -12,8 +14,6 @@ from layered_effects.errors import (
     EffectsValidationError,
 )
 from layered_settings import configure, get_config
-from pydantic import BaseModel
-
 from wallpaper_core.cli import batch, process, show
 from wallpaper_core.config.schema import CoreSettings, Verbosity
 from wallpaper_core.console.output import RichOutput

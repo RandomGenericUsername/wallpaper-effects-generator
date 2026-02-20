@@ -49,6 +49,7 @@ target-version = ["py312"]
 [tool.isort]
 profile = "black"
 line_length = 88
+known_first_party = ["wallpaper_core", "layered_settings", "layered_effects"]
 
 [tool.ruff]
 line-length = 88
@@ -63,8 +64,7 @@ ignore = []
 "tests/**/*.py" = ["ARG", "PTH"]
 
 [tool.ruff.lint.isort]
-lines-after-imports = 2
-known-first-party = ["wallpaper_core", "layered_settings"]
+known-first-party = ["wallpaper_core", "layered_settings", "layered_effects"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -60,6 +60,9 @@ select = [
     "N",   # pep8-naming
 ]
 
+[tool.ruff.lint.isort]
+known-first-party = ["wallpaper_core", "wallpaper_orchestrator", "layered_settings", "layered_effects"]
+
 [tool.mypy]
 ignore_missing_imports = true
 disable_error_code = ["import-untyped"]

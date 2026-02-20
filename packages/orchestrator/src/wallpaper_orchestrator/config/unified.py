@@ -1,10 +1,10 @@
 """Project-level UnifiedConfig composing all schemas."""
 
-from layered_effects import load_effects
 from pydantic import BaseModel, ConfigDict, Field
+
+from layered_effects import load_effects
 from wallpaper_core.config.schema import CoreSettings
 from wallpaper_core.effects.schema import EffectsConfig
-
 from wallpaper_orchestrator.config.settings import OrchestratorSettings
 
 

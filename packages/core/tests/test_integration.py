@@ -4,7 +4,6 @@ import tempfile
 from pathlib import Path
 
 from layered_settings import configure, get_config
-
 from wallpaper_core.cli.main import CoreOnlyConfig
 
 
@@ -66,7 +65,6 @@ binary = "/custom/magick"
 def test_effects_loaded_from_yaml() -> None:
     """Test effects are loaded from effects.yaml via layered_effects."""
     from layered_effects import _reset, configure, load_effects
-
     from wallpaper_core.effects import get_package_effects_file
 
     # Reset any previous configuration

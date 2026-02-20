@@ -175,7 +175,6 @@ def test_output_settings_loads_from_package_defaults():
     # This test verifies the package settings.toml is properly configured
     # by loading settings and checking the default value is applied
     from layered_settings import configure, get_config
-
     from wallpaper_core.cli.main import CoreOnlyConfig
 
     configure(CoreOnlyConfig, app_name="wallpaper-effects-test")
