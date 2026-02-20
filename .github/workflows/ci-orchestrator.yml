@@ -107,6 +107,11 @@ jobs:
           cd packages/orchestrator
           uv run pytest -n auto --cov=src --cov-report=xml --cov-report=term
 
+      - name: Check coverage threshold
+        run: |
+          cd packages/orchestrator
+          uv run coverage report --fail-under=95
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
