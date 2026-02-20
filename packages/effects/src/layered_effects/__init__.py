@@ -7,14 +7,13 @@ Public API:
 
 from pathlib import Path
 
-from wallpaper_core.effects.schema import EffectsConfig
-
 from layered_effects.errors import (
     EffectsError,
     EffectsLoadError,
     EffectsValidationError,
 )
 from layered_effects.loader import EffectsLoader
+from wallpaper_core.effects.schema import EffectsConfig
 
 __version__ = "0.1.0"
 

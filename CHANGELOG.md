@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added coverage threshold check (`--fail-under=95`) to `ci-orchestrator` (was missing)
 - Fixed `make push` color output: restored `echo -e` with color vars for all phase headers
 - Added `.github/pull_request_template.md` with design compliance checklist
+- Fixed `packages/effects/pyproject.toml` ruff isort: removed `lines-after-imports = 2`, added `known_first_party` to `[tool.isort]`
+- Aligned `known-first-party` across `packages/core` and `packages/orchestrator`: added `layered_effects` to both ruff and isort configs
+- Added `known_first_party` to per-package `[tool.isort]` sections (core, orchestrator, effects) so standalone isort and ruff agree on import sections
+- Added `[tool.ruff.lint.isort].known-first-party` to workspace root `pyproject.toml`
+- Changed CI ruff check steps to run from workspace root (`uv run ruff check packages/<pkg>`) for consistent config resolution
+- Added `[tool.ruff]` section to `packages/settings/pyproject.toml` with per-file ignores for E501/N813 in tests and examples
 
 
 ### Breaking Changes

@@ -47,13 +47,13 @@ target-version = ["py312"]
 [tool.isort]
 profile = "black"
 line_length = 88
+known_first_party = ["layered_effects", "layered_settings", "wallpaper_core"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py312"
 
 [tool.ruff.lint.isort]
-lines-after-imports = 2
 known-first-party = ["layered_effects", "layered_settings", "wallpaper_core"]
 
 [tool.mypy]
