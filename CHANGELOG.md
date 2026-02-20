@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (Dev Setup)
+
+- Added `.python-version` pinning Python to 3.12 for tool auto-detection (uv, pyenv, mise)
+- Updated pre-commit hook versions: black `24.1.1→24.10.0`, ruff `v0.2.1→v0.8.4`, mypy `v1.8.0→v1.13.0`, bandit `1.7.5→1.8.0`
+- Added `ruff-format` hook to pre-commit config
+- Removed `--ignore=I` from ruff pre-commit args; ruff now enforces import sorting consistently
+- Fixed root `pyproject.toml` ruff config: removed contradictory `ignore = ["I"]` and dead `[tool.ruff.lint.isort]` block
+- Migrated `packages/core`, `packages/orchestrator`, `packages/settings` dev deps from `[project.optional-dependencies]` to `[dependency-groups]` for correct `uv sync --dev` resolution
+- Added `ruff check` step to all 4 CI lint jobs (`ci-core`, `ci-settings`, `ci-effects`, `ci-orchestrator`)
+- Added `-ll` severity filter to bandit in all 4 CI security jobs
+- Added `-n auto` parallel execution to `ci-core` test step (was the only workflow missing it)
+- Added coverage threshold check (`--fail-under=95`) to `ci-orchestrator` (was missing)
+- Fixed `make push` color output: restored `echo -e` with color vars for all phase headers
+- Added `.github/pull_request_template.md` with design compliance checklist
+
+
 ### Breaking Changes
 
 #### Output Directory Now Optional
