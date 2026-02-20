@@ -71,7 +71,7 @@ jobs:
       - name: Bandit security scan
         run: |
           cd packages/orchestrator
-          uv run bandit -r src/ -f json -o bandit-report.json
+          uv run bandit -r src/ -ll -f json -o bandit-report.json
 
       - name: Upload security report
         if: always()
