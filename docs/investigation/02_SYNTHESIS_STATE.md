@@ -1,0 +1,6 @@
+# Synthesis State
+
+ITERATION = 0001
+STATUS = NOT_STARTED
+BLOCKING_REASONS = (none)
+LAST_CHECKPOINT = (none)
