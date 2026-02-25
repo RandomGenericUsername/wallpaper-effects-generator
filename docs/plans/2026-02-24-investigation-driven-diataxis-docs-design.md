@@ -1,7 +1,7 @@
-# Design: Investigation-Driven Diátaxis Documentation
+# Design: Investigation-Driven Documentation
 
 **Date:** 2026-02-24
-**Status:** Approved
+**Status:** Superseded — profile changed to MkDocs (see implementation plan `2026-02-24-investigation-driven-mkdocs-docs.md`)
 
 ## Goal
 
