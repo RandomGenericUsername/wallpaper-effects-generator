@@ -2,11 +2,11 @@
 
 ## Iteration
 - Current iteration: 0001
-- Phase: PHASE_1_INVENTORY
+- Phase: PHASE_2_TOPIC_MAP
 
 ## Progress
 Completed:
-- (none)
+- PHASE_1_INVENTORY (iteration 0001): Full file inventory of all 4 packages, root config, CI, and docs.
 
 Current focus:
-- Build repo-wide file inventory for wallpaper-effects-generator (4 packages: settings, core, effects, orchestrator)
+- Map topics across all in-scope files.
