@@ -10,3 +10,10 @@ Required fields:
 - Category (how-to/reference/concept/contract/troubleshooting)
 - Evidence status (verified/unverified/contradicted)
 - Evidence pointers
+
+- DOC-0001:
+  - Text:
+  - Source:
+  - Category:
+  - Evidence status:
+  - Evidence:

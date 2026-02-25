@@ -18,3 +18,12 @@ Required fields:
 - Expected output
 - Errors/edge cases
 - Evidence (tests/contracts/code)
+
+- BHV-0001:
+  - Title:
+  - Publicity:
+  - Preconditions:
+  - Steps:
+  - Expected:
+  - Errors:
+  - Evidence:

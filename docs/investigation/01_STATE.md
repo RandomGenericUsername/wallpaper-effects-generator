@@ -1,11 +1,12 @@
-# Audit State
+# Investigation State
 
-ITERATION = 0001
-PHASE = PHASE_1_INVENTORY
-S0_COUNT = 0
-S1_COUNT = 0
-S2_COUNT = 0
-S3_COUNT = 0
-UNKNOWNS_OPEN = 0
-INVESTIGATION_STATUS = RUNNING
-LAST_CHECKPOINT = (none)
+## Iteration
+- Current iteration: 0001
+- Phase: PHASE_1_INVENTORY
+
+## Progress
+Completed:
+- (none)
+
+Current focus:
+- Build repo-wide file inventory for wallpaper-effects-generator (4 packages: settings, core, effects, orchestrator)

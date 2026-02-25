@@ -21,6 +21,7 @@ INTERFACES =
 TEST_COMMAND = python -m pytest
 TEST_CATEGORIES = unit, integration, smoke
 TEST_ROOT = packages/
+ENVIRONMENT_NOTES = Each package is installed as an editable package. Run `make dev` from the project root to install all packages with dependencies. Tests should be run per-package using `make test-<package>` (e.g. `make test-settings`) or all at once with `make test-all`.
 
 CONTRACTS = (none — no OpenAPI or JSON Schema files)
 

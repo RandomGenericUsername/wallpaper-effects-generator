@@ -10,3 +10,10 @@ Required fields:
 - Opened in iteration
 - Attempts
 - Resolution evidence
+
+- U-0001:
+  - Question:
+  - Status: open | resolved | blocked
+  - Opened in iteration:
+  - Attempts:
+  - Resolution evidence:
