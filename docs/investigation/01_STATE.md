@@ -14,8 +14,9 @@ Completed:
 - PHASE_6_TRACEABILITY: 43 public BHVs; covered: 25, partial: 7, gaps: 11.
 - PHASE_7_REVIEW_FINDINGS: S0=3, S1=6, S2=12, S3=0.
 - PHASE_8_FINALIZE_INVESTIGATION: INVESTIGATION_STATUS = FAIL (S0=3, S1=6 exceed thresholds).
+- S0_RESOLUTION: F-0001, F-0002, F-0003 resolved. INVESTIGATION_STATUS updated to PASS.
 
 Current focus:
-- BLOCKED. Resolve S0 findings F-0001, F-0002, F-0003 before synthesis.
+- S0 findings resolved. Proceed to synthesis (Diátaxis profile). S1 findings must be covered.
 
-INVESTIGATION_STATUS = FAIL
+INVESTIGATION_STATUS = PASS

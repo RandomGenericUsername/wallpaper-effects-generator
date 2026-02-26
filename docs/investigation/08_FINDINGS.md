@@ -30,6 +30,8 @@ Critical findings represent doc claims that are actively wrong — wrong command
   wallpaper-process process preset input.jpg --preset dark_vibrant
   wallpaper-process process preset input.jpg --preset dark_vibrant -o /path/to/output
   ```
+- Status: resolved
+- Resolution: Replaced all positional-syntax command examples in packages/orchestrator/README.md (Quick Start, Commands, and Architecture sections) with correct flag-based syntax using --effect, --composite, --preset, and -o flags.
 
 ---
 
@@ -46,6 +48,8 @@ Critical findings represent doc claims that are actively wrong — wrong command
   ```
   ~/.config/wallpaper-effects-generator/settings.toml
   ```
+- Status: resolved
+- Resolution: Replaced wallpaper-effects with wallpaper-effects-generator in both user settings path references in packages/core/README.md (Layer Priority list and settings format comment).
 
 ---
 
@@ -55,6 +59,8 @@ Critical findings represent doc claims that are actively wrong — wrong command
 - Location: `README.md:129` (DOC-0018), `README.md:157` (DOC-0023)
 - Evidence: `packages/core/src/wallpaper_core/config/settings.toml:12` (`default_dir = "/tmp/wallpaper-effects"`); DOC-0018 claims `./wallpapers-output`; DOC-0023 claims default is `./wallpapers-output`; tests (BHV-0049 preconditions) note default is `/tmp/wallpaper-effects`
 - Proposed fix: Update `README.md:129` and `README.md:157` to replace `./wallpapers-output` with `/tmp/wallpaper-effects`. Also update any example output paths (e.g., DOC-0013 shows `./wallpapers-output/input/effect/blur.png`) that use `./wallpapers-output` as the default, since the true default output base is `/tmp/wallpaper-effects`.
+- Status: resolved
+- Resolution: Replaced all occurrences of ./wallpapers-output with /tmp/wallpaper-effects in README.md, including the default_dir description, the "Default value" note, example output paths, output structure diagrams, and the Basic Workflow ls example.
 
 ---
 
