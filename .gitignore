@@ -74,6 +74,7 @@ Thumbs.db
 *.log
 .logs/
 bandit-report.json
+site/
 
 # Git worktrees
 .worktrees/

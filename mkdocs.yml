@@ -1,0 +1,43 @@
+site_name: Wallpaper Effects Generator
+docs_dir: docs
+exclude_docs: |
+  .archive/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+
+nav:
+  - Home: index.md
+  - Tutorial:
+      - Getting Started: tutorials/getting-started.md
+  - How-To:
+      - Apply a Single Effect: how-to/apply-single-effect.md
+      - Apply a Composite: how-to/apply-composite.md
+      - Apply a Preset: how-to/apply-preset.md
+      - Batch Process: how-to/batch-process.md
+      - Dry Run: how-to/dry-run.md
+      - Override Config: how-to/override-config.md
+      - Run in Container: how-to/run-in-container.md
+      - Install the Container: how-to/install-container.md
+  - Reference:
+      - wallpaper-core CLI: reference/cli-core.md
+      - wallpaper-process CLI: reference/cli-orchestrator.md
+      - Configuration: reference/config.md
+      - Effects: reference/effects.md
+  - Explanation:
+      - Architecture: explanation/architecture.md
+      - Layered Configuration: explanation/layered-config.md
+      - Host vs Container: explanation/host-vs-container.md
+      - Contributing: explanation/contributing.md

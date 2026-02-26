@@ -10,6 +10,7 @@ EFFECTS_DIR := $(PACKAGES_DIR)/effects
 ORCHESTRATOR_DIR := $(PACKAGES_DIR)/orchestrator
 TOOLS_DIR := tools
 DEV_DIR := $(TOOLS_DIR)/dev
+DOCS_PORT := 8000
 
 # Color output
 BLUE := \033[0;34m
@@ -309,6 +310,13 @@ push: ## Run GitHub Actions workflows locally (add SMOKE=true for smoke tests)
 	echo -e "$(GREEN)Search logs:$(NC) grep 'PASSED\|FAILED' $$LOG_FILE"; \
 	echo -e ""; \
 	exit $$EXIT_CODE
+
+##@ Documentation
+docs-serve: ## Start local docs dev server (live reload). Override port: make docs-serve DOCS_PORT=9000
+	$(UV) run mkdocs serve --dev-addr 0.0.0.0:$(DOCS_PORT)
+
+docs-build: ## Build docs to site/ (strict — fails on warnings)
+	$(UV) run mkdocs build --strict
 
 ##@ Cleanup
 clean: ## Remove build artifacts and caches
