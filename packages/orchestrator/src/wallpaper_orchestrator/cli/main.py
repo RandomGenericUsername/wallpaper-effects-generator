@@ -9,6 +9,7 @@ from rich.console import Console
 from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_settings import configure, get_config
+from layered_settings.constants import APP_NAME
 from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
 from wallpaper_core.cli.path_utils import resolve_output_path
@@ -21,7 +22,7 @@ from wallpaper_orchestrator.container.manager import ContainerManager
 from wallpaper_orchestrator.dry_run import OrchestratorDryRun
 
 # Configure layered_settings at module import
-configure(UnifiedConfig, app_name="wallpaper-effects")
+configure(UnifiedConfig, app_name=APP_NAME)
 
 # Configure layered_effects for effects discovery
 configure_effects(
@@ -107,13 +108,13 @@ def process_effect(
             cmd_parts.extend(
                 [
                     "-v",
-                    f"{abs_input}:/input/image.jpg:ro",
+                    f"{abs_input}:/input/{input_file.name}:ro",
                     "-v",
                     f"{abs_output_dir}:/output:rw",
                     image_name,
                     "process",
                     "effect",
-                    "/input/image.jpg",
+                    f"/input/{input_file.name}",
                     "--effect",
                     effect,
                     "-o",
@@ -143,7 +144,7 @@ def process_effect(
                     )
                 inner_command = _resolve_command(
                     effect_def.command,
-                    Path("/input/image.jpg"),
+                    Path(f"/input/{input_file.name}"),
                     expected_output,
                     params,
                 )
@@ -266,13 +267,13 @@ def process_composite(
             cmd_parts.extend(
                 [
                     "-v",
-                    f"{abs_input}:/input/image.jpg:ro",
+                    f"{abs_input}:/input/{input_file.name}:ro",
                     "-v",
                     f"{abs_output_dir}:/output:rw",
                     image_name,
                     "process",
                     "composite",
-                    "/input/image.jpg",
+                    f"/input/{input_file.name}",
                     "--composite",
                     composite,
                     "-o",
@@ -301,7 +302,7 @@ def process_composite(
                 inner_commands = _resolve_chain_commands(
                     composite_def.chain,
                     effects_config,
-                    Path("/input/image.jpg"),
+                    Path(f"/input/{input_file.name}"),
                     expected_output,
                 )
                 inner_command = (
@@ -424,13 +425,13 @@ def process_preset(
             cmd_parts.extend(
                 [
                     "-v",
-                    f"{abs_input}:/input/image.jpg:ro",
+                    f"{abs_input}:/input/{input_file.name}:ro",
                     "-v",
                     f"{abs_output_dir}:/output:rw",
                     image_name,
                     "process",
                     "preset",
-                    "/input/image.jpg",
+                    f"/input/{input_file.name}",
                     "--preset",
                     preset,
                     "-o",
@@ -466,7 +467,7 @@ def process_preset(
                         )
                         inner_command = _resolve_command(
                             effect_def.command,
-                            Path("/input/image.jpg"),
+                            Path(f"/input/{input_file.name}"),
                             expected_output,
                             params,
                         )
@@ -480,7 +481,7 @@ def process_preset(
                         inner_commands = _resolve_chain_commands(
                             composite_def.chain,
                             effects_config,
-                            Path("/input/image.jpg"),
+                            Path(f"/input/{input_file.name}"),
                             expected_output,
                         )
                         inner_command = (

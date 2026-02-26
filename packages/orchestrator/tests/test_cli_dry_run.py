@@ -539,3 +539,74 @@ class TestPodmanDryRun:
 
         assert result.exit_code == 0
         assert "neither" in result.stdout.lower()
+
+
+class TestDryRunPreservesOriginalFilename:
+    """Dry-run output must use the actual input filename, not hardcoded image.jpg."""
+
+    def _mock_manager(self):
+        from unittest.mock import MagicMock
+
+        mock_manager = MagicMock()
+        mock_manager.engine = "docker"
+        mock_manager.get_image_name.return_value = "wallpaper-effects:latest"
+        return mock_manager
+
+    def test_process_effect_dry_run_uses_original_filename(self, tmp_path):
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["process", "effect", str(input_file), "--effect", "blur", "--dry-run"],
+            )
+
+        assert result.exit_code == 0, result.stdout
+        assert "/input/wallpaper.jpg" in result.stdout
+        assert "/input/image.jpg" not in result.stdout
+
+    def test_process_composite_dry_run_uses_original_filename(self, tmp_path):
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "composite",
+                    str(input_file),
+                    "--composite",
+                    "blur-brightness80",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0, result.stdout
+        assert "/input/wallpaper.jpg" in result.stdout
+        assert "/input/image.jpg" not in result.stdout
+
+    def test_process_preset_dry_run_uses_original_filename(self, tmp_path):
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                [
+                    "process",
+                    "preset",
+                    str(input_file),
+                    "--preset",
+                    "dark_blur",
+                    "--dry-run",
+                ],
+            )
+
+        assert result.exit_code == 0, result.stdout
+        assert "/input/wallpaper.jpg" in result.stdout
+        assert "/input/image.jpg" not in result.stdout

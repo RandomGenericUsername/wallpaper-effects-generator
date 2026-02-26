@@ -14,6 +14,7 @@ from layered_effects.errors import (
     EffectsValidationError,
 )
 from layered_settings import configure, get_config
+from layered_settings.constants import APP_NAME
 from wallpaper_core.cli import batch, process, show
 from wallpaper_core.config.schema import CoreSettings, Verbosity
 from wallpaper_core.console.output import RichOutput
@@ -28,7 +29,7 @@ class CoreOnlyConfig(BaseModel):
 
 
 # Configure layered_settings at module import
-configure(CoreOnlyConfig, app_name="wallpaper-effects")
+configure(CoreOnlyConfig, app_name=APP_NAME)
 
 # Configure layered_effects for effects configuration
 configure_effects(

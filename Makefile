@@ -31,6 +31,7 @@ help:
 
 ##@ Setup & Installation
 dev: install-deps ## Set up development environment
+	$(UV) run pre-commit install
 	@echo -e "$(GREEN)✓ Development environment ready$(NC)"
 
 install-deps: ## Install all dependencies for development

@@ -45,3 +45,17 @@ def test_cli_info_command_exists() -> None:
     assert result.exit_code == 0
     # Should show the info command or its help
     assert "info" in result.stdout.lower() or "configuration" in result.stdout.lower()
+
+
+def test_cli_uses_app_name_constant() -> None:
+    """configure() must use APP_NAME so settings and effects share the same dir."""
+    import layered_settings
+    from layered_settings.constants import APP_NAME
+
+    # configure() was called at module import time
+    # (top of file: from wallpaper_core.cli.main import app)
+
+    assert layered_settings._app_name == APP_NAME, (
+        f"Expected app_name={APP_NAME!r}, got {layered_settings._app_name!r}. "
+        "Fix: pass app_name=APP_NAME to configure() in wallpaper_core/cli/main.py."
+    )
