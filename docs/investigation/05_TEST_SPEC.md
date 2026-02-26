@@ -1,7 +1,8 @@
 # TEST_SPEC — Behavior Catalog
 
 <!-- Generated: iteration 0001, phase 3 -->
-<!-- Total BHVs: 82 | Public: 39 | Internal: 43 -->
+<!-- Updated: iteration 0001, phase 4 — publicity classifications verified -->
+<!-- Total BHVs: 82 | Public: 38 | Internal: 44 -->
 
 ## Test execution
 
@@ -384,7 +385,7 @@ All packages: `make test-all`
 ## BHV-0026
 
 - Title: Settings error hierarchy: SettingsFileError, SettingsRegistryError, and SettingsValidationError all extend SettingsError
-- Publicity: public
+- Publicity: internal
 - Package: settings
 - Preconditions: None
 - Steps:
@@ -1259,7 +1260,7 @@ All packages: `make test-all`
 ## BHV-0082
 
 - Title: wallpaper-orchestrator layered settings supports CLI-level overrides across core and orchestrator namespaces
-- Publicity: internal
+- Publicity: public
 - Package: orchestrator
 - Preconditions: `UnifiedConfig` is configured with `configure(UnifiedConfig, ...)`
 - Steps:
