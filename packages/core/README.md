@@ -59,7 +59,7 @@ uv run wallpaper-core process effect input.jpg output.jpg --effect blur
 
 1. **Package defaults** - `packages/core/src/wallpaper_core/config/settings.toml`
 2. **Project settings** - `./settings.toml` (root of your project)
-3. **User settings** - `~/.config/wallpaper-effects/settings.toml`
+3. **User settings** - `~/.config/wallpaper-effects-generator/settings.toml`
 4. **CLI overrides** - Command-line flags
 
 ### Settings Format
@@ -74,7 +74,7 @@ max_workers = 0
 
 **Project/User settings (namespaced):**
 ```toml
-# ./settings.toml or ~/.config/wallpaper-effects/settings.toml
+# ./settings.toml or ~/.config/wallpaper-effects-generator/settings.toml
 [core.execution]
 parallel = false
 max_workers = 4
