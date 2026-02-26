@@ -54,7 +54,7 @@ uv run wallpaper-process process effect image.jpg --effect blur
 **Without specifying output directory (uses default):**
 ```bash
 wallpaper-core process effect input.jpg --effect blur
-# Output: ./wallpapers-output/input/effect/blur.png
+# Output: /tmp/wallpaper-effects/input/effect/blur.png
 ```
 
 **With custom output directory:**
@@ -66,7 +66,7 @@ wallpaper-core process effect input.jpg --effect blur -o /home/user/outputs
 **With flat output structure:**
 ```bash
 wallpaper-core process effect input.jpg --effect blur --flat
-# Output: ./wallpapers-output/input/blur.png
+# Output: /tmp/wallpaper-effects/input/blur.png
 ```
 
 ### Apply a Composite (Effect Chain)
@@ -126,7 +126,7 @@ wallpaper-core batch presets input.jpg -o /output
 
 ### Default Output Directory
 
-The default output directory is `./wallpapers-output` in the current working directory. You can customize this globally through configuration.
+The default output directory is `/tmp/wallpaper-effects`. You can customize this globally through configuration.
 
 #### Configuration Hierarchy
 
@@ -154,7 +154,7 @@ Or project level:
 default_dir = "./wallpapers"
 ```
 
-**Default value:** `./wallpapers-output`
+**Default value:** `/tmp/wallpaper-effects`
 
 #### Example Configurations
 
@@ -249,7 +249,7 @@ wallpaper-process uninstall  # Remove container image
 ### With Type Subdirectories (Default)
 
 ```
-./wallpapers-output/
+/tmp/wallpaper-effects/
 └── input/                          # Based on input filename
     ├── effects/
     │   ├── blur.png
@@ -268,7 +268,7 @@ wallpaper-process uninstall  # Remove container image
 ### With Flat Structure (--flat flag)
 
 ```
-./wallpapers-output/
+/tmp/wallpaper-effects/
 └── input/                          # Based on input filename
     ├── blur.png
     ├── brighten.png
@@ -326,7 +326,7 @@ wallpaper-core process effect wallpaper.jpg --effect blur --dry-run
 wallpaper-core process effect wallpaper.jpg --effect blur
 
 # 3. Check results
-ls ./wallpapers-output/wallpaper/effects/
+ls /tmp/wallpaper-effects/wallpaper/effects/
 ```
 
 ### Batch Processing
