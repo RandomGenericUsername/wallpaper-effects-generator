@@ -23,7 +23,11 @@ wallpaper-core process effect wallpaper.jpg --effect blur --dry-run
 Prints:
 - The resolved `magick ...` command with all parameter substitutions applied.
 - The expected output path.
-- Validation checks (input file exists, effect is defined, backend binary found).
+- Validation checks:
+  - Input file exists
+  - ImageMagick binary found
+  - Effect (or composite/preset) found in config
+  - Output directory exists (or notes it would be created)
 
 No file is written. (BHV-0054)
 
@@ -67,7 +71,7 @@ wallpaper-core batch presets wallpaper.jpg --dry-run
 
 The orchestrator's `--dry-run` for process commands shows **two** pieces of information: (BHV-0079)
 
-1. The host command: the full `docker run ...` (or `podman run ...`) invocation with all volume mounts.
+1. The host command: the full `docker run ...` (or `podman run ...`) invocation with all volume mounts. The input file is mounted at its original filename (e.g., `-v /abs/wallpaper.jpg:/input/wallpaper.jpg:ro`).
 2. The inner command: the `magick ...` command that would execute inside the container.
 
 Example:

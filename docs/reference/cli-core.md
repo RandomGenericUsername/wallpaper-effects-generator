@@ -49,7 +49,7 @@ Backend Binary: magick
 
 === Effects ===
 Version: 1.0
-Effects defined: 8
+Effects defined: 9
 
 Available effects:
   - blackwhite: Convert to grayscale
@@ -79,7 +79,7 @@ Prints a table with columns: Name, Description, Parameters.
 wallpaper-core show composites
 ```
 
-Prints a table with columns: Name, Description, Chain (e.g., `blur -> brightness`).
+Prints a table with columns: Name, Description, Chain (e.g., `blur → brightness`).
 
 ### show presets
 

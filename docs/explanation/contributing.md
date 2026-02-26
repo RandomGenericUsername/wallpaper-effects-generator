@@ -54,9 +54,9 @@ In tests, `shutil.which("magick")` is mocked to return a known path so ImageMagi
 
 ```bash
 make format      # Auto-format with Black, isort, and Ruff
-make lint        # Check formatting, linting, and type errors (mypy)
+make lint        # Check formatting (Black, isort) and linting; mypy runs only for core and orchestrator packages
 make security    # Run Bandit security scanner
-make pipeline    # Run the full validation pipeline (format check + lint + security + tests)
+make pipeline    # Run the full validation pipeline (lint + security scan + tests)
 ```
 
 All tools use line length 88. The same configuration is used in pre-commit hooks and in GitHub Actions CI.

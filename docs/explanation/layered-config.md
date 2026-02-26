@@ -40,10 +40,10 @@ Merging happens key-by-key: if a key is set in layer 3 but not layer 2, the laye
 At import time, the CLI modules call:
 
 ```python
-configure(CoreOnlyConfig, app_name="wallpaper-effects")
+configure(CoreOnlyConfig, app_name=APP_NAME)  # APP_NAME = "wallpaper-effects-generator"
 ```
 
-This registers the root Pydantic model and the application name. `app_name` is used to derive the user config path (`~/.config/wallpaper-effects`). (BHV-0022)
+This registers the root Pydantic model and the application name. `app_name` is used to derive the user config path (`~/.config/wallpaper-effects-generator/`). Both `wallpaper-core` and `wallpaper-process` pass `app_name=APP_NAME` from `layered_settings.constants`, so settings and effects are loaded from the same directory. (BHV-0022)
 
 When a subcommand runs, it calls:
 

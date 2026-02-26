@@ -75,12 +75,6 @@ By default, batch runs in parallel using multiple workers. Disable this with:
 wallpaper-core batch all wallpaper.jpg --sequential
 ```
 
-Or using the long form:
-
-```bash
-wallpaper-core batch all wallpaper.jpg --no-parallel
-```
-
 (BHV-0057)
 
 ### Continue on errors (non-strict mode)

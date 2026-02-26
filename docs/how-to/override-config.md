@@ -44,7 +44,7 @@ These flags must appear before the subcommand name (they are global flags on the
 
 ## Parallel processing flag
 
-`--sequential` (or `--no-parallel`) overrides `core.execution.parallel` for batch commands:
+`--sequential` overrides `core.execution.parallel` for batch commands:
 
 ```bash
 wallpaper-core batch all wallpaper.jpg --sequential

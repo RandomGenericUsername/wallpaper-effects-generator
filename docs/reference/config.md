@@ -55,7 +55,7 @@ verbosity = 2
 default_dir = "/home/user/wallpapers"
 ```
 
-Both TOML (`.toml`) and YAML (`.yaml`, `.yml`) formats are supported for project and user files. (BHV-0023)
+Only **TOML** (`.toml`) is supported for auto-discovered settings files. Layer discovery always looks for `settings.toml` by name. The `FileLoader` can parse YAML internally but no YAML settings file is ever auto-discovered. (BHV-0023)
 
 ---
 
@@ -98,7 +98,7 @@ All keys below are accessed as `core.<section>.<key>` in project/user config.
 
 | Key | Default | Description |
 |---|---|---|
-| `binary` | `"magick"` | ImageMagick binary name or path. Change if your system uses `convert` instead of `magick`. |
+| `binary` | auto-detected | ImageMagick binary. At startup, auto-detected via `shutil.which("magick")` then `shutil.which("convert")`; falls back to `"magick"` if neither is found. Override to use a specific path. |
 
 ---
 
@@ -111,6 +111,7 @@ The `orchestrator` namespace is only available when using `wallpaper-process`. P
 | Key | Default | Description |
 |---|---|---|
 | `engine` | `"docker"` | Container engine: `"docker"` or `"podman"`. |
+| `image_name` | `"wallpaper-effects:latest"` | Container image name and tag. Override to use a different local image name. |
 | `image_registry` | `""` | Optional registry prefix, e.g., `"ghcr.io/myusername"`. When set, the full image name becomes `<registry>/wallpaper-effects:latest`. |
 
 Example user config for Podman with a custom registry:

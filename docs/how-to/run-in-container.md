@@ -28,7 +28,7 @@ wallpaper-process process effect wallpaper.jpg --effect blur
 `wallpaper-process` builds a `docker run` (or `podman run`) command, mounts the input file read-only and the output directory read-write, and invokes `wallpaper-core` inside the container. The container is removed after each run (`--rm`). (BHV-0074, BHV-0078)
 
 The container mounts are:
-- Input: `{abs-input-path}:/input/image.jpg:ro`
+- Input: `{abs-input-path}:/input/{filename}:ro` — the original filename is preserved, not renamed to `image.jpg`.
 - Output: `{abs-output-dir}:/output:rw`
 
 (BHV-0074)

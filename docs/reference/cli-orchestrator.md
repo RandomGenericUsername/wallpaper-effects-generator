@@ -118,11 +118,15 @@ wallpaper-process process effect <input-file> --effect <name> [options]
 **Container invocation:**
 ```
 docker run --rm \
-  -v <abs-input>:/input/image.jpg:ro \
+  -v <abs-input>:/input/<filename>:ro \
   -v <abs-output-dir>:/output:rw \
   wallpaper-effects:latest \
-  process effect /input/image.jpg --effect <name> -o /output [--flat]
+  process effect /input/<filename> --effect <name> -o /output [--flat]
 ```
+
+> The input file is mounted at its original filename (e.g., `/input/wallpaper.jpg`),
+> not a fixed `/input/image.jpg`. `<filename>` is the basename of the path you pass
+> as the `<input-file>` argument.
 
 With Podman, `--userns=keep-id` is added. (BHV-0074)
 

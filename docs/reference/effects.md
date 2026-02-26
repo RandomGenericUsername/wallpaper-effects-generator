@@ -207,6 +207,10 @@ effects:
     command: 'magick "$INPUT" -sharpen 0x2 "$OUTPUT"'
 ```
 
+> **Note:** The `version` field in project and user `effects.yaml` files is optional.
+> The merge logic always restores the package layer's `version` as the canonical value,
+> so any `version` you specify in an override file is ignored.
+
 The user layer has the highest precedence. To override a built-in effect's default parameters, redefine only the parameter block:
 
 ```yaml
