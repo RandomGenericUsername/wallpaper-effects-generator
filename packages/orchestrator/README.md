@@ -37,7 +37,7 @@ source .venv/bin/activate
 wallpaper-process install
 
 # 2. Process images (runs in container)
-wallpaper-process process effect input.jpg output.jpg blur
+wallpaper-process process effect input.jpg --effect blur
 
 # 3. When done, remove image
 wallpaper-process uninstall
@@ -46,7 +46,7 @@ wallpaper-process uninstall
 **Note:** If not activating the venv, prefix all commands with `uv run`:
 ```bash
 uv run wallpaper-process install
-uv run wallpaper-process process effect input.jpg output.jpg blur
+uv run wallpaper-process process effect input.jpg --effect blur
 ```
 
 ## Commands
@@ -69,18 +69,20 @@ wallpaper-process uninstall --yes       # Skip confirmation
 
 **Apply single effect:**
 ```bash
-wallpaper-process process effect input.jpg output.jpg blur
-wallpaper-process process effect photo.png result.png darken
+wallpaper-process process effect input.jpg --effect blur
+wallpaper-process process effect input.jpg --effect blur -o /path/to/output
 ```
 
 **Apply composite:**
 ```bash
-wallpaper-process process composite input.jpg output.jpg dark
+wallpaper-process process composite input.jpg --composite dark
+wallpaper-process process composite input.jpg --composite dark -o /path/to/output
 ```
 
 **Apply preset:**
 ```bash
-wallpaper-process process preset input.jpg output.jpg dark_vibrant
+wallpaper-process process preset input.jpg --preset dark_vibrant
+wallpaper-process process preset input.jpg --preset dark_vibrant -o /path/to/output
 ```
 
 ### Info Commands (Host Execution)
@@ -109,14 +111,14 @@ When you run a process command, the orchestrator:
 
 **Example:**
 ```bash
-$ wallpaper-process process effect ~/photo.jpg ~/output/blurred.jpg blur
+$ wallpaper-process process effect ~/photo.jpg --effect blur -o ~/output
 
 # Internally runs:
 # docker run --rm \
 #   -v ~/photo.jpg:/input/image.jpg:ro \
 #   -v ~/output:/output:rw \
 #   wallpaper-effects:latest \
-#   process effect /input/image.jpg /output/blurred.jpg blur
+#   process effect /input/image.jpg --effect blur -o /output
 ```
 
 ### Package Structure
