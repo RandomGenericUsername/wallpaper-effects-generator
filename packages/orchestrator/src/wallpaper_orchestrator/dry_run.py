@@ -75,6 +75,30 @@ class OrchestratorDryRun(DryRunBase):
         self.render_command("Host command", host_command)
         self.render_command("Inner command (runs inside container)", inner_command)
 
+    def render_container_batch(
+        self,
+        batch_type: str,
+        input_path: Path,
+        output_dir: Path,
+        engine: str,
+        image_name: str,
+        host_command: str,
+        items: list[dict[str, str]],
+    ) -> None:
+        """Render container batch dry-run with both command layers."""
+        self.render_header(f"batch {batch_type} (container)")
+        self.render_field("Input", str(input_path))
+        self.render_field("Output dir", str(output_dir))
+        self.render_field("Batch type", batch_type)
+        self.render_field("Engine", engine)
+        self.render_field("Image", image_name)
+        self.render_command("Host command", host_command)
+        if items:
+            inner = "\n".join(item.get("command", "") for item in items)
+            self.render_command(
+                f"Inner commands ({len(items)} items, run inside container)", inner
+            )
+
     def render_install(
         self,
         engine: str,
