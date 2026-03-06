@@ -1,6 +1,7 @@
 """Tests for CLI integration with core commands."""
 
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 from typer.testing import CliRunner
@@ -70,216 +71,207 @@ class TestShowCommands:
 
 
 class TestBatchCommands:
-    """Tests for batch commands using core functionality."""
+    """Tests for containerized batch commands."""
+
+    def _mock_manager(self) -> MagicMock:
+        mock = MagicMock()
+        mock.is_image_available.return_value = True
+        mock.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        return mock
 
     def test_cli_batch_help(self) -> None:
-        """Test batch command is available (tests batch_callback)."""
+        """Test batch command is available."""
         result = runner.invoke(app, ["batch", "--help"])
 
         assert result.exit_code == 0
 
     def test_cli_batch_effects_help(self) -> None:
-        """Test batch effects subcommand."""
+        """Test batch effects subcommand help shows -o option."""
         result = runner.invoke(app, ["batch", "effects", "--help"])
 
         assert result.exit_code == 0
-        # Should show -o/--output-dir option
         assert "--output-dir" in result.stdout or "-o" in result.stdout
 
-    def test_batch_effects_without_output_uses_default(
-        self, test_image_file: Path, use_tmp_default_output: Path
-    ) -> None:
-        """Batch effects without -o uses default from settings."""
-        result = runner.invoke(
-            app,
-            ["batch", "effects", str(test_image_file), "--sequential"],
-        )
-        assert result.exit_code == 0
-        # Default is overridden to tmp_path for test isolation
-        expected_base = use_tmp_default_output / test_image_file.stem / "effects"
-        # Check that at least one effect was generated
-        assert expected_base.exists()
-        assert len(list(expected_base.glob("*.png"))) > 0
-
-    def test_batch_effects_with_output_dir(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test batch effects command with -o flag."""
-        output_dir = tmp_path / "custom_output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "effects",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--sequential",
-            ],
-        )
-        assert result.exit_code == 0
-        # Check that effects directory was created
-        effects_dir = output_dir / test_image_file.stem / "effects"
-        assert effects_dir.exists()
-        assert len(list(effects_dir.glob("*.png"))) > 0
-
-    def test_batch_effects_flat(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test batch effects with flat output."""
+    def test_batch_effects_calls_run_batch(self, tmp_path: Path) -> None:
+        """batch effects calls run_batch(batch_type='effects')."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
         output_dir = tmp_path / "output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "effects",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--flat",
-                "--sequential",
-            ],
-        )
-        assert result.exit_code == 0
-        # With flat, files go directly to output_dir (no subdirectories)
-        assert output_dir.exists()
-        assert len(list(output_dir.glob("*.png"))) > 0
 
-    def test_batch_composites_without_output_uses_default(
-        self, test_image_file: Path, use_tmp_default_output: Path
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "-o", str(output_dir)],
+            )
+
+        assert result.exit_code == 0
+        call_kwargs = mock_mgr.return_value.run_batch.call_args[1]
+        assert call_kwargs["batch_type"] == "effects"
+
+    def test_batch_effects_without_output_uses_config_default(
+        self, tmp_path: Path
     ) -> None:
-        """Batch composites without -o uses default from settings."""
-        result = runner.invoke(
-            app,
-            ["batch", "composites", str(test_image_file), "--sequential"],
-        )
-        assert result.exit_code == 0
-        expected_base = use_tmp_default_output / test_image_file.stem / "composites"
-        assert expected_base.exists()
-        assert len(list(expected_base.glob("*.png"))) > 0
+        """batch effects without -o passes config default_dir to run_batch."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+        default_dir = tmp_path / "wallpapers-output"
 
-    def test_batch_composites_with_output_dir(
-        self, test_image_file: Path, tmp_path: Path
+        with (
+            patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr,
+            patch("wallpaper_orchestrator.cli.main.get_config") as mock_config,
+        ):
+            mock_settings = MagicMock()
+            mock_settings.core.output.default_dir = default_dir
+            mock_config.return_value = mock_settings
+            mock_mgr.return_value = self._mock_manager()
+
+            result = runner.invoke(app, ["batch", "effects", str(input_file)])
+
+        assert result.exit_code == 0
+        call_kwargs = mock_mgr.return_value.run_batch.call_args[1]
+        assert call_kwargs["output_dir"] == default_dir
+
+    def test_batch_effects_flat(self, tmp_path: Path) -> None:
+        """--flat forwarded correctly."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "-o", str(tmp_path), "--flat"],
+            )
+
+        assert mock_mgr.return_value.run_batch.call_args[1]["flat"] is True
+
+    def test_batch_effects_sequential(self, tmp_path: Path) -> None:
+        """--sequential forwarded as parallel=False."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "-o", str(tmp_path), "--sequential"],
+            )
+
+        assert mock_mgr.return_value.run_batch.call_args[1]["parallel"] is False
+
+    def test_batch_composites_calls_run_batch(self, tmp_path: Path) -> None:
+        """batch composites calls run_batch(batch_type='composites')."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "composites", str(input_file), "-o", str(tmp_path)],
+            )
+
+        assert result.exit_code == 0
+        assert mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "composites"
+
+    def test_batch_composites_without_output_uses_config_default(
+        self, tmp_path: Path
     ) -> None:
-        """Test batch composites command with -o flag."""
-        output_dir = tmp_path / "custom_output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "composites",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--sequential",
-            ],
-        )
-        assert result.exit_code == 0
-        composites_dir = output_dir / test_image_file.stem / "composites"
-        assert composites_dir.exists()
-        assert len(list(composites_dir.glob("*.png"))) > 0
+        """batch composites without -o passes config default_dir."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
 
-    def test_batch_presets_without_output_uses_default(
-        self, test_image_file: Path, use_tmp_default_output: Path
+        with (
+            patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr,
+            patch("wallpaper_orchestrator.cli.main.get_config") as mock_config,
+        ):
+            mock_settings = MagicMock()
+            mock_settings.core.output.default_dir = tmp_path / "default"
+            mock_config.return_value = mock_settings
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(app, ["batch", "composites", str(input_file)])
+
+        assert result.exit_code == 0
+
+    def test_batch_presets_calls_run_batch(self, tmp_path: Path) -> None:
+        """batch presets calls run_batch(batch_type='presets')."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "presets", str(input_file), "-o", str(tmp_path)],
+            )
+
+        assert result.exit_code == 0
+        assert mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "presets"
+
+    def test_batch_presets_without_output_uses_config_default(
+        self, tmp_path: Path
     ) -> None:
-        """Batch presets without -o uses default from settings."""
-        result = runner.invoke(
-            app,
-            ["batch", "presets", str(test_image_file), "--sequential"],
-        )
-        assert result.exit_code == 0
-        expected_base = use_tmp_default_output / test_image_file.stem / "presets"
-        assert expected_base.exists()
-        assert len(list(expected_base.glob("*.png"))) > 0
+        """batch presets without -o passes config default_dir."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
 
-    def test_batch_presets_with_output_dir(
-        self, test_image_file: Path, tmp_path: Path
+        with (
+            patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr,
+            patch("wallpaper_orchestrator.cli.main.get_config") as mock_config,
+        ):
+            mock_settings = MagicMock()
+            mock_settings.core.output.default_dir = tmp_path / "default"
+            mock_config.return_value = mock_settings
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(app, ["batch", "presets", str(input_file)])
+
+        assert result.exit_code == 0
+
+    def test_batch_all_calls_run_batch(self, tmp_path: Path) -> None:
+        """batch all calls run_batch(batch_type='all')."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "all", str(input_file), "-o", str(tmp_path)],
+            )
+
+        assert result.exit_code == 0
+        assert mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "all"
+
+    def test_batch_all_without_output_uses_config_default(
+        self, tmp_path: Path
     ) -> None:
-        """Test batch presets command with -o flag."""
-        output_dir = tmp_path / "custom_output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "presets",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--sequential",
-            ],
-        )
+        """batch all without -o passes config default_dir."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
+
+        with (
+            patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr,
+            patch("wallpaper_orchestrator.cli.main.get_config") as mock_config,
+        ):
+            mock_settings = MagicMock()
+            mock_settings.core.output.default_dir = tmp_path / "default"
+            mock_config.return_value = mock_settings
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(app, ["batch", "all", str(input_file)])
+
         assert result.exit_code == 0
-        presets_dir = output_dir / test_image_file.stem / "presets"
-        assert presets_dir.exists()
-        assert len(list(presets_dir.glob("*.png"))) > 0
 
-    def test_batch_all_without_output_uses_default(
-        self, test_image_file: Path, use_tmp_default_output: Path
-    ) -> None:
-        """Batch all without -o uses default from settings."""
-        result = runner.invoke(
-            app,
-            ["batch", "all", str(test_image_file), "--sequential"],
-        )
-        assert result.exit_code == 0
-        expected_base = use_tmp_default_output / test_image_file.stem
-        assert expected_base.exists()
-        # Check multiple subdirectories exist
-        assert (expected_base / "effects").exists()
-        assert (expected_base / "composites").exists() or (
-            expected_base / "presets"
-        ).exists()
+    def test_batch_all_flat(self, tmp_path: Path) -> None:
+        """--flat forwarded for batch all."""
+        input_file = tmp_path / "test_image.png"
+        input_file.touch()
 
-    def test_batch_all_with_output_dir(
-        self, test_image_file: Path, tmp_path: Path
-    ) -> None:
-        """Test batch all command with -o flag."""
-        output_dir = tmp_path / "custom_output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "all",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--sequential",
-            ],
-        )
-        assert result.exit_code == 0
-        base_dir = output_dir / test_image_file.stem
-        assert base_dir.exists()
-        # Check subdirectories
-        assert (base_dir / "effects").exists()
-        assert (base_dir / "composites").exists() or (base_dir / "presets").exists()
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            runner.invoke(
+                app,
+                ["batch", "all", str(input_file), "-o", str(tmp_path), "--flat"],
+            )
 
-    def test_batch_all_flat(self, test_image_file: Path, tmp_path: Path) -> None:
-        """Test batch all with flat output."""
-        output_dir = tmp_path / "output"
-        result = runner.invoke(
-            app,
-            [
-                "batch",
-                "all",
-                str(test_image_file),
-                "-o",
-                str(output_dir),
-                "--flat",
-                "--sequential",
-            ],
-        )
-        assert result.exit_code == 0
-        # With flat, files go directly to output_dir (no subdirectories)
-        assert output_dir.exists()
-        assert len(list(output_dir.glob("*.png"))) > 0
-
-
-# Fixtures
-@pytest.fixture
-def test_image_file(tmp_path: Path) -> Path:
-    """Create a simple test image file (mocked)."""
-    image_path = tmp_path / "test_image.png"
-    # Create a minimal valid PNG file
-    image_path.write_bytes(
-        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d"
-        b"\x08\x02\x00\x00\x00\xf6B\xc8n\x00\x00\x00\x00IEND\xaeB`\x82"
-    )
-    return image_path
+        assert mock_mgr.return_value.run_batch.call_args[1]["flat"] is True
