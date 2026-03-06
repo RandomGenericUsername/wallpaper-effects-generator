@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `wallpaper-process batch` now runs inside the container instead of on the host. All four batch subcommands (`effects`, `composites`, `presets`, `all`) spawn a container via `ContainerManager.run_batch()` and pass flags (`--flat`, `--parallel`/`--sequential`, `--strict`/`--no-strict`) through to the inner `wallpaper-core batch` invocation. `--dry-run` prints both the host `docker run ...` command and the inner batch commands without spawning a container.
+
 ### Changed (Dev Setup)
 
 - Added `.python-version` pinning Python to 3.12 for tool auto-detection (uv, pyenv, mise)

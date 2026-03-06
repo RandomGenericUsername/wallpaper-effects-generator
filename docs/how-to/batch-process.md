@@ -8,8 +8,16 @@ Generate multiple effects, composites, or presets for an image in one command us
 
 ## Prerequisites
 
+### Using wallpaper-core (host mode)
+
 - `wallpaper-core` is installed.
 - ImageMagick is installed.
+
+### Using wallpaper-process (container mode)
+
+- `wallpaper-process` is installed.
+- Docker or Podman is installed and running.
+- The container image is built: `wallpaper-process install`
 
 ---
 
@@ -97,9 +105,24 @@ Prints the full table of planned commands and output paths for every item withou
 
 ---
 
+## Using the container (wallpaper-process batch)
+
+To run batch inside the container (no host ImageMagick required), use `wallpaper-process batch` instead of `wallpaper-core batch`:
+
+```bash
+wallpaper-process batch effects wallpaper.jpg
+wallpaper-process batch all wallpaper.jpg -o ~/my-wallpapers
+wallpaper-process batch all wallpaper.jpg --dry-run
+```
+
+All flags (`--sequential`, `--no-strict`, `--flat`, `--dry-run`, `-o`) work identically. The container handles all ImageMagick processing; output is written to the host output directory via the volume mount.
+
+---
+
 ## See also
 
 - [Preview Commands Without Executing](dry-run.md)
 - [Run Effects in a Container](run-in-container.md) — for `wallpaper-process batch`
 - [wallpaper-core CLI Reference](../reference/cli-core.md)
+- [wallpaper-process CLI Reference](../reference/cli-orchestrator.md)
 - [Configuration Reference](../reference/config.md) — to set parallel/worker defaults

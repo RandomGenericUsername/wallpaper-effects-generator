@@ -62,7 +62,7 @@ wallpaper-process install
 | Command | wallpaper-core | wallpaper-process |
 |---|---|---|
 | `process effect/composite/preset` | On host (runs `magick`) | In container |
-| `batch effects/composites/presets/all` | On host | On host (delegates to core batch engine) |
+| `batch effects/composites/presets/all` | On host | In container |
 | `show effects/composites/presets/all` | On host | On host |
 | `info` | On host | On host |
 | `version` | On host | On host |
@@ -81,11 +81,12 @@ wallpaper-core process effect input.jpg --effect blur
 Use **container mode** (`wallpaper-process`) when you want isolation or lack ImageMagick:
 
 ```bash
-wallpaper-process install           # once
-wallpaper-process process effect input.jpg --effect blur
+wallpaper-process install                                    # once
+wallpaper-process process effect input.jpg --effect blur     # single effect
+wallpaper-process batch effects input.jpg                    # all effects, inside container
 ```
 
-The command syntax for `process`, `batch`, and `show` is identical between the two CLIs. Switching from host to container mode is as simple as replacing `wallpaper-core` with `wallpaper-process`.
+The command syntax for `process`, `batch`, and `show` is identical between the two CLIs. Switching from host to container mode is as simple as replacing `wallpaper-core` with `wallpaper-process`. With `wallpaper-process`, both single-process and batch commands run inside the container.
 
 ---
 

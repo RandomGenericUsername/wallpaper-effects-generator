@@ -1,6 +1,6 @@
 # Reference: wallpaper-process CLI
 
-`wallpaper-process` is the container-orchestration CLI. It wraps `wallpaper-core` by running process commands inside a Docker or Podman container. Batch, show, info, and version commands run on the host.
+`wallpaper-process` is the container-orchestration CLI. It wraps `wallpaper-core` by running process commands inside a Docker or Podman container. Batch commands run inside the container. Show, info, and version commands run on the host.
 
 <!-- BHV IDs: BHV-0067, BHV-0068, BHV-0071, BHV-0074, BHV-0075, BHV-0076, BHV-0077, BHV-0078, BHV-0079, BHV-0081, BHV-0082 -->
 
@@ -13,7 +13,7 @@
 | `install` | Host |
 | `uninstall` | Host |
 | `process effect/composite/preset` | Inside container |
-| `batch effects/composites/presets/all` | Host |
+| `batch effects/composites/presets/all` | Container |
 | `show effects/composites/presets/all` | Host |
 | `info` | Host |
 | `version` | Host |
@@ -166,9 +166,7 @@ wallpaper-process process preset <input-file> --preset <name> [options]
 
 ## batch
 
-Runs batch generation on the **host** (not inside the container). Delegates to the core batch engine. (BHV-0081)
-
-Supports the same subcommands and flags as `wallpaper-core batch`:
+Runs batch generation **inside the container**. Spawns a container and runs the batch subcommand inside it. (BHV-0081)
 
 ```bash
 wallpaper-process batch effects <input-file> [options]
@@ -177,7 +175,26 @@ wallpaper-process batch presets <input-file> [options]
 wallpaper-process batch all <input-file> [options]
 ```
 
-Flags: `-o`, `--parallel`/`--sequential`, `--strict`/`--no-strict`, `--flat`, `--dry-run`.
+| Flag | Short | Description | Default |
+|---|---|---|---|
+| `--output-dir` | `-o` | Output directory on host. | `core.output.default_dir` |
+| `--flat` | | Flat output structure. | false |
+| `--parallel` / `--sequential` | | Parallelism mode. | `--parallel` |
+| `--strict` / `--no-strict` | | Strict mode. | `--strict` |
+| `--dry-run` | | Preview host and inner commands. | false |
+
+**Container invocation:**
+```
+docker run --rm \
+  -v <abs-input>:/input/<filename>:ro \
+  -v <abs-output-dir>:/output:rw \
+  wallpaper-effects:latest \
+  batch <subcommand> /input/<filename> -o /output [--flat] [--parallel|--sequential] [--strict|--no-strict]
+```
+
+With Podman, `--userns=keep-id` is added. (BHV-0074)
+
+**`--dry-run` behavior:** Prints both the host `docker run ...` command and the inner batch commands that would execute inside the container. No container is spawned. (BHV-0079)
 
 ---
 

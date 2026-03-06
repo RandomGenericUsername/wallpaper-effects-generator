@@ -69,13 +69,16 @@ The `--dry-run` flag prints both the host `docker run ...` command (with all mou
 
 ### Run batch in the container environment
 
-`wallpaper-process batch` delegates to the core batch engine and runs **on the host** (not in the container):
+`wallpaper-process batch` runs **inside the container** — it spawns a container and runs the batch subcommand inside it:
 
 ```bash
+wallpaper-process batch effects wallpaper.jpg
+wallpaper-process batch composites wallpaper.jpg
+wallpaper-process batch presets wallpaper.jpg
 wallpaper-process batch all wallpaper.jpg
 ```
 
-Batch supports the same flags as `wallpaper-core batch`: `--sequential`, `--no-strict`, `--flat`, `--dry-run`. (BHV-0081)
+Batch supports the same flags as `wallpaper-core batch`: `--sequential`, `--no-strict`, `--flat`, `--dry-run`. The `--dry-run` flag prints both the host `docker run ...` command and the inner batch commands that would run inside the container. (BHV-0079, BHV-0081)
 
 ### List available effects, composites, and presets
 
