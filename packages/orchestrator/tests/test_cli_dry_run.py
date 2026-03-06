@@ -741,3 +741,48 @@ class TestBatchContainerDryRun:
         assert result.exit_code == 0
         assert "my-wallpaper.jpg" in result.stdout
         assert "image.jpg" not in result.stdout
+
+    def test_batch_dry_run_flat_flag_included_in_host_command(self, tmp_path):
+        """batch --flat --dry-run includes --flat in the host docker run command."""
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--flat", "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "--flat" in result.stdout
+
+    def test_batch_dry_run_sequential_flag_included_in_host_command(self, tmp_path):
+        """batch --sequential --dry-run includes --sequential in the host command."""
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--sequential", "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "--sequential" in result.stdout
+
+    def test_batch_dry_run_no_strict_flag_included_in_host_command(self, tmp_path):
+        """batch --no-strict --dry-run includes --no-strict in the host command."""
+        input_file = tmp_path / "wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--no-strict", "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "--no-strict" in result.stdout
