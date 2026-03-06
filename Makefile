@@ -190,19 +190,14 @@ build-orchestrator: ## Build orchestrator package
 ##@ Smoke Testing
 smoke-test: ## Run end-to-end smoke tests (add WALLPAPER=/path or VERBOSE=true)
 	@echo -e "$(BLUE)Running smoke tests...$(NC)"
-	@# Check dependencies (support both ImageMagick 6 and 7)
+	@# Check dependencies (support both ImageMagick 6 and 7) — warn only, script handles skipping
 	@if ! command -v magick &> /dev/null && ! command -v convert &> /dev/null; then \
-		echo -e "$(RED)✗ ImageMagick not found (neither 'magick' nor 'convert')$(NC)"; \
-		echo -e "$(RED)  Install: sudo apt-get install imagemagick$(NC)"; \
-		exit 1; \
+		echo -e "$(RED)⚠ ImageMagick not found — wallpaper-core tests will be skipped$(NC)"; \
 	fi
 	@if ! command -v docker &> /dev/null && ! command -v podman &> /dev/null; then \
-		echo -e "$(RED)✗ Docker or Podman not found$(NC)"; \
-		echo -e "$(RED)  Install Docker: https://docs.docker.com/get-docker/$(NC)"; \
-		echo -e "$(RED)  Or Podman: sudo apt-get install podman$(NC)"; \
-		exit 1; \
+		echo -e "$(RED)⚠ Docker/Podman not found — container execution tests will be skipped$(NC)"; \
 	fi
-	@echo -e "$(GREEN)✓ Dependencies available$(NC)"
+	@echo -e "$(GREEN)✓ Dependency check complete$(NC)"
 	@# Set default wallpaper if not provided
 	@DEFAULT_WALLPAPER="tests/fixtures/test-wallpaper.jpg"; \
 	TEST_WALLPAPER="$${WALLPAPER:-$$DEFAULT_WALLPAPER}"; \

@@ -262,6 +262,16 @@ mkdir -p "$TEST_OUTPUT_DIR"
 chmod 777 "$TEST_OUTPUT_DIR"
 echo -e "${GREEN}✓ Output directory ready${NC}\n"
 
+# Detect host ImageMagick
+if command -v magick > /dev/null 2>&1; then
+    MAGICK_AVAILABLE=true
+else
+    MAGICK_AVAILABLE=false
+fi
+
+# Tracks whether wallpaper-process install succeeded this run
+IMAGE_INSTALLED=false
+
 # ============================================================================
 # Testing Core CLI Basic Commands
 # ============================================================================
@@ -337,7 +347,12 @@ core_effect_dir="$TEST_OUTPUT_DIR/core-effect-out"
 # CLI creates subdirectories: <output-dir>/<stem>/effects/<effect-name>.jpg
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$core_effect_dir/$image_stem/effects/blur.jpg"
-if run_cmd "wallpaper-core process effect \"$TEST_IMAGE\" --effect blur -o \"$core_effect_dir\"" && [ -f "$expected_output" ]; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core process effect \"$TEST_IMAGE\" --effect blur -o \"$core_effect_dir\"" && [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Command: wallpaper-core process effect <image> --effect blur -o <dir>"
     add_detail "• Input: $TEST_IMAGE"
@@ -355,7 +370,12 @@ print_test "wallpaper-core process composite (blackwhite-blur) creates output fi
 core_composite_dir="$TEST_OUTPUT_DIR/core-composite-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$core_composite_dir/$image_stem/composites/blackwhite-blur.jpg"
-if run_cmd "wallpaper-core process composite \"$TEST_IMAGE\" --composite blackwhite-blur -o \"$core_composite_dir\"" && [ -f "$expected_output" ]; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core process composite \"$TEST_IMAGE\" --composite blackwhite-blur -o \"$core_composite_dir\"" && [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Command: wallpaper-core process composite <image> --composite blackwhite-blur -o <dir>"
     add_detail "• Input: $TEST_IMAGE"
@@ -373,7 +393,12 @@ print_test "wallpaper-core process preset (dark_blur) creates output file"
 core_preset_dir="$TEST_OUTPUT_DIR/core-preset-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$core_preset_dir/$image_stem/presets/dark_blur.jpg"
-if run_cmd "wallpaper-core process preset \"$TEST_IMAGE\" --preset dark_blur -o \"$core_preset_dir\"" && [ -f "$expected_output" ]; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core process preset \"$TEST_IMAGE\" --preset dark_blur -o \"$core_preset_dir\"" && [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Command: wallpaper-core process preset <image> --preset dark_blur -o <dir>"
     add_detail "• Input: $TEST_IMAGE"
@@ -396,7 +421,12 @@ print_header "Testing Core Batch Commands"
 print_test "wallpaper-core batch effects generates all effect outputs"
 core_batch_effect="$TEST_OUTPUT_DIR/core-batch-effect"
 mkdir -p "$core_batch_effect"
-if run_cmd "wallpaper-core batch effects \"$TEST_IMAGE\" -o \"$core_batch_effect\""; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core batch effects \"$TEST_IMAGE\" -o \"$core_batch_effect\""; then
     # Should generate 9 effects
     output_count=$(find "$core_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
@@ -418,7 +448,12 @@ fi
 print_test "wallpaper-core batch composites generates all composite outputs"
 core_batch_composite="$TEST_OUTPUT_DIR/core-batch-composite"
 mkdir -p "$core_batch_composite"
-if run_cmd "wallpaper-core batch composites \"$TEST_IMAGE\" -o \"$core_batch_composite\""; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core batch composites \"$TEST_IMAGE\" -o \"$core_batch_composite\""; then
     # Should generate 4 composites
     output_count=$(find "$core_batch_composite" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 4 ]; then
@@ -440,7 +475,12 @@ fi
 print_test "wallpaper-core batch presets generates all preset outputs"
 core_batch_preset="$TEST_OUTPUT_DIR/core-batch-preset"
 mkdir -p "$core_batch_preset"
-if run_cmd "wallpaper-core batch presets \"$TEST_IMAGE\" -o \"$core_batch_preset\""; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core batch presets \"$TEST_IMAGE\" -o \"$core_batch_preset\""; then
     # Should generate 7 presets
     output_count=$(find "$core_batch_preset" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 7 ]; then
@@ -462,7 +502,12 @@ fi
 print_test "wallpaper-core batch all generates effects, composites, and presets"
 core_batch_all="$TEST_OUTPUT_DIR/core-batch-all"
 mkdir -p "$core_batch_all"
-if run_cmd "wallpaper-core batch all \"$TEST_IMAGE\" -o \"$core_batch_all\""; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core batch all \"$TEST_IMAGE\" -o \"$core_batch_all\""; then
     # Check if at least some outputs were created
     output_count=$(find "$core_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -gt 15 ]; then  # Should have 9 effects + 4 composites + presets
@@ -493,7 +538,12 @@ default_effect_test="$TEST_OUTPUT_DIR/default-effect-test"
 mkdir -p "$default_effect_test"
 # Clear /tmp/wallpaper-effects before test
 rm -rf /tmp/wallpaper-effects
-if run_cmd "cd \"$default_effect_test\" && wallpaper-core process effect \"$TEST_IMAGE\" --effect blur"; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$default_effect_test\" && wallpaper-core process effect \"$TEST_IMAGE\" --effect blur"; then
     # Check if output was created in /tmp/wallpaper-effects (new default)
     output_file=$(find /tmp/wallpaper-effects -type f -name "*blur.jpg" 2>/dev/null | head -1)
     if [ -n "$output_file" ]; then
@@ -517,7 +567,12 @@ default_batch_test="$TEST_OUTPUT_DIR/default-batch-test"
 mkdir -p "$default_batch_test"
 # Clear /tmp/wallpaper-effects before test
 rm -rf /tmp/wallpaper-effects
-if run_cmd "cd \"$default_batch_test\" && wallpaper-core batch effects \"$TEST_IMAGE\""; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$default_batch_test\" && wallpaper-core batch effects \"$TEST_IMAGE\""; then
     # Check if outputs were created in /tmp/wallpaper-effects (new default)
     output_count=$(find /tmp/wallpaper-effects -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -ge 9 ]; then
@@ -543,7 +598,12 @@ flat_batch_test="$TEST_OUTPUT_DIR/flat-batch-test"
 mkdir -p "$flat_batch_test"
 # Clear /tmp/wallpaper-effects before test
 rm -rf /tmp/wallpaper-effects
-if run_cmd "cd \"$flat_batch_test\" && wallpaper-core batch effects \"$TEST_IMAGE\" --flat"; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$flat_batch_test\" && wallpaper-core batch effects \"$TEST_IMAGE\" --flat"; then
     # Check if outputs were created in /tmp/wallpaper-effects without type subdirectories
     # With --flat, files go to /tmp/wallpaper-effects/test-wallpaper/ (stem dir only, no effects/ subdir)
     stem_dir="/tmp/wallpaper-effects/$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')"
@@ -571,7 +631,12 @@ print_test "wallpaper-core batch effects -o <dir> --flat outputs to specified di
 flat_custom_test="$TEST_OUTPUT_DIR/flat-custom-test"
 flat_custom_out="$flat_custom_test/output"
 mkdir -p "$flat_custom_test"
-if run_cmd "wallpaper-core batch effects \"$TEST_IMAGE\" -o \"$flat_custom_out\" --flat"; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "wallpaper-core batch effects \"$TEST_IMAGE\" -o \"$flat_custom_out\" --flat"; then
     # Check if outputs were created directly in specified directory (not in effects/)
     output_count=$(find "$flat_custom_out" -maxdepth 1 -type f -name "*.jpg" 2>/dev/null | wc -l)
     subdir_count=$(find "$flat_custom_out" -mindepth 2 -type f -name "*.jpg" 2>/dev/null | wc -l)
@@ -718,6 +783,7 @@ elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process install 2>&1";
         echo "DEBUG: Checking if image exists:"
         $CONTAINER_ENGINE inspect wallpaper-effects:latest > /dev/null 2>&1 && echo "Image found!" || echo "Image NOT found!"
     fi
+    IMAGE_INSTALLED=true
     test_passed
 else
     test_failed "container image build failed (wallpaper-effects:latest)" \
@@ -732,6 +798,11 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif [ "$IMAGE_INSTALLED" = "false" ]; then
+    test_skipped "container image not installed (install step failed)" \
+        "wallpaper-process install" \
+        "wallpaper-effects:latest image not available" \
+        "Check wallpaper-process install output for build errors"
 else
     # Debug mode: show what's happening before the command
     if [ "$VERBOSE" = "true" ]; then
@@ -770,6 +841,11 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif [ "$IMAGE_INSTALLED" = "false" ]; then
+    test_skipped "container image not installed (install step failed)" \
+        "wallpaper-process install" \
+        "wallpaper-effects:latest image not available" \
+        "Check wallpaper-process install output for build errors"
 else
     orch_composite_dir="$TEST_OUTPUT_DIR/orch-composite-out"
     image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
@@ -797,6 +873,11 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif [ "$IMAGE_INSTALLED" = "false" ]; then
+    test_skipped "container image not installed (install step failed)" \
+        "wallpaper-process install" \
+        "wallpaper-effects:latest image not available" \
+        "Check wallpaper-process install output for build errors"
 else
     orch_preset_dir="$TEST_OUTPUT_DIR/orch-preset-out"
     image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
@@ -825,6 +906,11 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif [ "$IMAGE_INSTALLED" = "false" ]; then
+    test_skipped "container image not installed (install step failed)" \
+        "wallpaper-process install" \
+        "wallpaper-effects:latest image not available" \
+        "Check wallpaper-process install output for build errors"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects \"$TEST_IMAGE\" -o \"$orch_batch_effect\" 2>&1"; then
     # Should generate 9 effects
     output_count=$(find "$orch_batch_effect" -type f -name "*.jpg" 2>/dev/null | wc -l)
@@ -855,6 +941,11 @@ if [ "$CONTAINER_ENGINE" = "none" ]; then
         "command -v docker && command -v podman" \
         "Neither docker nor podman found" \
         "Install Docker (https://docs.docker.com/) or Podman (https://podman.io/)"
+elif [ "$IMAGE_INSTALLED" = "false" ]; then
+    test_skipped "container image not installed (install step failed)" \
+        "wallpaper-process install" \
+        "wallpaper-effects:latest image not available" \
+        "Check wallpaper-process install output for build errors"
 elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch all \"$TEST_IMAGE\" -o \"$orch_batch_all\" 2>&1"; then
     output_count=$(find "$orch_batch_all" -type f -name "*.jpg" 2>/dev/null | wc -l)
     if [ "$output_count" -gt 15 ]; then
@@ -990,7 +1081,12 @@ print_test "Layered effects user custom effect processes successfully"
 user_custom_dir="$TEST_OUTPUT_DIR/user-custom-effect-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$user_custom_dir/$image_stem/effects/test_custom.jpg"
-if run_cmd "XDG_CONFIG_HOME=\"$TEST_USER_CONFIG\" wallpaper-core process effect \"$TEST_IMAGE\" --effect test_custom -o \"$user_custom_dir\"" && [ -f "$expected_output" ]; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "XDG_CONFIG_HOME=\"$TEST_USER_CONFIG\" wallpaper-core process effect \"$TEST_IMAGE\" --effect test_custom -o \"$user_custom_dir\"" && [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Effect: test_custom (user-defined)"
     add_detail "• Output file: $expected_output"
@@ -1006,7 +1102,12 @@ print_test "Layered effects project effect processes successfully"
 project_effect_dir="$TEST_OUTPUT_DIR/project-effect-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$project_effect_dir/$image_stem/effects/project_effect.jpg"
-if run_cmd "cd \"$TEST_PROJECT_ROOT\" && wallpaper-core process effect \"$TEST_IMAGE\" --effect project_effect -o \"$project_effect_dir\"" && [ -f "$expected_output" ]; then
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$TEST_PROJECT_ROOT\" && wallpaper-core process effect \"$TEST_IMAGE\" --effect project_effect -o \"$project_effect_dir\"" && [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Effect: project_effect (project-defined)"
     add_detail "• Output file: $expected_output"
@@ -1168,7 +1269,12 @@ print_test "Layered effects 3-layer merge user effect processes successfully"
 threelayer_dir="$TEST_OUTPUT_DIR/3layer-user-effect-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$threelayer_dir/$image_stem/effects/user_effect.jpg"
-if run_cmd "cd \"$TEST_3LAYER_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_3LAYER_USER\" wallpaper-core process effect \"$TEST_IMAGE\" --effect user_effect -o \"$threelayer_dir\"" && \
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$TEST_3LAYER_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_3LAYER_USER\" wallpaper-core process effect \"$TEST_IMAGE\" --effect user_effect -o \"$threelayer_dir\"" && \
    [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Effect: user_effect (from user layer in 3-layer merge)"
@@ -1185,7 +1291,12 @@ print_test "Layered effects 3-layer merge project effect processes successfully"
 threelayer_project_dir="$TEST_OUTPUT_DIR/3layer-project-effect-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$threelayer_project_dir/$image_stem/effects/project_effect.jpg"
-if run_cmd "cd \"$TEST_3LAYER_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_3LAYER_USER\" wallpaper-core process effect \"$TEST_IMAGE\" --effect project_effect -o \"$threelayer_project_dir\"" && \
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$TEST_3LAYER_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_3LAYER_USER\" wallpaper-core process effect \"$TEST_IMAGE\" --effect project_effect -o \"$threelayer_project_dir\"" && \
    [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Effect: project_effect (from project layer in 3-layer merge)"
@@ -1332,7 +1443,12 @@ print_test "Layered effects user composite processes successfully"
 user_comp_dir="$TEST_OUTPUT_DIR/user-composite-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$user_comp_dir/$image_stem/composites/user_composite.jpg"
-if run_cmd "cd \"$TEST_COMP_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_COMP_USER\" wallpaper-core process composite \"$TEST_IMAGE\" --composite user_composite -o \"$user_comp_dir\"" && \
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$TEST_COMP_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_COMP_USER\" wallpaper-core process composite \"$TEST_IMAGE\" --composite user_composite -o \"$user_comp_dir\"" && \
    [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Composite: user_composite (user layer)"
@@ -1349,7 +1465,12 @@ print_test "Layered effects user preset processes successfully"
 user_preset_dir="$TEST_OUTPUT_DIR/user-preset-out"
 image_stem=$(basename "$TEST_IMAGE" | sed 's/\.[^.]*$//')
 expected_output="$user_preset_dir/$image_stem/presets/user_preset.jpg"
-if run_cmd "cd \"$TEST_COMP_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_COMP_USER\" wallpaper-core process preset \"$TEST_IMAGE\" --preset user_preset -o \"$user_preset_dir\"" && \
+if [ "$MAGICK_AVAILABLE" = "false" ]; then
+    test_skipped "magick not installed on host" \
+        "command -v magick" \
+        "magick not found in PATH" \
+        "Install ImageMagick: https://imagemagick.org/"
+elif run_cmd "cd \"$TEST_COMP_PROJECT\" && XDG_CONFIG_HOME=\"$TEST_COMP_USER\" wallpaper-core process preset \"$TEST_IMAGE\" --preset user_preset -o \"$user_preset_dir\"" && \
    [ -f "$expected_output" ]; then
     file_size=$(stat -f%z "$expected_output" 2>/dev/null || stat -c%s "$expected_output" 2>/dev/null)
     add_detail "• Preset: user_preset (user layer)"

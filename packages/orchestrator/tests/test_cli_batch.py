@@ -23,7 +23,9 @@ def test_batch_effects_with_output_dir(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -55,7 +57,9 @@ def test_batch_effects_without_output_dir(tmp_path: Path) -> None:
 
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(app, ["batch", "effects", str(input_file)])
@@ -72,7 +76,9 @@ def test_batch_effects_flat_flag(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         runner.invoke(
@@ -92,7 +98,9 @@ def test_batch_effects_sequential_flag(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         runner.invoke(
@@ -112,7 +120,9 @@ def test_batch_effects_no_strict_flag(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         runner.invoke(
@@ -197,7 +207,9 @@ def test_batch_composites_with_output_dir(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -237,7 +249,9 @@ def test_batch_composites_container_failure(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=1, stdout="", stderr="err")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=1, stdout="", stderr="err"
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -259,7 +273,9 @@ def test_batch_presets_with_output_dir(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -301,7 +317,9 @@ def test_batch_all_with_output_dir(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         result = runner.invoke(
@@ -322,7 +340,9 @@ def test_batch_all_flat_flag(tmp_path: Path) -> None:
     with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
         mock_manager = MagicMock()
         mock_manager.is_image_available.return_value = True
-        mock_manager.run_batch.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
         mock_mgr.return_value = mock_manager
 
         runner.invoke(

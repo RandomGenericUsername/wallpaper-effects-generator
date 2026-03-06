@@ -697,9 +697,7 @@ def batch_effects(
             help="Output directory (uses settings default if not specified)",
         ),
     ] = None,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     dry_run: Annotated[
@@ -728,9 +726,7 @@ def batch_composites(
             help="Output directory (uses settings default if not specified)",
         ),
     ] = None,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     dry_run: Annotated[
@@ -759,9 +755,7 @@ def batch_presets(
             help="Output directory (uses settings default if not specified)",
         ),
     ] = None,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     dry_run: Annotated[
@@ -790,9 +784,7 @@ def batch_all(
             help="Output directory (uses settings default if not specified)",
         ),
     ] = None,
-    flat: Annotated[
-        bool, typer.Option("--flat", help="Flat output structure")
-    ] = False,
+    flat: Annotated[bool, typer.Option("--flat", help="Flat output structure")] = False,
     parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
     strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
     dry_run: Annotated[

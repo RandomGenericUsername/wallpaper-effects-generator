@@ -154,7 +154,14 @@ class TestBatchCommands:
             mock_mgr.return_value = self._mock_manager()
             runner.invoke(
                 app,
-                ["batch", "effects", str(input_file), "-o", str(tmp_path), "--sequential"],
+                [
+                    "batch",
+                    "effects",
+                    str(input_file),
+                    "-o",
+                    str(tmp_path),
+                    "--sequential",
+                ],
             )
 
         assert mock_mgr.return_value.run_batch.call_args[1]["parallel"] is False
@@ -172,7 +179,9 @@ class TestBatchCommands:
             )
 
         assert result.exit_code == 0
-        assert mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "composites"
+        assert (
+            mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "composites"
+        )
 
     def test_batch_composites_without_output_uses_config_default(
         self, tmp_path: Path
@@ -242,9 +251,7 @@ class TestBatchCommands:
         assert result.exit_code == 0
         assert mock_mgr.return_value.run_batch.call_args[1]["batch_type"] == "all"
 
-    def test_batch_all_without_output_uses_config_default(
-        self, tmp_path: Path
-    ) -> None:
+    def test_batch_all_without_output_uses_config_default(self, tmp_path: Path) -> None:
         """batch all without -o passes config default_dir."""
         input_file = tmp_path / "test_image.png"
         input_file.touch()

@@ -172,7 +172,9 @@ def test_run_batch_invalid_type(manager: ContainerManager, tmp_path: Path) -> No
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with pytest.raises(ValueError, match="Invalid batch_type"):
-        manager.run_batch(batch_type="invalid", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="invalid", input_path=input_file, output_dir=tmp_path
+        )
 
 
 def test_run_batch_image_not_available(
@@ -185,7 +187,9 @@ def test_run_batch_image_not_available(
         patch.object(manager, "is_image_available", return_value=False),
         pytest.raises(RuntimeError, match="Container image not found"),
     ):
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
 
 
 def test_run_batch_input_not_found(manager: ContainerManager, tmp_path: Path) -> None:
@@ -195,12 +199,12 @@ def test_run_batch_input_not_found(manager: ContainerManager, tmp_path: Path) ->
         patch.object(manager, "is_image_available", return_value=True),
         pytest.raises(FileNotFoundError, match="Input file not found"),
     ):
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
 
 
-def test_run_batch_permission_error(
-    manager: ContainerManager, tmp_path: Path
-) -> None:
+def test_run_batch_permission_error(manager: ContainerManager, tmp_path: Path) -> None:
     """PermissionError on output dir is wrapped and re-raised."""
     input_file = tmp_path / "input.jpg"
     input_file.touch()
@@ -228,7 +232,9 @@ def test_run_batch_effects_command_structure(
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
         call_args = mock_run.call_args[0][0]
         assert call_args[0] == "docker"
         assert "run" in call_args
@@ -252,7 +258,9 @@ def test_run_batch_composites_command_structure(
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="composites", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="composites", input_path=input_file, output_dir=tmp_path
+        )
         call_args = mock_run.call_args[0][0]
         assert "composites" in call_args
 
@@ -268,7 +276,9 @@ def test_run_batch_presets_command_structure(
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="presets", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="presets", input_path=input_file, output_dir=tmp_path
+        )
         call_args = mock_run.call_args[0][0]
         assert "presets" in call_args
 
@@ -318,7 +328,10 @@ def test_run_batch_sequential_flag_forwarded(
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         manager.run_batch(
-            batch_type="effects", input_path=input_file, output_dir=tmp_path, parallel=False
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+            parallel=False,
         )
         call_args = mock_run.call_args[0][0]
         assert "--sequential" in call_args
@@ -337,7 +350,10 @@ def test_run_batch_parallel_flag_forwarded(
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         manager.run_batch(
-            batch_type="effects", input_path=input_file, output_dir=tmp_path, parallel=True
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+            parallel=True,
         )
         assert "--parallel" in mock_run.call_args[0][0]
 
@@ -354,7 +370,10 @@ def test_run_batch_no_strict_flag_forwarded(
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         manager.run_batch(
-            batch_type="effects", input_path=input_file, output_dir=tmp_path, strict=False
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+            strict=False,
         )
         call_args = mock_run.call_args[0][0]
         assert "--no-strict" in call_args
@@ -373,7 +392,10 @@ def test_run_batch_strict_flag_forwarded(
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
         manager.run_batch(
-            batch_type="effects", input_path=input_file, output_dir=tmp_path, strict=True
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+            strict=True,
         )
         assert "--strict" in mock_run.call_args[0][0]
 
@@ -406,7 +428,9 @@ def test_run_batch_docker_no_userns(manager: ContainerManager, tmp_path: Path) -
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
         assert "--userns=keep-id" not in mock_run.call_args[0][0]
 
 
@@ -420,7 +444,9 @@ def test_run_batch_returns_process_result(
         patch("subprocess.run") as mock_run,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=42, stdout="", stderr="batch error")
+        mock_run.return_value = MagicMock(
+            returncode=42, stdout="", stderr="batch error"
+        )
         result = manager.run_batch(
             batch_type="all", input_path=input_file, output_dir=tmp_path
         )
@@ -439,7 +465,9 @@ def test_run_batch_uses_absolute_input_path(
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
         call_args = mock_run.call_args[0][0]
         mounts = [
             call_args[i + 1]
@@ -463,7 +491,9 @@ def test_run_batch_preserves_original_filename(
         patch.object(manager, "is_image_available", return_value=True),
     ):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        manager.run_batch(batch_type="effects", input_path=input_file, output_dir=tmp_path)
+        manager.run_batch(
+            batch_type="effects", input_path=input_file, output_dir=tmp_path
+        )
         call_args = mock_run.call_args[0][0]
         assert "/input/my-wallpaper.png" in call_args
         assert "/input/image.jpg" not in call_args
