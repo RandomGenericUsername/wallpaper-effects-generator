@@ -610,3 +610,134 @@ class TestDryRunPreservesOriginalFilename:
         assert result.exit_code == 0, result.stdout
         assert "/input/wallpaper.jpg" in result.stdout
         assert "/input/image.jpg" not in result.stdout
+
+
+class TestBatchContainerDryRun:
+    """Dry-run for containerized batch commands."""
+
+    def _mock_manager(self, engine: str = "docker") -> MagicMock:
+        mock = MagicMock()
+        mock.engine = engine
+        mock.get_image_name.return_value = "wallpaper-effects:latest"
+        mock.is_image_available.return_value = True
+        return mock
+
+    def test_batch_effects_dry_run_shows_host_command(self, tmp_path):
+        """batch effects --dry-run shows docker run command."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "docker" in result.stdout.lower() or "run" in result.stdout.lower()
+        assert "batch" in result.stdout.lower()
+        assert "effects" in result.stdout.lower()
+
+    def test_batch_effects_dry_run_shows_inner_commands(self, tmp_path):
+        """batch effects --dry-run shows magick commands."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "magick" in result.stdout.lower()
+
+    def test_batch_effects_dry_run_no_container_spawned(self, tmp_path):
+        """batch effects --dry-run never calls run_batch."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_manager = self._mock_manager()
+            mock_mgr.return_value = mock_manager
+            runner.invoke(app, ["batch", "effects", str(input_file), "--dry-run"])
+
+        mock_manager.run_batch.assert_not_called()
+
+    def test_batch_composites_dry_run_shows_host_command(self, tmp_path):
+        """batch composites --dry-run shows docker run command."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "composites", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "composites" in result.stdout.lower()
+
+    def test_batch_presets_dry_run_shows_host_command(self, tmp_path):
+        """batch presets --dry-run shows docker run command."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "presets", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "presets" in result.stdout.lower()
+
+    def test_batch_all_dry_run_shows_host_command(self, tmp_path):
+        """batch all --dry-run shows docker run command."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "all", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "all" in result.stdout.lower() or "batch" in result.stdout.lower()
+
+    def test_batch_dry_run_podman_shows_userns(self, tmp_path):
+        """batch --dry-run with podman shows --userns flag."""
+        input_file = tmp_path / "input.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager(engine="podman")
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "userns" in result.stdout or "podman" in result.stdout.lower()
+
+    def test_batch_dry_run_uses_original_filename(self, tmp_path):
+        """batch --dry-run shows original filename, not hardcoded image.jpg."""
+        input_file = tmp_path / "my-wallpaper.jpg"
+        input_file.touch()
+
+        with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+            mock_mgr.return_value = self._mock_manager()
+            result = runner.invoke(
+                app,
+                ["batch", "effects", str(input_file), "--dry-run"],
+            )
+
+        assert result.exit_code == 0
+        assert "my-wallpaper.jpg" in result.stdout
+        assert "image.jpg" not in result.stdout

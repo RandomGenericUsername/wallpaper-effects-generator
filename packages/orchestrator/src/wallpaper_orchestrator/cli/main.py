@@ -10,8 +10,8 @@ from layered_effects import configure as configure_effects
 from layered_effects import load_effects
 from layered_settings import configure, get_config
 from layered_settings.constants import APP_NAME
-from wallpaper_core.cli import batch as core_batch_module
 from wallpaper_core.cli import show as core_show_module
+from wallpaper_core.cli.batch import _resolve_batch_items
 from wallpaper_core.cli.path_utils import resolve_output_path
 from wallpaper_core.config.schema import ItemType
 from wallpaper_core.dry_run import CoreDryRun
@@ -561,30 +561,261 @@ def process_preset(
 app.add_typer(process_app, name="process")
 
 
-# Create batch and show sub-apps with proper context initialization
+# Create batch sub-app — all commands run inside the container
 batch_app = typer.Typer(
     name="batch",
-    help="Batch generate effects (runs on host)",
+    help="Batch generate effects (runs in container)",
     no_args_is_help=True,
 )
 
+
+def _build_batch_host_command(
+    manager: ContainerManager,
+    batch_type: str,
+    input_file: Path,
+    output_dir: Path,
+    flat: bool,
+    parallel: bool,
+    strict: bool,
+) -> str:
+    """Build the docker/podman run command string for batch dry-run display."""
+    image_name = manager.get_image_name()
+    abs_input = input_file.absolute()
+    abs_output_dir = output_dir.absolute()
+
+    cmd_parts = [manager.engine, "run", "--rm"]
+    if manager.engine == "podman":
+        cmd_parts.append("--userns=keep-id")
+    cmd_parts.extend(
+        [
+            "-v",
+            f"{abs_input}:/input/{input_file.name}:ro",
+            "-v",
+            f"{abs_output_dir}:/output:rw",
+            image_name,
+            "batch",
+            batch_type,
+            f"/input/{input_file.name}",
+            "-o",
+            "/output",
+        ]
+    )
+    if flat:
+        cmd_parts.append("--flat")
+    if not parallel:
+        cmd_parts.append("--sequential")
+    if not strict:
+        cmd_parts.append("--no-strict")
+    return " ".join(cmd_parts)
+
+
+def _run_containerized_batch(
+    batch_type: str,
+    input_file: Path,
+    output_dir: Path | None,
+    flat: bool,
+    parallel: bool,
+    strict: bool,
+    dry_run: bool,
+) -> None:
+    """Shared implementation for all four batch subcommands."""
+    try:
+        config = get_config()
+        manager = ContainerManager(config)  # type: ignore[arg-type]
+
+        if output_dir is None:
+            output_dir = config.core.output.default_dir  # type: ignore[attr-defined]
+
+        if dry_run:
+            renderer = OrchestratorDryRun(console=console)
+            image_name = manager.get_image_name()
+            host_command = _build_batch_host_command(
+                manager, batch_type, input_file, output_dir, flat, parallel, strict
+            )
+            effects_config = load_effects()
+            items = _resolve_batch_items(
+                effects_config, batch_type, input_file, output_dir, flat
+            )
+            renderer.render_container_batch(
+                batch_type=batch_type,
+                input_path=input_file,
+                output_dir=output_dir,
+                engine=manager.engine,
+                image_name=image_name,
+                host_command=host_command,
+                items=items,
+            )
+            container_checks = renderer.validate_container(
+                engine=manager.engine,
+                image_name=image_name,
+            )
+            renderer.render_validation(container_checks)
+            raise typer.Exit(0)
+
+        if not manager.is_image_available():
+            console.print(
+                "[red]Error:[/red] Container image not found\n\n"
+                "Install the image first:\n"
+                "  wallpaper-process install"
+            )
+            raise typer.Exit(1)
+
+        console.print(f"[cyan]Generating {batch_type} in container...[/cyan]")
+        result = manager.run_batch(
+            batch_type=batch_type,
+            input_path=input_file,
+            output_dir=output_dir,
+            flat=flat,
+            parallel=parallel,
+            strict=strict,
+        )
+
+        if result.returncode != 0:
+            console.print(f"[red]Batch failed:[/red]\n{result.stderr}")
+            raise typer.Exit(result.returncode)
+
+        console.print(f"[green]✓ Output written to:[/green] {output_dir}")
+
+    except typer.Exit:
+        raise
+    except (RuntimeError, FileNotFoundError, PermissionError) as e:
+        console.print(f"[red]Error:[/red] {str(e)}")
+        raise typer.Exit(1) from None
+    except Exception as e:
+        console.print(f"[red]Unexpected error:[/red] {str(e)}")
+        raise typer.Exit(1) from None
+
+
+@batch_app.command("effects")
+def batch_effects(
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
+    parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
+    strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
+) -> None:
+    """Generate all effects for an image (runs in container).
+
+    Examples:
+        wallpaper-process batch effects input.jpg
+        wallpaper-process batch effects input.jpg -o /out --flat
+    """
+    _run_containerized_batch(
+        "effects", input_file, output_dir, flat, parallel, strict, dry_run
+    )
+
+
+@batch_app.command("composites")
+def batch_composites(
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
+    parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
+    strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
+) -> None:
+    """Generate all composites for an image (runs in container).
+
+    Examples:
+        wallpaper-process batch composites input.jpg
+        wallpaper-process batch composites input.jpg -o /out --flat
+    """
+    _run_containerized_batch(
+        "composites", input_file, output_dir, flat, parallel, strict, dry_run
+    )
+
+
+@batch_app.command("presets")
+def batch_presets(
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
+    parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
+    strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
+) -> None:
+    """Generate all presets for an image (runs in container).
+
+    Examples:
+        wallpaper-process batch presets input.jpg
+        wallpaper-process batch presets input.jpg -o /out --flat
+    """
+    _run_containerized_batch(
+        "presets", input_file, output_dir, flat, parallel, strict, dry_run
+    )
+
+
+@batch_app.command("all")
+def batch_all(
+    input_file: Annotated[Path, typer.Argument(help="Input image file")],
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "-o",
+            "--output-dir",
+            help="Output directory (uses settings default if not specified)",
+        ),
+    ] = None,
+    flat: Annotated[
+        bool, typer.Option("--flat", help="Flat output structure")
+    ] = False,
+    parallel: Annotated[bool, typer.Option("--parallel/--sequential")] = True,
+    strict: Annotated[bool, typer.Option("--strict/--no-strict")] = True,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Preview without executing")
+    ] = False,
+) -> None:
+    """Generate all effects, composites, and presets for an image (runs in container).
+
+    Examples:
+        wallpaper-process batch all input.jpg
+        wallpaper-process batch all input.jpg -o /out --flat
+    """
+    _run_containerized_batch(
+        "all", input_file, output_dir, flat, parallel, strict, dry_run
+    )
+
+
+# Create show sub-app
 show_app = typer.Typer(
     name="show",
     help="Show available effects, composites, and presets",
     no_args_is_help=True,
 )
-
-
-@batch_app.callback()
-def batch_callback(ctx: typer.Context) -> None:
-    """Initialize context for batch commands."""
-    from wallpaper_core.console.output import RichOutput
-
-    config = get_config()
-    ctx.ensure_object(dict)
-    ctx.obj["output"] = RichOutput()
-    ctx.obj["config"] = config.effects  # type: ignore[attr-defined]
-    ctx.obj["settings"] = config.core  # type: ignore[attr-defined]
 
 
 @show_app.callback()
@@ -598,10 +829,6 @@ def show_callback(ctx: typer.Context) -> None:
     ctx.obj["config"] = config.effects  # type: ignore[attr-defined]
     ctx.obj["settings"] = config.core  # type: ignore[attr-defined]
 
-
-# Add core commands to the sub-apps
-for cmd_info in core_batch_module.app.registered_commands:
-    batch_app.command(name=cmd_info.name)(cmd_info.callback)  # type: ignore[type-var]
 
 for cmd_info in core_show_module.app.registered_commands:
     show_app.command(name=cmd_info.name)(cmd_info.callback)  # type: ignore[type-var]
