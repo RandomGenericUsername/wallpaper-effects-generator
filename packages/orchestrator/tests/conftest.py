@@ -69,9 +69,13 @@ def mock_subprocess_for_integration_tests():
     """
     Auto-use fixture that mocks subprocess.run and shutil.which for all tests.
 
-    This allows integration tests to run without ImageMagick installed
-    by simulating command execution and file creation. Also mocks shutil.which
-    so validation checks pass without requiring the binary to be on PATH.
+    This mocks wallpaper_core.engine.executor.subprocess.run (the ImageMagick
+    execution path used by core's BatchGenerator and CommandExecutor). It applies
+    to show, info, and any test that exercises core machinery directly.
+
+    NOTE: Batch commands in the orchestrator (wallpaper-process batch) no longer
+    go through this code path — they call ContainerManager.run_batch(), which
+    uses a separate subprocess call. Those tests mock ContainerManager directly.
     """
 
     def mock_which(cmd):
