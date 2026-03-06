@@ -65,14 +65,18 @@ def test_cli_commands_registered() -> None:
     """Test all CLI commands are registered."""
     from wallpaper_orchestrator.cli.main import app
 
-    # Get all registered commands (some may have None name, check callback)
     command_names = {
         cmd.name or cmd.callback.__name__ for cmd in app.registered_commands
     }
+    group_names = {grp.name for grp in app.registered_groups}
 
-    # Should have orchestrator commands
+    # Scalar commands
     assert "install" in command_names
     assert "uninstall" in command_names
-
-    # Should have core command
     assert "info" in command_names
+    assert "version" in command_names
+
+    # Sub-app groups
+    assert "batch" in group_names
+    assert "show" in group_names
+    assert "process" in group_names
