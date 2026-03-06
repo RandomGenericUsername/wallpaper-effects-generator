@@ -817,7 +817,7 @@ else
     fi
 fi
 
-print_test "wallpaper-process batch effects generates all effect outputs on host"
+print_test "wallpaper-process batch effects generates all effect outputs in container"
 orch_batch_effect="$TEST_OUTPUT_DIR/orch-batch-effect"
 mkdir -p "$orch_batch_effect"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
@@ -834,7 +834,7 @@ elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch effects 
         add_detail "• Output directory: $orch_batch_effect"
         add_detail "• Effects generated: $output_count"
         add_detail "• Sample files: $output_files..."
-        add_detail "• Execution: Host-side (delegates to core)"
+        add_detail "• Execution: Container-side ($CONTAINER_ENGINE run wallpaper-effects:latest batch effects ...)"
         test_passed
     else
         test_failed "orchestrator batch effects: insufficient outputs (expected ≥9, got $output_count)" \
@@ -847,7 +847,7 @@ else
         "$LAST_OUTPUT"
 fi
 
-print_test "wallpaper-process batch all generates all outputs on host"
+print_test "wallpaper-process batch all generates all outputs in container"
 orch_batch_all="$TEST_OUTPUT_DIR/orch-batch-all"
 mkdir -p "$orch_batch_all"
 if [ "$CONTAINER_ENGINE" = "none" ]; then
@@ -863,7 +863,7 @@ elif run_cmd "cd \"$TEST_CONTAINER_PROJECT\" && wallpaper-process batch all \"$T
         add_detail "• Output directory: $orch_batch_all"
         add_detail "• Total files: $output_count (effects + composites + presets)"
         add_detail "• Effects subset: $effects_count files"
-        add_detail "• Execution: Host-side (delegates to core)"
+        add_detail "• Execution: Container-side ($CONTAINER_ENGINE run wallpaper-effects:latest batch all ...)"
         test_passed
     else
         test_failed "orchestrator batch all: insufficient outputs (expected >15, got $output_count)" \
@@ -1911,7 +1911,63 @@ EOF
         rm -rf "$test_output_dir"
     fi
 
-    # Note: Orchestrator batch commands delegate to core (host execution), so they're already tested above
+    print_test "wallpaper-process batch effects --dry-run shows host docker run command"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch effects "$TEST_IMAGE" -o /tmp/orch-batch-dry --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE" && echo "$dry_run_output" | grep -q "batch"; then
+        sample_line=$(echo "$dry_run_output" | grep -m1 "$CONTAINER_ENGINE" | head -c 80)
+        add_detail "• Command: wallpaper-process batch effects --dry-run"
+        add_detail "• Container engine: $CONTAINER_ENGINE"
+        add_detail "• Output sample: $sample_line..."
+        add_detail "• Verified: Host docker run command displayed"
+        test_passed
+    else
+        test_failed "host run command not shown in batch dry-run output (expected $CONTAINER_ENGINE and batch)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ... --dry-run" \
+            "$dry_run_output"
+    fi
+
+    print_test "wallpaper-process batch effects --dry-run shows inner batch commands"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch effects "$TEST_IMAGE" -o /tmp/orch-batch-dry --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -qi "magick\|inner\|command"; then
+        add_detail "• Command: wallpaper-process batch effects --dry-run"
+        add_detail "• Verified: Inner batch commands displayed"
+        test_passed
+    else
+        test_failed "inner commands not shown in batch dry-run output (expected magick or inner commands)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ... --dry-run" \
+            "$dry_run_output"
+    fi
+
+    print_test "wallpaper-process batch effects --dry-run does not spawn container"
+    test_output_dir="/tmp/wallpaper-orch-dry-batch"
+    rm -rf "$test_output_dir" 2>/dev/null
+    dry_run_cmd="cd $TEST_CONTAINER_PROJECT && wallpaper-process batch effects ... --dry-run"
+    (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch effects "$TEST_IMAGE" -o "$test_output_dir" --dry-run > /dev/null 2>&1)
+    if [ ! -d "$test_output_dir" ] || [ -z "$(find "$test_output_dir" -type f 2>/dev/null)" ]; then
+        add_detail "• Test output directory: $test_output_dir"
+        add_detail "• Verified: No container spawned, no files created"
+        test_passed
+    else
+        test_failed "dry-run created output files (should not spawn container)" \
+            "$dry_run_cmd" \
+            "Unexpected files in: $test_output_dir"
+        rm -rf "$test_output_dir"
+    fi
+
+    print_test "wallpaper-process batch all --dry-run shows host docker run command"
+    dry_run_output=$(cd "$TEST_CONTAINER_PROJECT" && wallpaper-process batch all "$TEST_IMAGE" -o /tmp/orch-batch-all-dry --dry-run 2>&1)
+    if echo "$dry_run_output" | grep -q "$CONTAINER_ENGINE" && echo "$dry_run_output" | grep -q "batch"; then
+        sample_line=$(echo "$dry_run_output" | grep -m1 "$CONTAINER_ENGINE" | head -c 80)
+        add_detail "• Command: wallpaper-process batch all --dry-run"
+        add_detail "• Container engine: $CONTAINER_ENGINE"
+        add_detail "• Output sample: $sample_line..."
+        add_detail "• Verified: Host docker run command displayed"
+        test_passed
+    else
+        test_failed "host run command not shown in batch all dry-run output (expected $CONTAINER_ENGINE and batch)" \
+            "cd $TEST_CONTAINER_PROJECT && wallpaper-process batch all ... --dry-run" \
+            "$dry_run_output"
+    fi
 
     # Clean up container image
     (cd "$TEST_CONTAINER_PROJECT" && wallpaper-process uninstall --yes > /dev/null 2>&1)
