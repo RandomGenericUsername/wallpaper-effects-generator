@@ -203,3 +203,104 @@ class ContainerManager:
         )
 
         return result
+
+    def run_batch(
+        self,
+        batch_type: str,
+        input_path: Path,
+        output_dir: Path,
+        flat: bool = False,
+        parallel: bool = True,
+        strict: bool = True,
+    ) -> subprocess.CompletedProcess[str]:
+        """Execute wallpaper-core batch command inside container.
+
+        Args:
+            batch_type: One of "effects", "composites", "presets", "all"
+            input_path: Path to input image on host
+            output_dir: Output directory on host
+            flat: Use flat output structure
+            parallel: Run effects in parallel (True) or sequential (False)
+            strict: Abort on first failure
+
+        Returns:
+            CompletedProcess with returncode, stdout, stderr
+
+        Raises:
+            ValueError: If batch_type is not one of the valid values
+            RuntimeError: If container image not available
+            FileNotFoundError: If input file doesn't exist
+            PermissionError: If output directory cannot be created
+        """
+        valid_types = {"effects", "composites", "presets", "all"}
+        if batch_type not in valid_types:
+            raise ValueError(
+                f"Invalid batch_type: {batch_type}. "
+                f"Must be one of: {', '.join(sorted(valid_types))}"
+            )
+
+        if not self.is_image_available():
+            raise RuntimeError(
+                "Container image not found. "
+                "Install the image first: wallpaper-process install"
+            )
+
+        if not input_path.exists():
+            raise FileNotFoundError(
+                f"Input file not found: {input_path}\n"
+                "Please check the file path is correct."
+            )
+
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            abs_output_dir = output_dir.absolute()
+            abs_output_dir.chmod(0o777)
+        except PermissionError as e:
+            raise PermissionError(
+                f"Cannot create output directory: {output_dir}\n"
+                "Please check directory permissions."
+            ) from e
+
+        abs_input = input_path.absolute()
+        input_mount = f"{abs_input}:/input/{input_path.name}:ro"
+        output_mount = f"{abs_output_dir}:/output:rw"
+
+        cmd = [self.engine, "run", "--rm"]
+
+        if self.engine == "podman":
+            cmd.append("--userns=keep-id")
+
+        cmd.extend(
+            [
+                "-v",
+                input_mount,
+                "-v",
+                output_mount,
+                self.get_image_name(),
+                "batch",
+                batch_type,
+                f"/input/{input_path.name}",
+                "-o",
+                "/output",
+            ]
+        )
+
+        if flat:
+            cmd.append("--flat")
+
+        if parallel:
+            cmd.append("--parallel")
+        else:
+            cmd.append("--sequential")
+
+        if strict:
+            cmd.append("--strict")
+        else:
+            cmd.append("--no-strict")
+
+        return subprocess.run(  # nosec: B603
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
