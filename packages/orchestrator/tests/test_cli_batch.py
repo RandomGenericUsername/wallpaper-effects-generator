@@ -371,3 +371,45 @@ def test_batch_all_image_not_available(tmp_path: Path) -> None:
 
         assert result.exit_code == 1
         assert "Container image not found" in result.output
+
+
+def test_batch_effects_failure_no_stderr(tmp_path: Path) -> None:
+    """Batch failure with empty stderr shows fallback message."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_batch.return_value = MagicMock(
+            returncode=1, stdout="", stderr=""
+        )
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            ["batch", "effects", str(input_file), "-o", str(tmp_path)],
+        )
+
+        assert result.exit_code == 1
+        assert "see output above" in result.output
+
+
+def test_batch_effects_unexpected_error(tmp_path: Path) -> None:
+    """Unexpected exception from run_batch exits 1."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_batch.side_effect = ValueError("unexpected")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            ["batch", "effects", str(input_file), "-o", str(tmp_path)],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()

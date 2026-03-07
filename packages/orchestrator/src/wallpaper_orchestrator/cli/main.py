@@ -858,5 +858,5 @@ def version() -> None:
     console.print(f"wallpaper-orchestrator v{__version__}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     app()
