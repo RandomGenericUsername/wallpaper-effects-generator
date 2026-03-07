@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Live Rich progress bar animations in terminal environments**: `wallpaper-orchestrator` now automatically detects TTY environments and adds `-t` flag to Docker/Podman commands, enabling live-updating Rich progress bars with spinners and real-time completion tracking. In non-interactive environments (CI, piped output), the behavior automatically falls back to showing only the final frame for maximum compatibility.
+
 ### Fixed
 
 - `wallpaper-process batch` now runs inside the container instead of on the host. All four batch subcommands (`effects`, `composites`, `presets`, `all`) spawn a container via `ContainerManager.run_batch()` and pass flags (`--flat`, `--parallel`/`--sequential`, `--strict`/`--no-strict`) through to the inner `wallpaper-core batch` invocation. `--dry-run` prints both the host `docker run ...` command and the inner batch commands without spawning a container.
+
+### Changed
+
+- **Container execution output**: When running in a terminal (TTY detected via `sys.stdout.isatty()`), container commands now use PTY mode (`-t` flag) for Rich animations. Error messages adapt automatically: when stderr is available (PIPE mode), errors are shown with full stderr output; when stderr is merged with stdout (PTY mode), errors reference the live output stream.
 
 ### Changed (Dev Setup)
 

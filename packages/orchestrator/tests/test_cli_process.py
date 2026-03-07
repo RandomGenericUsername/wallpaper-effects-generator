@@ -676,3 +676,249 @@ def test_process_effect_runtime_error(tmp_path: Path) -> None:
 
         assert result.exit_code == 1
         assert "Error" in result.output or "error" in result.output.lower()
+
+
+def test_process_effect_failure_no_stderr(tmp_path: Path) -> None:
+    """Test process effect failure with empty stderr shows fallback message."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=1, stdout="", stderr=""
+        )
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "see output above" in result.output
+
+
+def test_process_effect_unexpected_error(tmp_path: Path) -> None:
+    """Test process effect handles unexpected exceptions."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = ValueError("unexpected")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "effect",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--effect",
+                "blur",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()
+
+
+def test_process_composite_failure_no_stderr(tmp_path: Path) -> None:
+    """Test process composite failure with empty stderr shows fallback message."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=1, stdout="", stderr=""
+        )
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "dark",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "see output above" in result.output
+
+
+def test_process_composite_runtime_error(tmp_path: Path) -> None:
+    """Test process composite handles RuntimeError."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = RuntimeError("Container error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "dark",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()
+
+
+def test_process_composite_unexpected_error(tmp_path: Path) -> None:
+    """Test process composite handles unexpected exceptions."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = ValueError("unexpected")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "composite",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--composite",
+                "dark",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()
+
+
+def test_process_preset_failure_no_stderr(tmp_path: Path) -> None:
+    """Test process preset failure with empty stderr shows fallback message."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.return_value = MagicMock(
+            returncode=1, stdout="", stderr=""
+        )
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "see output above" in result.output
+
+
+def test_process_preset_runtime_error(tmp_path: Path) -> None:
+    """Test process preset handles RuntimeError."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = RuntimeError("Container error")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()
+
+
+def test_process_preset_unexpected_error(tmp_path: Path) -> None:
+    """Test process preset handles unexpected exceptions."""
+    input_file = tmp_path / "input.jpg"
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+    input_file.touch()
+
+    with patch("wallpaper_orchestrator.cli.main.ContainerManager") as mock_mgr:
+        mock_manager = MagicMock()
+        mock_manager.is_image_available.return_value = True
+        mock_manager.run_process.side_effect = ValueError("unexpected")
+        mock_mgr.return_value = mock_manager
+
+        result = runner.invoke(
+            app,
+            [
+                "process",
+                "preset",
+                str(input_file),
+                "-o",
+                str(output_dir),
+                "--preset",
+                "dark_vibrant",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "error" in result.output.lower()

@@ -228,14 +228,19 @@ def test_run_batch_effects_command_structure(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert call_args[0] == "docker"
         assert "run" in call_args
         assert "--rm" in call_args
@@ -254,14 +259,19 @@ def test_run_batch_composites_command_structure(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="composites", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "composites" in call_args
 
 
@@ -272,14 +282,19 @@ def test_run_batch_presets_command_structure(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="presets", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "presets" in call_args
 
 
@@ -290,12 +305,17 @@ def test_run_batch_all_command_structure(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(batch_type="all", input_path=input_file, output_dir=tmp_path)
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "all" in call_args
 
 
@@ -306,14 +326,19 @@ def test_run_batch_flat_flag_forwarded(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path, flat=True
         )
-        assert "--flat" in mock_run.call_args[0][0]
+        assert "--flat" in mock_popen.call_args[0][0]
 
 
 def test_run_batch_sequential_flag_forwarded(
@@ -323,17 +348,22 @@ def test_run_batch_sequential_flag_forwarded(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects",
             input_path=input_file,
             output_dir=tmp_path,
             parallel=False,
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "--sequential" in call_args
         assert "--parallel" not in call_args
 
@@ -345,17 +375,22 @@ def test_run_batch_parallel_flag_forwarded(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects",
             input_path=input_file,
             output_dir=tmp_path,
             parallel=True,
         )
-        assert "--parallel" in mock_run.call_args[0][0]
+        assert "--parallel" in mock_popen.call_args[0][0]
 
 
 def test_run_batch_no_strict_flag_forwarded(
@@ -365,17 +400,22 @@ def test_run_batch_no_strict_flag_forwarded(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects",
             input_path=input_file,
             output_dir=tmp_path,
             strict=False,
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "--no-strict" in call_args
         assert "--strict" not in call_args
 
@@ -387,17 +427,22 @@ def test_run_batch_strict_flag_forwarded(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects",
             input_path=input_file,
             output_dir=tmp_path,
             strict=True,
         )
-        assert "--strict" in mock_run.call_args[0][0]
+        assert "--strict" in mock_popen.call_args[0][0]
 
 
 def test_run_batch_podman_adds_userns(tmp_path: Path) -> None:
@@ -407,14 +452,19 @@ def test_run_batch_podman_adds_userns(tmp_path: Path) -> None:
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(podman_manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         podman_manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert call_args[0] == "podman"
         assert "--userns=keep-id" in call_args
 
@@ -424,14 +474,19 @@ def test_run_batch_docker_no_userns(manager: ContainerManager, tmp_path: Path) -
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path
         )
-        assert "--userns=keep-id" not in mock_run.call_args[0][0]
+        assert "--userns=keep-id" not in mock_popen.call_args[0][0]
 
 
 def test_run_batch_returns_process_result(
@@ -441,12 +496,15 @@ def test_run_batch_returns_process_result(
     input_file = tmp_path / "input.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(
-            returncode=42, stdout="", stderr="batch error"
-        )
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter(["batch error"])
+        mock_proc.returncode = 42
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         result = manager.run_batch(
             batch_type="all", input_path=input_file, output_dir=tmp_path
         )
@@ -461,14 +519,19 @@ def test_run_batch_uses_absolute_input_path(
     input_file = tmp_path / "wallpaper.jpg"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         mounts = [
             call_args[i + 1]
             for i, arg in enumerate(call_args)
@@ -487,13 +550,423 @@ def test_run_batch_preserves_original_filename(
     input_file = tmp_path / "my-wallpaper.png"
     input_file.touch()
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
         manager.run_batch(
             batch_type="effects", input_path=input_file, output_dir=tmp_path
         )
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert "/input/my-wallpaper.png" in call_args
         assert "/input/image.jpg" not in call_args
+
+
+def test_run_process_sets_pythonunbuffered(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """PYTHONUNBUFFERED=1 is passed as env var to the container in run_process."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-e" in call_args
+        idx = call_args.index("-e")
+        assert call_args[idx + 1] == "PYTHONUNBUFFERED=1"
+
+
+def test_run_batch_sets_pythonunbuffered(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """PYTHONUNBUFFERED=1 is passed as env var to the container in run_batch."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_batch(
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-e" in call_args
+        idx = call_args.index("-e")
+        assert call_args[idx + 1] == "PYTHONUNBUFFERED=1"
+
+
+# ── TTY Mode Tests ─────────────────────────────────────────────────────────
+
+
+def test_run_process_adds_tty_flag_when_stdout_is_tty(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that -t flag is added when stdout is a TTY."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=True),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-t" in call_args
+
+
+def test_run_process_no_tty_flag_when_stdout_not_tty(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that -t flag is NOT added when stdout is not a TTY."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=False),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-t" not in call_args
+
+
+def test_run_batch_adds_tty_flag_when_stdout_is_tty(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that -t flag is added in batch mode when stdout is a TTY."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=True),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_batch(
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-t" in call_args
+
+
+def test_run_batch_no_tty_flag_when_stdout_not_tty(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that -t flag is NOT added in batch mode when stdout is not a TTY."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=False),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_batch(
+            batch_type="effects",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        call_args = mock_popen.call_args[0][0]
+        assert "-t" not in call_args
+
+
+def test_run_streaming_pty_returns_empty_stderr(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that PTY mode returns empty stderr (merged with stdout)."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+    mock_proc.poll.return_value = 0
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=True),
+        patch("pty.openpty", return_value=(99, 100)),
+        patch("os.close"),
+        patch("os.read", return_value=b""),
+        patch("select.select", return_value=([], [], [])),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        # PTY mode: stderr should be empty (merged into stdout stream)
+        assert result.stderr == ""
+
+
+def test_run_streaming_pipe_streams_stdout(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that _run_streaming_pipe prints stdout lines to terminal."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter(["Progress: 50%\n", "Done\n"])
+    mock_proc.stderr = iter([""])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=False),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        assert result.returncode == 0
+
+
+def test_run_streaming_pty_select_oserror(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test PTY streaming handles OSError from select gracefully."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=True),
+        patch("pty.openpty", return_value=(99, 100)),
+        patch("os.close"),
+        patch("select.select", side_effect=OSError("bad fd")),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        assert result.returncode == 0
+        assert result.stderr == ""
+
+
+def test_run_streaming_pty_empty_chunk_breaks(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test PTY streaming breaks on empty chunk (EOF)."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=True),
+        patch("pty.openpty", return_value=(99, 100)),
+        patch("os.close"),
+        patch("os.read", return_value=b""),
+        patch("select.select", return_value=([99], [], [])),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        assert result.returncode == 0
+
+
+def test_run_streaming_pty_streams_chunk(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test PTY streaming writes chunk to stdout and advances."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    chunks = [b"Progress 50%\n", b""]
+
+    def _fake_read(_fd: int, _n: int) -> bytes:
+        return chunks.pop(0)
+
+    mock_buffer = MagicMock()
+    mock_stdout = MagicMock()
+    mock_stdout.buffer = mock_buffer
+    mock_stdout.isatty.return_value = True
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout", mock_stdout),
+        patch("pty.openpty", return_value=(99, 100)),
+        patch("os.close"),
+        patch("os.read", side_effect=_fake_read),
+        patch("select.select", return_value=([99], [], [])),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        assert result.returncode == 0
+        mock_buffer.write.assert_called_with(b"Progress 50%\n")
+
+
+def test_run_streaming_pty_final_read_on_poll(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test PTY reads remaining data after process exits (poll != None)."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+    mock_proc.poll.return_value = 0
+
+    mock_buffer = MagicMock()
+    mock_stdout = MagicMock()
+    mock_stdout.buffer = mock_buffer
+    mock_stdout.isatty.return_value = True
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout", mock_stdout),
+        patch("pty.openpty", return_value=(99, 100)),
+        patch("os.close"),
+        patch("os.read", return_value=b"final output\n"),
+        patch("select.select", return_value=([], [], [])),
+    ):
+        mock_popen.return_value = mock_proc
+        result = manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+        )
+        assert result.returncode == 0
+        mock_buffer.write.assert_called_with(b"final output\n")
+
+
+def test_run_process_flat_flag_forwarded(
+    manager: ContainerManager, tmp_path: Path
+) -> None:
+    """Test that --flat flag is included in container command when flat=True."""
+    input_file = tmp_path / "input.jpg"
+    input_file.touch()
+
+    mock_proc = MagicMock()
+    mock_proc.stdout = iter([])
+    mock_proc.stderr = iter([])
+    mock_proc.returncode = 0
+    mock_proc.wait.return_value = None
+
+    with (
+        patch("subprocess.Popen") as mock_popen,
+        patch.object(manager, "is_image_available", return_value=True),
+        patch("sys.stdout.isatty", return_value=False),
+    ):
+        mock_popen.return_value = mock_proc
+        manager.run_process(
+            command_type="effect",
+            command_name="blur",
+            input_path=input_file,
+            output_dir=tmp_path,
+            flat=True,
+        )
+        assert "--flat" in mock_popen.call_args[0][0]

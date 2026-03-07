@@ -30,10 +30,15 @@ def test_run_process_effect_builds_correct_command(
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         result = manager.run_process(
             command_type="effect",
@@ -43,8 +48,8 @@ def test_run_process_effect_builds_correct_command(
         )
 
         # Verify subprocess was called
-        assert mock_run.called
-        call_args = mock_run.call_args[0][0]
+        assert mock_popen.called
+        call_args = mock_popen.call_args[0][0]
 
         # Verify command structure
         assert call_args[0] == "docker"
@@ -132,10 +137,15 @@ def test_run_process_creates_output_directory(
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         manager.run_process(
             command_type="effect",
@@ -158,10 +168,15 @@ def test_run_process_uses_absolute_paths(
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         manager.run_process(
             command_type="effect",
@@ -170,7 +185,7 @@ def test_run_process_uses_absolute_paths(
             output_dir=output_file.parent,
         )
 
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         # Find volume mount arguments
         mounts = [arg for arg in call_args if ":" in arg and "/" in arg]
 
@@ -189,10 +204,15 @@ def test_run_process_returns_container_exit_code(
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=42, stdout="", stderr="error")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter(["error"])
+        mock_proc.returncode = 42
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         result = manager.run_process(
             command_type="effect",
@@ -215,10 +235,15 @@ def test_run_process_with_podman_engine(tmp_path: Path) -> None:
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         manager.run_process(
             command_type="effect",
@@ -227,7 +252,7 @@ def test_run_process_with_podman_engine(tmp_path: Path) -> None:
             output_dir=output_file.parent,
         )
 
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         assert call_args[0] == "podman"
 
 
@@ -240,10 +265,15 @@ def test_run_process_with_additional_args(
     input_file.touch()
 
     with (
-        patch("subprocess.run") as mock_run,
+        patch("subprocess.Popen") as mock_popen,
         patch.object(manager, "is_image_available", return_value=True),
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_proc = MagicMock()
+        mock_proc.stdout = iter([])
+        mock_proc.stderr = iter([])
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = None
+        mock_popen.return_value = mock_proc
 
         manager.run_process(
             command_type="effect",
@@ -253,7 +283,7 @@ def test_run_process_with_additional_args(
             additional_args=["--intensity", "5"],
         )
 
-        call_args = mock_run.call_args[0][0]
+        call_args = mock_popen.call_args[0][0]
         # Verify additional args are included
         assert "--intensity" in call_args
         assert "5" in call_args
