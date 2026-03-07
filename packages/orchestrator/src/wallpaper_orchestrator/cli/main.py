@@ -197,7 +197,10 @@ def process_effect(
         )
 
         if result.returncode != 0:
-            console.print(f"[red]Effect failed:[/red]\n{result.stderr}")
+            if result.stderr:
+                console.print(f"[red]Effect failed:[/red]\n{result.stderr}")
+            else:
+                console.print("[red]Effect failed[/red] (see output above)")
             raise typer.Exit(result.returncode)
 
         console.print(f"[green]✓ Output written to:[/green] {output_file}")
@@ -355,7 +358,10 @@ def process_composite(
         )
 
         if result.returncode != 0:
-            console.print(f"[red]Composite failed:[/red]\n{result.stderr}")
+            if result.stderr:
+                console.print(f"[red]Composite failed:[/red]\n{result.stderr}")
+            else:
+                console.print("[red]Composite failed[/red] (see output above)")
             raise typer.Exit(result.returncode)
 
         console.print(f"[green]✓ Output written to:[/green] {output_file}")
@@ -542,7 +548,10 @@ def process_preset(
         )
 
         if result.returncode != 0:
-            console.print(f"[red]Preset failed:[/red]\n{result.stderr}")
+            if result.stderr:
+                console.print(f"[red]Preset failed:[/red]\n{result.stderr}")
+            else:
+                console.print("[red]Preset failed[/red] (see output above)")
             raise typer.Exit(result.returncode)
 
         console.print(f"[green]✓ Output written to:[/green] {output_file}")
@@ -671,7 +680,10 @@ def _run_containerized_batch(
         )
 
         if result.returncode != 0:
-            console.print(f"[red]Batch failed:[/red]\n{result.stderr}")
+            if result.stderr:
+                console.print(f"[red]Batch failed:[/red]\n{result.stderr}")
+            else:
+                console.print("[red]Batch failed[/red] (see output above)")
             raise typer.Exit(result.returncode)
 
         console.print(f"[green]✓ Output written to:[/green] {output_dir}")

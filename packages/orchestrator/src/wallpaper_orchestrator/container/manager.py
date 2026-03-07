@@ -1,6 +1,11 @@
 """Container manager for orchestrating wallpaper effects processing."""
 
+import os
+import pty
+import select
 import subprocess  # nosec: necessary for container management
+import sys
+import threading
 from pathlib import Path
 
 from wallpaper_orchestrator.config.unified import UnifiedConfig
@@ -84,6 +89,135 @@ class ContainerManager:
         except (subprocess.SubprocessError, FileNotFoundError):
             return False
 
+    def _run_streaming(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        """Run a command, streaming output live.
+
+        Uses PTY when -t flag is present (for Rich animations), otherwise uses PIPE.
+
+        Args:
+            cmd: Command and arguments to execute.
+
+        Returns:
+            CompletedProcess with returncode and stderr (if available).
+            stdout is streamed directly to the terminal.
+        """
+        # Check if -t flag is in command (indicates PTY mode)
+        use_pty = "-t" in cmd
+
+        if use_pty:
+            return self._run_streaming_pty(cmd)
+        else:
+            return self._run_streaming_pipe(cmd)
+
+    def _run_streaming_pipe(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        """PIPE-based streaming (original implementation).
+
+        Args:
+            cmd: Command and arguments to execute.
+
+        Returns:
+            CompletedProcess with returncode and accumulated stderr.
+            stdout is streamed directly to the terminal and returned as empty string.
+        """
+        proc = subprocess.Popen(  # nosec: B603
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        stderr_lines: list[str] = []
+
+        def _drain_stderr() -> None:
+            assert proc.stderr is not None  # noqa: S101
+            for line in proc.stderr:
+                stderr_lines.append(line)
+
+        stderr_thread = threading.Thread(target=_drain_stderr, daemon=True)
+        stderr_thread.start()
+
+        assert proc.stdout is not None  # noqa: S101
+        for line in proc.stdout:
+            print(line, end="", flush=True)
+
+        proc.wait()
+        stderr_thread.join()
+
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=proc.returncode,
+            stdout="",
+            stderr="".join(stderr_lines),
+        )
+
+    def _run_streaming_pty(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        """PTY-based streaming for Rich animations.
+
+        When -t flag is present, use PTY to enable live Rich progress bars.
+        stdout and stderr are merged in PTY mode.
+
+        Args:
+            cmd: Command and arguments to execute.
+
+        Returns:
+            CompletedProcess with returncode. stderr is empty (merged with stdout).
+            stdout is streamed directly to the terminal and returned as empty string.
+        """
+        master_fd, slave_fd = pty.openpty()
+
+        proc = subprocess.Popen(  # nosec: B603
+            cmd,
+            stdin=slave_fd,
+            stdout=slave_fd,
+            stderr=slave_fd,
+        )
+        os.close(slave_fd)
+
+        output_chunks: list[str] = []
+
+        while True:
+            try:
+                r, _, _ = select.select([master_fd], [], [], 0.1)
+            except (ValueError, OSError):
+                break
+
+            if r:
+                try:
+                    chunk = os.read(master_fd, 1024)
+                except OSError:
+                    break
+
+                if not chunk:
+                    break
+
+                # Write to stdout for live streaming
+                sys.stdout.buffer.write(chunk)
+                sys.stdout.flush()
+                output_chunks.append(chunk.decode(errors="replace"))
+
+            elif proc.poll() is not None:
+                # Process finished, do final read
+                try:
+                    chunk = os.read(master_fd, 1024)
+                    if chunk:
+                        sys.stdout.buffer.write(chunk)
+                        sys.stdout.flush()
+                        output_chunks.append(chunk.decode(errors="replace"))
+                except OSError:
+                    pass
+                break
+
+        proc.wait()
+        os.close(master_fd)
+
+        # PTY mode: stderr is merged into stdout, not separately available
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=proc.returncode,
+            stdout="",
+            stderr="",
+        )
+
     def run_process(
         self,
         command_type: str,
@@ -164,6 +298,10 @@ class ContainerManager:
             "--rm",
         ]
 
+        # Add -t for TTY if stdout is a terminal (enables Rich animations)
+        if sys.stdout.isatty():
+            cmd.append("-t")
+
         # Rootless podman needs --userns=keep-id for correct
         # UID mapping with host-mounted volumes
         if self.engine == "podman":
@@ -175,6 +313,8 @@ class ContainerManager:
                 input_mount,
                 "-v",
                 output_mount,
+                "-e",
+                "PYTHONUNBUFFERED=1",
                 self.get_image_name(),
                 "process",
                 command_type,
@@ -194,15 +334,8 @@ class ContainerManager:
         if additional_args:
             cmd.extend(additional_args)
 
-        # Execute container
-        result = subprocess.run(  # nosec: B603
-            cmd,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-
-        return result
+        # Execute container with streaming output
+        return self._run_streaming(cmd)
 
     def run_batch(
         self,
@@ -267,6 +400,10 @@ class ContainerManager:
 
         cmd = [self.engine, "run", "--rm"]
 
+        # Add -t for TTY if stdout is a terminal (enables Rich animations)
+        if sys.stdout.isatty():
+            cmd.append("-t")
+
         if self.engine == "podman":
             cmd.append("--userns=keep-id")
 
@@ -276,6 +413,8 @@ class ContainerManager:
                 input_mount,
                 "-v",
                 output_mount,
+                "-e",
+                "PYTHONUNBUFFERED=1",
                 self.get_image_name(),
                 "batch",
                 batch_type,
@@ -298,9 +437,4 @@ class ContainerManager:
         else:
             cmd.append("--no-strict")
 
-        return subprocess.run(  # nosec: B603
-            cmd,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        return self._run_streaming(cmd)
