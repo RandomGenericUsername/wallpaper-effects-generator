@@ -85,8 +85,9 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 | gates | `make gates` | exit 0; `349 passed` ×2, `All checks passed!`, lock current |
 | packaging | `uv build` | exit 0; `wallpaper_effects_generator-0.1.0-py3-none-any.whl` + `.tar.gz` |
 | image | `podman build -t wallpaper-effects-generator:v0.1.0 ... .`; `podman run --rm wallpaper-effects-generator:v0.1.0 weg --version` | build exit 0, image `81d4c337ce25`; `0.1.0 contract 0.1.0` |
+| image from a fresh clone | `make image` in `/tmp/opencode/weg-fresh` | exit 0, image `65df6cbb6798`; `0.1.0 contract 0.1.0` |
 | install verb tag | `.venv/bin/weg install --context . --container-engine podman --image-tag v0.1.0` | exit 0; `weg-podman:v0.1.0` (`81d4c337ce25`); run prints `0.1.0 contract 0.1.0`; invalid tag exits 2 with `invalid image tag` |
-| fresh clone | clone → `make sync && make gates && make build` | pending |
+| fresh clone | `git clone <local repo> /tmp/opencode/weg-fresh` → `make sync && make gates && make build`; `uv lock --check`; `make ci-gates-parity` | all exit 0; `349 passed` ×2; wheel + sdist in `dist/`; lock current; parity PASS |
 | CI parity | `make ci-gates-parity` | `PASS gates=[...5] jobs=[...8] exempt=[ci-gates-parity, image, release]` |
 | CI runs | `gh run list` | pending (blocked: no remote) |
 | annotated tag | `git cat-file -t v0.1.0`; `git rev-parse v0.1.0`; `git rev-parse 'v0.1.0^{commit}'` | pending (blocked: no remote) |
@@ -119,4 +120,32 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 
 ## Closeout
 
-Open. Blocked on the owner decision for the occupied repo name; see Deviations 1.
+Local birth is complete; the **remote birth is blocked** on Deviations 1.
+
+- Local repo: `/home/inumaki/Development/wallpaper-effects-generator`, branch `main`, 67 commits
+  (65 imported by `git subtree split` + `34a8c8f` planning + `657a53d` implementation).
+  `git status --porcelain` is empty; no remote is configured, no tag exists.
+- Every local gate is green: 349 tests ambient and hermetic, ruff, lock, docs, packaging, parity,
+  and the image builds and runs `0.1.0 contract 0.1.0` both in place and from a fresh clone.
+- The remote steps (create/push, first CI run, annotated `v0.1.0`, anonymous `ls-remote`, GitHub
+  Release) were **not** performed: the repo name is a pre-existing private legacy repo. Deleting,
+  renaming or force-pushing over it is destructive and was not authorised.
+- `dotfiles-v3` `master` is unchanged at `6ad7117cc982d540d05ec70cecf466393ac1cadc`; its working
+  tree is clean. The only dotfiles change is the **local** branch
+  `split/wallpaper-effects-generator` (`810e72b`, 65 commits), kept local as instructed.
+
+### Unblock options (owner decision)
+
+1. **Reclaim the name.** Confirm the legacy repo is disposable (or renamed to a backup name,
+   e.g. `wallpaper-effects-generator-legacy`); then create the public repo, push local `main`, let
+   CI run, tag `v0.1.0`, and publish the Release with `dist/` artifacts.
+2. **Use a new name.** Point this slice (and `dotfiles-v3` provisioning) at another repo name, e.g.
+   `wallpaper-effects-generator-weg`; the local repo only needs an `origin` and a one-line push.
+
+Neither option was taken here because both change a published name or existing remote history.
+
+### Birth-worktree exception
+
+The scaffold commits were made on `main` in the fresh local repo (the slice instruction), as in
+the sibling births: `scripts/worktree-guard.sh create` needs a clean `main` to branch from, and the
+repo had no scaffold commit yet. Every later item uses a ticket worktree.
