@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,13 @@ from oci_runtime.domain.exceptions import SourceRootNotFoundError
 from wallpaper_effects_generator.cli.main import app
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def _plain(text: str) -> str:
+    """Strip ANSI styling so assertions do not depend on the CI color mode."""
+    return _ANSI_RE.sub("", text)
 
 
 def _parse_ndjson(output: str) -> list[dict]:
@@ -902,7 +910,7 @@ def test_explicit_output_without_output_flag(tmp_path: Path, monkeypatch: pytest
         ],
     )
     assert result.exit_code != 0
-    message = (result.stderr or "") + "\n" + (result.output or "")
+    message = _plain((result.stderr or "") + "\n" + (result.output or ""))
     # Rich wraps/boxes the message, so assert the two fragments, not one line.
     assert "--explicit-output" in message
     assert "requires -o/--output" in message
