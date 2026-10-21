@@ -902,7 +902,10 @@ def test_explicit_output_without_output_flag(tmp_path: Path, monkeypatch: pytest
         ],
     )
     assert result.exit_code != 0
-    assert "--explicit-output requires" in (result.stderr or result.output)
+    message = (result.stderr or "") + "\n" + (result.output or "")
+    # Rich wraps/boxes the message, so assert the two fragments, not one line.
+    assert "--explicit-output" in message
+    assert "requires -o/--output" in message
 
 
 # 8.3+ --explicit-output with -o succeeds
