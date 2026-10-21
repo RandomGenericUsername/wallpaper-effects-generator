@@ -18,7 +18,7 @@
 
 ## Ops tasks
 
-- [OPS-001-contracts-v020-repin](./OPS-001-contracts-v020-repin/ticket.md) — Re-pin contracts v0.2.0 and release weg v0.2.0 | `in-progress` | openspec: none (pin bump; no weg behaviour delta)
+(none)
 
 ## Spikes
 
@@ -31,3 +31,4 @@
 ## Done (links only, newest last)
 
 - [REQ-001-repo-birth](./REQ-001-repo-birth/ticket.md) — Birth the wallpaper-effects-generator repo (mu-strict, `weg`) and cut v0.1.0 | `done` | openspec: repo-birth (archived 2026-10-21)
+- [OPS-001-contracts-v020-repin](./OPS-001-contracts-v020-repin/ticket.md) — Re-pin contracts v0.2.0 and release weg v0.2.0 | `done` | openspec: none (pin bump; no weg behaviour delta)
