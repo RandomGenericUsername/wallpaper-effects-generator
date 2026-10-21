@@ -18,7 +18,7 @@
 
 ## Ops tasks
 
-- [OPS-002-contract-artifacts-ci](./OPS-002-contract-artifacts-ci/ticket.md) — Prove weg's own side of the invocation contract in CI (artifact conformance) | `in-progress` | openspec: none (test + CI support; contract owned by `contracts`)
+(none)
 
 ## Spikes
 
@@ -32,3 +32,4 @@
 
 - [REQ-001-repo-birth](./REQ-001-repo-birth/ticket.md) — Birth the wallpaper-effects-generator repo (mu-strict, `weg`) and cut v0.1.0 | `done` | openspec: repo-birth (archived 2026-10-21)
 - [OPS-001-contracts-v020-repin](./OPS-001-contracts-v020-repin/ticket.md) — Re-pin contracts v0.2.0 and release weg v0.2.0 | `done` | openspec: none (pin bump; no weg behaviour delta)
+- [OPS-002-contract-artifacts-ci](./OPS-002-contract-artifacts-ci/ticket.md) — Prove weg's own side of the invocation contract in CI (artifact conformance) | `done` | openspec: none (test + CI support; contract owned by `contracts`)
