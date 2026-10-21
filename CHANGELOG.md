@@ -6,6 +6,21 @@ Notable changes to the `wallpaper-effects-generator` repo. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- `tests/contract/test_invocation_contract.py` proves this repo's own side of the invocation
+  contract: it loads the `weg` record from `cli_invocation_contract`, renders the record's
+  `argv`/`env` templates against a checked-in PNG fixture and a temp output directory (no
+  argv/env/artifact literal is re-typed in the test), runs the installed `weg` console script for
+  real, and asserts the result with `assert_cli_writes_artifacts`. Marked `real_imagemagick`, so
+  it runs against the real ImageMagick backend and **fails** — never skips — when `magick` is
+  absent.
+- `scripts/install-imagemagick7.sh` + `make imagemagick`: install the pinned, SHA-256-verified
+  upstream ImageMagick 7 static build (extracted AppImage, not `latest`). The `test` and
+  `hermetic` CI jobs run it before pytest; a host that already has ImageMagick 7 is left alone.
+- `tests/conftest.py` also scrubs `WALLPAPER_EFFECTS_CONFIG_FILE_PATH` (and the canary asserts
+  it), so a host effects catalog cannot change the catalog a test sees.
+
 ## [0.2.0] - 2026-10-21
 
 Re-pin the invocation contract at `contracts` `v0.2.0` and release `weg` `0.2.0`. `weg`'s

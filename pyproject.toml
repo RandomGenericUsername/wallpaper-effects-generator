@@ -48,6 +48,9 @@ only-include = [
 testpaths = ["tests"]
 pythonpath = ["src", "."]
 addopts = ["--strict-markers", "-rxX"]
+markers = [
+    "real_imagemagick: run against the host's real ImageMagick 7 (`magick`), not the fake on PATH",
+]
 
 [tool.uv.sources]
 cli-invocation-contract = { git = "https://github.com/RandomGenericUsername/contracts", tag = "v0.2.0" }

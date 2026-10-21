@@ -9,6 +9,11 @@ name: gates
 # builds Dockerfile.imagemagick at the tag and runs `weg --version` inside the
 # image. It is a declared CI-only job because it needs an engine and network.
 #
+# The `test` and `hermetic` jobs install the pinned ImageMagick 7 static build
+# (`make imagemagick`) before running pytest: `tests/contract/` runs the real
+# local backend, whose catalog shells out to `magick`, and the runner ships no
+# ImageMagick 7. A missing `magick` fails that test rather than skipping it.
+#
 # On a tag push the gates run and `release` attaches the sdist + wheel built
 # from that commit to the GitHub Release (AD-9). Nothing is published to PyPI.
 on:
@@ -29,6 +34,8 @@ jobs:
           version: "0.9.22"
           enable-cache: true
       - run: make sync
+      - name: Install ImageMagick 7 (`magick`) for the local-backend contract test
+        run: make imagemagick
       - run: make test
 
   lint:
@@ -53,6 +60,8 @@ jobs:
           version: "0.9.22"
           enable-cache: true
       - run: make sync
+      - name: Install ImageMagick 7 (`magick`) for the local-backend contract test
+        run: make imagemagick
       - run: make hermetic
 
   lock-check:

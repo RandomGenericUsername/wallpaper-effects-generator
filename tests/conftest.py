@@ -27,12 +27,15 @@ _HERMETIC_HOST_ONLY_VARS = (
     "DOTFILES_DEV_INPUTS_ROOT",
     "COLORSCHEME_CONFIG_FILE_PATH",
     "WALLPAPER_CONFIG_FILE_PATH",
+    "WALLPAPER_EFFECTS_CONFIG_FILE_PATH",
     "ICON_RENDERER_CONFIG_FILE_PATH",
 )
 
 
 @pytest.fixture(autouse=True)
-def _fake_imagemagick(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def _fake_imagemagick(
+    request: pytest.FixtureRequest, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Provide a deterministic `magick` on PATH.
 
     The unit/CLI suites assert orchestration and parameter scoping, not
@@ -41,7 +44,12 @@ def _fake_imagemagick(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     fake writes an empty file at the last argument (the output path in every
     catalog template) and exits 0, so the tests exercise the real command
     runner, sanitizer and file layout without an external dependency.
+
+    A test marked `real_imagemagick` opts out: it asserts the *artifacts*, so it
+    needs the real backend and must fail (never skip) when it is absent.
     """
+    if request.node.get_closest_marker("real_imagemagick") is not None:
+        return
     bin_dir = tmp_path / "fake-bin"
     bin_dir.mkdir()
     fake = bin_dir / "magick"

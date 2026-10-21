@@ -27,7 +27,7 @@ DOCKERFILE   := $(CURDIR)/src/wallpaper_effects_generator/adapters/docker/Docker
 # engine and network access to the pinned git dependencies.
 GATES := test lint hermetic lock-check docs-check
 
-.PHONY: help sync install test lint format check gates gates-ci hermetic lock-check docs-check image build ci-gates-parity clean
+.PHONY: help sync install test lint format check gates gates-ci hermetic lock-check docs-check image build ci-gates-parity imagemagick clean
 
 help:
 	@echo "sync            Install the env from uv.lock (uv sync --frozen)"
@@ -40,6 +40,7 @@ help:
 	@echo "docs-check      README/CHANGELOG/LICENSE/AGENTS + CLAUDE symlink exist"
 	@echo "gates           $(GATES)"
 	@echo "ci-gates-parity Workflow jobs equal GATES + declared CI-only jobs"
+	@echo "imagemagick     Install the pinned ImageMagick 7 static build (no-op if magick exists)"
 	@echo "image           Build $(IMAGE) from this repo root and run weg --version"
 	@echo "build           Build sdist + wheel into dist/"
 	@echo "install         Install the built package into .venv"
@@ -103,6 +104,13 @@ gates-ci: $(GATES)
 
 ci-gates-parity:
 	python3 scripts/ci-gates-parity.py
+
+# CI support, not a gate: the contract test runs the real local backend, whose
+# catalog shells out to `magick` (ImageMagick 7). The GitHub runner has none, so
+# the pytest jobs install the pinned static build. A developer machine that
+# already has `magick` is left untouched.
+imagemagick:
+	bash scripts/install-imagemagick7.sh
 
 build:
 	$(UV) build

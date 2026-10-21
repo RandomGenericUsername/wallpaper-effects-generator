@@ -74,10 +74,17 @@ From a checkout (development):
 
 ```bash
 make sync          # uv sync --frozen
+make imagemagick   # pinned ImageMagick 7 static build (skipped when `magick` exists)
 make gates         # test + lint + hermetic + lock-check + docs-check
 make build         # sdist + wheel in dist/
 make image         # build the container image from this repo root
 ```
+
+`make test` (and therefore `make gates`) includes `tests/contract/`: it renders the `weg`
+record from `cli-invocation-contract` and runs the installed console script for real, asserting the
+artifacts with `assert_cli_writes_artifacts`. The catalog shells out to `magick`, so a host
+without ImageMagick 7 fails that test instead of skipping it; `make imagemagick` installs the same
+pinned, checksum-verified static build the CI pytest jobs use.
 
 As a consumer, pin an immutable tag — never a path and never a branch:
 
