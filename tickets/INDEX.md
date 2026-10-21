@@ -18,7 +18,7 @@
 
 ## Ops tasks
 
-(none)
+- [OPS-001-contracts-v020-repin](./OPS-001-contracts-v020-repin/ticket.md) — Re-pin contracts v0.2.0 and release weg v0.2.0 | `in-progress` | openspec: none (pin bump; no weg behaviour delta)
 
 ## Spikes
 
