@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the image from the repo root and run the CLI in it
-        run: make image IMAGE_ENGINE=docker IMAGE_TAG=v0.1.0
+        run: make image IMAGE_ENGINE=docker
 
   release:
     name: release

@@ -29,7 +29,7 @@ weg --version
 ```
 
 - `--version` prints `<package version> contract <contracts version>`, e.g.
-  `0.1.0 contract 0.1.0`. The contract token comes from
+  `0.2.0 contract 0.2.0`. The contract token comes from
   `cli_invocation_contract.CONTRACT_VERSION`, not from `cli-output`.
 - Global flags: `--output-format {json,plain,rich}`, `-v/-vv/-vvv`, `-q`.
 - Exit codes: `0` success, non-zero a domain/config error with the message on the output stream.
@@ -44,9 +44,9 @@ dependencies are fetched from their git tags at build time (the stage carries `u
 and CA certificates), so an unreachable pin fails closed. No path outside this repo is referenced.
 
 ```bash
-make image                                  # podman build -t wallpaper-effects-generator:v0.1.0 .
-weg install --context . --container-engine podman --image-tag v0.1.0
-podman run --rm weg-podman:v0.1.0 weg --version   # 0.1.0 contract 0.1.0
+make image                                  # podman build -t wallpaper-effects-generator:v0.2.0 .
+weg install --context . --container-engine podman --image-tag v0.2.0
+podman run --rm weg-podman:v0.2.0 weg --version   # 0.2.0 contract 0.2.0
 ```
 
 `--image-tag` overrides `[container] image_tag` for one build and is validated against Docker's
@@ -83,26 +83,30 @@ As a consumer, pin an immutable tag — never a path and never a branch:
 
 ```toml
 # pyproject.toml
-dependencies = ["wallpaper-effects-generator>=0.1.0"]
+dependencies = ["wallpaper-effects-generator>=0.2.0"]
 
 [tool.uv.sources]
-wallpaper-effects-generator = { git = "https://github.com/RandomGenericUsername/wallpaper-effects-generator", tag = "v0.1.0" }
+wallpaper-effects-generator = { git = "https://github.com/RandomGenericUsername/wallpaper-effects-generator", tag = "v0.2.0" }
 ```
 
 ```bash
-uv tool install "git+https://github.com/RandomGenericUsername/wallpaper-effects-generator@v0.1.0"
-weg --version    # 0.1.0 contract 0.1.0
+uv tool install "git+https://github.com/RandomGenericUsername/wallpaper-effects-generator@v0.2.0"
+weg --version    # 0.2.0 contract 0.2.0
 ```
 
 A published tag is never moved or deleted; a fix ships as a new tag.
 
 ## What `dotfiles-v3` pins
 
-`dotfiles-v3` addresses this repo as `{name: weg, repo: <this repo>, tag: v0.1.0}` in
+`dotfiles-v3` addresses this repo as `{name: weg, repo: <this repo>, tag: vX.Y.Z}` in
 `provisioning/cli-tools.yaml`; the `cli_tools` role shallow-clones that tag, installs `weg` from the
-checkout, builds with `--context <checkout> --image-tag v0.1.0`, and `verify` asserts the image
+checkout, builds with `--context <checkout> --image-tag <tag>`, and `verify` asserts the image
 exists at that exact tag. Provisioning owns the pin, clone, install and image tag; it never writes
 or patches this repo's Dockerfile (spine AD-7/AD-10).
+
+That pin is currently `v0.1.0` (evidence: `dotfiles-v3`
+`dotfiles/provisioning/cli-tools.yaml`, the `name: weg` entry). Moving it to `v0.2.0` is
+`dotfiles-v3`'s own commit — a consumer pin bump never lands in this repo (AGENTS §6).
 
 ## Sibling pins
 
@@ -113,7 +117,7 @@ This repo consumes four sibling repos by immutable tag (spine AD-3):
 | `cli-output` | `v0.1.0` | `https://github.com/RandomGenericUsername/cli-output` |
 | `config-assembler-engine` | `v0.1.0` | `https://github.com/RandomGenericUsername/config-assembler-engine` |
 | `oci-runtime` | `v0.5.0` | `https://github.com/RandomGenericUsername/oci-runtime` |
-| `cli-invocation-contract` | `v0.1.0` | `https://github.com/RandomGenericUsername/contracts` |
+| `cli-invocation-contract` | `v0.2.0` | `https://github.com/RandomGenericUsername/contracts` |
 
 ## Release
 

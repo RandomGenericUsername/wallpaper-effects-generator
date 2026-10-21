@@ -6,6 +6,39 @@ Notable changes to the `wallpaper-effects-generator` repo. Format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-21
+
+Re-pin the invocation contract at `contracts` `v0.2.0` and release `weg` `0.2.0`. `weg`'s
+invocation record is unchanged: the contract release is additive and `itr`-only, so the only
+observable delta here is the contract token in `--version`.
+
+### Changed
+
+- `pyproject.toml` `[tool.uv.sources]`: `cli-invocation-contract` tag `v0.1.0` → `v0.2.0`
+  (`contracts` annotated tag object `442fb9abdc73fa109115ba804911a10af9f4cad1`, peeled
+  `c6c3ab5d523d06210f8e87535c464d3190d005c0`). `uv.lock` records that peeled commit.
+  `CONTRACT_VERSION` is now `0.2.0` and `DATA_VERSION` `2`; the version-strict loader refuses a
+  v2 document from a 0.1.x client, which is why every consumer must re-pin.
+- Package version `0.1.0` → `0.2.0` (`pyproject.toml`, `src/wallpaper_effects_generator/__init__.py`).
+  `weg --version` now prints `0.2.0 contract 0.2.0`.
+- `tests/unit/cli/test_version_flag.py` asserts the pinned token explicitly
+  (`CONTRACT_VERSION == "0.2.0"`) next to the derived-token assertion, so a stale tag pin fails the
+  suite instead of agreeing with itself. Suite: 350 tests.
+- CI `image` job no longer hard-codes `IMAGE_TAG=v0.1.0`; it takes the Makefile default
+  (`v$(VERSION)` from `pyproject.toml`), so the image tag tracks the release.
+- `README.md`: `--version` examples, container-mode examples, consumer pin snippets and the sibling
+  pin table name `v0.2.0` / `0.2.0 contract 0.2.0`.
+
+### Notes
+
+- The contract release also adds `ICON_RENDERER__TEMPLATES__DIR` to `clis.itr.env`; nothing in the
+  `weg` record (`argv`, `env`, `artifacts`, `exit_codes`, `timeout`) moved, and no `weg` code changed.
+- The `dotfiles-v3` consumer pin is still `v0.1.0`; re-pinning it is that repo's own commit (AGENTS
+  §6: consumer pin bump in its own commit).
+- The illustrative literals in `openspec/specs/weg-cli/spec.md` and
+  `openspec/specs/weg-container-mode/spec.md` still read `0.1.0 contract 0.1.0`. Main specs change
+  through an OpenSpec change, so that refresh is deferred rather than folded into this pin bump.
+
 ## [0.1.0] - 2026-10-20
 
 First release. The package content is the in-tree `src/cli-tools/wallpaper-effects-generator`
