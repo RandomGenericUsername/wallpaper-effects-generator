@@ -42,16 +42,15 @@
   `uv build`.
   Verify: exit 0; `uv run pytest -q` → `349 passed`; `ls dist/wallpaper_effects_generator-0.1.0-*`
   lists a wheel and an sdist.
-- [ ] 3.6 Tag annotated `v0.1.0` after the gates and CI exist; push the tag; confirm the Release
+- [x] 3.6 Tag annotated `v0.1.0` after the gates and CI exist; push the tag; confirm the Release
   carries both artifacts.
   Verify: `GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote
   https://github.com/RandomGenericUsername/wallpaper-effects-generator 'refs/tags/v0.1.0'` →
   exactly one line; `gh release view v0.1.0 --json assets --jq '.assets[].name'` → wheel + sdist.
-  **Blocked:** the repo name is occupied by a private legacy repo; remote create/push/tag/release
-  await an owner decision.
+  Evidence: tag object `093d4051` → commit `9672d89`; run `39534972375` attached both artifacts.
 
 ## 4. Closeout (≤0.5h)
 
-- [ ] 4.1 Tick acceptance, record commands + results in the ticket, move the INDEX entry to Done.
+- [x] 4.1 Tick acceptance, record commands + results in the ticket, move the INDEX entry to Done.
   Verify: `git status --porcelain` → empty; `rg -n "REQ-001" tickets/INDEX.md` → the Done
   section lists it.

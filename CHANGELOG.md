@@ -44,4 +44,5 @@ version continues at `0.1.0` (spine AD-9: versions never move backwards).
 - The image tag is the pin, not `latest` (spine AD-7). The Dockerfile copies only repo-relative
   paths (`pyproject.toml`, `uv.lock`, `README.md`, `LICENSE`, `src/`); no sibling repo or parent
   directory is referenced.
-- Suite: 349 tests, green in the ambient and hermetic environments.
+- Suite: 349 tests, green in the ambient and hermetic environments, and independent of a
+  host-installed ImageMagick (the tests provide a deterministic fake `magick`).
