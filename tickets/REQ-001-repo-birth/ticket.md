@@ -7,8 +7,8 @@ lane: 3
 links:
   openspec: repo-birth
   bmad: none
-worktree: none
-branch: main
+worktree: .worktrees/REQ-001/
+branch: ticket/REQ-001-repo-birth-closeout
 ---
 
 # Birth the wallpaper-effects-generator repo (mu-strict, weg) and cut v0.1.0
@@ -36,9 +36,10 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 - [x] `AGENTS.md` carries the evidence rule and this repo's charter; `CLAUDE.md` is a symlink.
   Verify: `rg -c "Evidence:|Verify:" AGENTS.md` → ≥ 2; `test -L CLAUDE.md` → exit 0.
 - [x] `tickets/INDEX.md` lists this ticket with the same status as the frontmatter, and the
-  OpenSpec change validates strictly.
-  Verify: `openspec validate --specs --strict` → exit 0; `openspec validate repo-birth --strict`
-  → exit 0.
+  OpenSpec change validates strictly, then archives cleanly.
+  Verify: `openspec validate --specs --strict` → `3 passed`; `openspec archive repo-birth -y` →
+  `Change 'repo-birth' archived as '2026-10-21-repo-birth'`; `openspec validate --specs --strict`
+  → exit 0 (no placeholder `Purpose`).
 - [x] A fresh clone passes `make sync && make gates && make build` and the suite count is 349.
   Verify: `uv sync --frozen && uv run pytest -q` → `349 passed`; `make gates` → exit 0;
   `ls dist/wallpaper_effects_generator-0.1.0-*` → wheel + sdist.
@@ -52,16 +53,20 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 - [x] `.github/workflows/gates.yml` exists and its job set equals `GATES` (plus declared CI-only
   jobs); the first run on `main` is green.
   Verify: `make ci-gates-parity` → `PASS ...`; `gh run list -R RandomGenericUsername/wallpaper-effects-generator
-  --limit 1 --json status,conclusion` → `completed` / `success`.
+  --limit 3 --json status,conclusion` → three `completed` / `success` entries.
 - [x] Annotated tag `v0.1.0` exists on the released commit, is anonymously fetchable, and its
   GitHub Release carries the wheel + sdist.
   Verify: `GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote
   https://github.com/RandomGenericUsername/wallpaper-effects-generator 'refs/tags/v0.1.0'` →
   exactly one line; `gh release view v0.1.0 --json assets --jq '.assets[].name'` → both artifacts.
-- [x] `git status --porcelain` is empty in both repos; `dotfiles-v3` `master` is at the same SHA
-  as before the slice.
-  Verify: `git status --porcelain` → empty; `git -C /home/inumaki/Development/dotfiles-v3 rev-parse
-  master` → `6ad7117cc982d540d05ec70cecf466393ac1cadc`.
+- [x] `git status --porcelain` is empty in both repos; this slice committed nothing to
+  `dotfiles-v3` (`master` was `6ad7117cc982d540d05ec70cecf466393ac1cadc` at birth and has since
+  advanced only through that repo's own S5/S6 work).
+  Verify: `git status --porcelain` in both repos → empty;
+  `git -C /home/inumaki/Development/dotfiles-v3 merge-base --is-ancestor
+  6ad7117cc982d540d05ec70cecf466393ac1cadc master` → exit 0; `git -C ... rev-parse master` →
+  `56fc4b7efcd410f59f194f5560c6e7d2962f7386` (the eight commits after `6ad7117` are dotfiles-v3's
+  S4–S6 work, not this slice).
 
 ## Out of scope
 
@@ -82,6 +87,7 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 | harness byte-identical | `diff -r mu/<path> <path>` for `_bmad`, `.agents/skills`, `.opencode`, `scripts/worktree-guard.sh`, `skills-lock.json`, `tickets/_template`, `tickets/_fixtures`, `tickets/LIFECYCLE.md` | `IDENTICAL` × 8, exit 0 |
 | evidence rule present | `rg -c "Evidence:\|Verify:" AGENTS.md`; `test -L CLAUDE.md` | `6`; exit 0 |
 | specs/change valid | `openspec validate --specs --strict`; `openspec validate repo-birth --strict` | 2 passed; `Change 'repo-birth' is valid` |
+| change archived | `openspec archive repo-birth -y`; `openspec validate --specs --strict` | archived as `2026-10-21-repo-birth`; 3 passed, 0 failed (the new `repo-harness` spec carries a real `Purpose`, not the archive placeholder) |
 | suite | `uv run pytest -q` | `349 passed` |
 | gates | `make gates` | exit 0; `349 passed` ×2, `All checks passed!`, lock current |
 | packaging | `uv build` | exit 0; `wallpaper_effects_generator-0.1.0-py3-none-any.whl` + `.tar.gz` |
@@ -100,7 +106,21 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 | anonymous fetch | `GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote ... 'refs/tags/v0.1.0'` | exactly one line: `093d4051… refs/tags/v0.1.0` |
 | release artifacts | `gh release view v0.1.0 --json assets` | `wallpaper_effects_generator-0.1.0-py3-none-any.whl` (60 204 B) + `.tar.gz` (76 035 B), both `uploaded` |
 | tag install + batch | `uv tool install git+…@v0.1.0`; `weg --version`; `WALLPAPER__OUTPUT__DIRECTORY=… weg batch all -- input.png` | `0.1.0 contract 0.1.0`; batch exit 0; **20 output files** |
-| dotfiles untouched | `git -C /home/inumaki/Development/dotfiles-v3 rev-parse master`; `git status --porcelain` | `6ad7117cc982d540d05ec70cecf466393ac1cadc`; empty (only the local `split/` ref was added) |
+| dotfiles untouched | `git -C /home/inumaki/Development/dotfiles-v3 rev-parse master`; `git status --porcelain` | birth SHA `6ad7117cc982d540d05ec70cecf466393ac1cadc`; current `56fc4b7efcd410f59f194f5560c6e7d2962f7386` reached only by that repo's own S4–S6 commits (8 commits, `6ad7117` is an ancestor); tree empty |
+
+## Re-verification at closeout (2026-10-21, from `.worktrees/REQ-001/` at `27305bd`)
+
+| Check | Command | Observed |
+| --- | --- | --- |
+| clean tree | `git status --porcelain`; `bash scripts/worktree-guard.sh check-clean` | empty; exit 0 |
+| gates | `make gates` | exit 0; `349 passed` ×2, `All checks passed!`, `Resolved 26 packages` |
+| CI parity | `make ci-gates-parity` | exit 0; `PASS gates=['docs-check','hermetic','lint','lock-check','test'] jobs=[8] exempt=['ci-gates-parity','image','release']` |
+| packaging | `uv build` | exit 0; `wallpaper_effects_generator-0.1.0-py3-none-any.whl` (60 204 B) + `.tar.gz` (76 078 B) |
+| isolated tag install | `UV_TOOL_DIR=… UV_TOOL_BIN_DIR=… uv tool install --force git+https://…@v0.1.0`; `…/bin/weg --version` | install exit 0, resolved to `9672d89…`; `0.1.0 contract 0.1.0` |
+| image at the pin | `make image IMAGE_TAG=v0.1.0`; `podman run --rm wallpaper-effects-generator:v0.1.0 weg --version` | exit 0; image `e0326bcb126a`, tagged `wallpaper-effects-generator:v0.1.0` + `weg-podman:v0.1.0`; `0.1.0 contract 0.1.0` |
+| remote live, public | `GIT_TERMINAL_PROMPT=0 git -c credential.helper= ls-remote origin 'refs/heads/main' 'refs/tags/v0.1.0*'`; `gh api repos/… --jq '{private,default_branch}'` | `main` = `27305bd…`; tag object `093d4051…`, peeled `9672d89…`; `{"default_branch":"main","private":false}` |
+| release assets | `gh release view v0.1.0 --json tagName,isDraft,isPrerelease,assets` | `v0.1.0`, not draft, not prerelease; wheel 60 204 B + sdist 76 035 B, both `uploaded` |
+| CI history | `gh run list -R … --limit 3 --json databaseId,headBranch,headSha,event,status,conclusion` | `39535210223` main/`27305bd` success; `39534972375` v0.1.0/`9672d89` success; `39534905975` main/`9672d89` success |
 
 ## Deviations from the slice text
 
@@ -133,17 +153,43 @@ consumer rewire and the in-tree deletion are the remaining S5 steps in that repo
 
 ## Closeout
 
-Closed 2026-10-21. The public repo was created after the owner freed the name, `main` was pushed at
-71 commits (65 imported + planning `34a8c8f`, implementation `657a53d`, evidence `5a35456`, and the
-three test fixes `673f368`/`bd53ec2`/`9672d89`), and CI on `9672d89` is green. The annotated tag
-`v0.1.0` points at the tested commit `9672d89` (tag object `093d4051`); the tag-triggered run
-`39534972375` built and attached both artifacts to the GitHub Release. A fresh clone of the public
-repo at `v0.1.0` passes the full gate set, and the tagged tool installs and runs a real 20-output
-batch. This closeout commit follows the tag and carries no product change.
+Closed 2026-10-21 on `ticket/REQ-001-repo-birth-closeout` (worktree `.worktrees/REQ-001/`), after
+re-verifying every acceptance box against the live public repo rather than against the earlier
+transcript:
 
-`dotfiles-v3` remains at `6ad7117cc982d540d05ec70cecf466393ac1cadc` with a clean tree; the only
-change there is the local `split/wallpaper-effects-generator` branch. The remaining S5 work lives in
-`dotfiles-v3` (manifest/role/verify pin, `deploy-coverage` shape assertions, in-tree deletion).
+- **Remote live and public.** `origin` is `https://github.com/RandomGenericUsername/wallpaper-effects-generator.git`;
+  `main` is at `27305bd` and `gh api … --jq .private` → `false`. The legacy repo
+  `wallpaper-effects-generator-legacy` is a separate, still-private repository, untouched by this
+  slice and not part of this deliverable.
+- **CI green, three runs in a row.** `39534905975` (main, `9672d89`), `39534972375` (tag `v0.1.0`,
+  `9672d89`) and `39535210223` (main, `27305bd`) are all `completed`/`success`.
+- **Gates and packaging pass here.** `make gates` → exit 0 (`349 passed` twice, ruff clean, lock
+  current); `uv build` → wheel (60 204 B) + sdist (76 078 B).
+- **The tag is the pin.** Annotated tag object `093d405129ef34a7d1bd78c64b692bca17129cb9` peels to
+  `9672d89c117709afa6eb5b574bd8fdb71469f801`; an isolated `uv tool install git+…@v0.1.0` resolves to
+  that commit and prints `0.1.0 contract 0.1.0`.
+- **The image builds at the pin.** `make image IMAGE_TAG=v0.1.0` → exit 0, image `e0326bcb126a`
+  tagged `wallpaper-effects-generator:v0.1.0` (and `weg-podman:v0.1.0`); running `weg --version` in
+  it prints `0.1.0 contract 0.1.0`.
+- **The release carries both artifacts.** `gh release view v0.1.0` → not draft, not prerelease, with
+  the wheel (60 204 B) and sdist (76 035 B) both `uploaded`; no manual upload was needed.
+
+The OpenSpec change is archived at `openspec/changes/archive/2026-10-21-repo-birth/`; the new
+`openspec/specs/repo-harness/spec.md` got a real `Purpose`, because the archive command's placeholder
+sentence fails `openspec validate --specs --strict` (the first post-archive run reported
+`Totals: 2 passed, 1 failed`; after the edit, `3 passed, 0 failed`). `tickets/INDEX.md` carries the
+entry under Done in the same commit as this status.
+
+The earlier closeout text — "pending (blocked: no remote)" — belonged to `5a35456`, when the target
+name still resolved to the private legacy repo. It was superseded by `27305bd` once the owner freed
+the name; no such text remains in the tree (verified: `rg "pending \(blocked|blocked: no remote"`
+→ no match). This ticket branch only refreshes the evidence, archives the change and updates the
+INDEX — it carries no product change, and the published tag stays on `9672d89`.
+
+`dotfiles-v3` is clean and was not touched by this slice: its `master` was `6ad7117` at birth and is
+now `56fc4b7`, reached only by that repo's own S4–S6 commits (verified: `6ad7117` is an ancestor of
+`56fc4b7`). The consumer rewire and the in-tree deletion happened there afterwards
+(`6d3bea84`, `1d8d4fc8`, `8e8de381`).
 
 ### Birth-worktree exception
 
