@@ -18,7 +18,7 @@
 
 ## Ops tasks
 
-(none)
+- [OPS-002-contract-artifacts-ci](./OPS-002-contract-artifacts-ci/ticket.md) — Prove weg's own side of the invocation contract in CI (artifact conformance) | `in-progress` | openspec: none (test + CI support; contract owned by `contracts`)
 
 ## Spikes
 
