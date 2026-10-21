@@ -8,7 +8,7 @@ links:
   openspec: repo-birth
   bmad: none
 worktree: .worktrees/REQ-001/
-branch: ticket/REQ-001-repo-birth-closeout
+branch: ticket/REQ-001-closeout-evidence-fix
 ---
 
 # Birth the wallpaper-effects-generator repo (mu-strict, weg) and cut v0.1.0
@@ -158,11 +158,14 @@ re-verifying every acceptance box against the live public repo rather than again
 transcript:
 
 - **Remote live and public.** `origin` is `https://github.com/RandomGenericUsername/wallpaper-effects-generator.git`;
-  `main` is at `27305bd` and `gh api … --jq .private` → `false`. The legacy repo
+  `main` stood at `27305bd` when these checks ran (the archive/closeout commit `94b6d5a` follows it)
+  and `gh api … --jq .private` → `false`. The legacy repo
   `wallpaper-effects-generator-legacy` is a separate, still-private repository, untouched by this
   slice and not part of this deliverable.
-- **CI green, three runs in a row.** `39534905975` (main, `9672d89`), `39534972375` (tag `v0.1.0`,
-  `9672d89`) and `39535210223` (main, `27305bd`) are all `completed`/`success`.
+- **CI green, four runs in a row.** `39534905975` (main, `9672d89`), `39534972375` (tag `v0.1.0`,
+  `9672d89`), `39535210223` (main, `27305bd`) and `39625472562` (main, `94b6d5a`) are all
+  `completed`/`success`; the last one runs all seven gates plus `image` and skips `release`
+  (a branch push has no tag).
 - **Gates and packaging pass here.** `make gates` → exit 0 (`349 passed` twice, ruff clean, lock
   current); `uv build` → wheel (60 204 B) + sdist (76 078 B).
 - **The tag is the pin.** Annotated tag object `093d405129ef34a7d1bd78c64b692bca17129cb9` peels to
