@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,34 @@ _HERMETIC_HOST_ONLY_VARS = (
     "WALLPAPER_CONFIG_FILE_PATH",
     "ICON_RENDERER_CONFIG_FILE_PATH",
 )
+
+
+@pytest.fixture(autouse=True)
+def _fake_imagemagick(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Provide a deterministic `magick` on PATH.
+
+    The unit/CLI suites assert orchestration and parameter scoping, not
+    ImageMagick's pixels. Depending on a host-installed `magick` made 11 tests
+    pass on the author's machine and fail on CI (`BinaryNotFoundError`). The
+    fake writes an empty file at the last argument (the output path in every
+    catalog template) and exits 0, so the tests exercise the real command
+    runner, sanitizer and file layout without an external dependency.
+    """
+    bin_dir = tmp_path / "fake-bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "magick"
+    fake.write_text(
+        "#!/bin/sh\n"
+        'last=""\n'
+        'for arg in "$@"; do last="$arg"; done\n'
+        'if [ -n "$last" ]; then\n'
+        '  mkdir -p "$(dirname "$last")" 2>/dev/null || true\n'
+        '  : > "$last" 2>/dev/null || true\n'
+        "fi\n"
+        "exit 0\n"
+    )
+    fake.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
 
 
 @pytest.fixture(autouse=True)
