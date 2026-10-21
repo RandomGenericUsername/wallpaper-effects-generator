@@ -1,28 +1,53 @@
 [project]
 name = "wallpaper-effects-generator"
 version = "0.1.0"
-description = "Wallpaper effects generator with hexagonal architecture"
+description = "Wallpaper effects generator (weg) with ImageMagick container mode for the dotfiles CLI toolchain"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
-    "cli-invocation-contract",
+    "cli-invocation-contract>=0.1.0",
     "cli-output>=0.1.0",
     "config-assembler-engine>=0.1.0",
-    "oci-runtime>=0.3.0",
+    "oci-runtime>=0.5.0",
     "pydantic>=2.0",
     "pyyaml>=6.0",
     "typer>=0.27.0",
     "rich>=13.0",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+
+[project.scripts]
+weg = "wallpaper_effects_generator.cli.main:app"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/wallpaper_effects_generator"]
 
-[project.scripts]
-weg = "wallpaper_effects_generator.cli.main:app"
+# The harness trees (.agents/, _bmad/, .opencode/, openspec/, tickets/) are not
+# package content; keep them out of the sdist.
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "pyproject.toml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "src/wallpaper_effects_generator",
+    "tests",
+    "docs",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = ["--strict-markers", "-rxX"]
 
 [tool.uv.sources]
 cli-invocation-contract = { git = "https://github.com/RandomGenericUsername/contracts", tag = "v0.1.0" }
@@ -30,17 +55,14 @@ cli-output = { git = "https://github.com/RandomGenericUsername/cli-output", tag 
 config-assembler-engine = { git = "https://github.com/RandomGenericUsername/config-assembler-engine", tag = "v0.1.0" }
 oci-runtime = { git = "https://github.com/RandomGenericUsername/oci-runtime", tag = "v0.5.0" }
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src", "."]
-
 [tool.ruff]
 target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B"]
-ignore = ["B905"]
+# B008 is Typer's option/argument declaration idiom; B905 is deliberate.
+ignore = ["B008", "B905"]
 
 [tool.ruff.format]
 quote-style = "double"

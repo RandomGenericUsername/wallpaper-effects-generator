@@ -62,7 +62,9 @@ class BatchProcessor:
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
         except OSError as e:
-            raise BatchProcessingError(f"Failed to create output directory {output_dir}: {e}")
+            raise BatchProcessingError(
+                f"Failed to create output directory {output_dir}: {e}"
+            ) from e
 
         request_with_output = BatchRequest(
             input_path=input_path,
@@ -215,7 +217,6 @@ class BatchProcessor:
                         break
                     done, pending = wait(pending, return_when=FIRST_COMPLETED, timeout=0.5)
                     for future in done:
-                        item = future_map[future]
                         try:
                             result = future.result()
                             results.append(result)

@@ -332,6 +332,62 @@ image_registry = "ghcr.io"
     assert "installed" in data["message"]
 
 
+def test_install_command_explicit_image_tag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """AD-7: provisioning passes the repo pin as an explicit tag, not `latest`."""
+    config_file = tmp_path / "settings.toml"
+    config_file.write_text("""
+version = "1.0"
+[container]
+engine = "docker"
+image_tag = "latest"
+""")
+
+    from tests.conftest import FakeEngine
+
+    fake_engine = FakeEngine()
+    monkeypatch.setattr(
+        "wallpaper_effects_generator.cli.install.create_container_engine",
+        lambda settings: fake_engine,
+    )
+    result = runner.invoke(
+        app,
+        ["install", "--config", str(config_file), "--image-tag", "v0.1.0"],
+    )
+
+    assert result.exit_code == 0, f"exit_code={result.exit_code}, stderr={result.stderr}"
+    assert fake_engine.builds, "expected at least one build recorded"
+    image_name, _ = fake_engine.builds[0]
+    assert image_name == "weg-docker:v0.1.0"
+
+
+def test_install_command_rejects_invalid_image_tag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_file = tmp_path / "settings.toml"
+    config_file.write_text("""
+version = "1.0"
+[container]
+engine = "docker"
+image_tag = "latest"
+""")
+
+    from tests.conftest import FakeEngine
+
+    fake_engine = FakeEngine()
+    monkeypatch.setattr(
+        "wallpaper_effects_generator.cli.install.create_container_engine",
+        lambda settings: fake_engine,
+    )
+    result = runner.invoke(
+        app,
+        ["install", "--config", str(config_file), "--image-tag", "bad tag"],
+    )
+
+    assert result.exit_code != 0
+    assert "invalid image tag" in (result.stdout + result.stderr)
+    assert not fake_engine.builds
+
+
 def test_install_command_runtime_unavailable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     config_file = tmp_path / "settings.toml"
     config_file.write_text("""

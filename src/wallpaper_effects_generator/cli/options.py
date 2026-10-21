@@ -58,3 +58,10 @@ CONTEXT_OPT: Path | None = typer.Option(
     dir_okay=True,
     resolve_path=True,
 )
+
+IMAGE_TAG_OPT: str | None = typer.Option(
+    None,
+    "--image-tag",
+    help="Tag for the built container image (overrides `[container] image_tag`). "
+    "Provisioning passes the repo pin, e.g. v0.1.0 — never `latest`.",
+)

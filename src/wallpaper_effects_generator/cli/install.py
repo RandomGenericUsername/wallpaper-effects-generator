@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from importlib.resources import files as resource_files
 from pathlib import Path
 
@@ -20,6 +21,18 @@ from wallpaper_effects_generator.ports.output import OutputPort
 
 _SOURCE_ROOT_ENV = "WEG_SOURCE_ROOT"
 
+# Docker tag grammar: [A-Za-z0-9_][A-Za-z0-9_.-]{0,127}. Validated before the
+# engine is touched so provisioning fails on a bad pin instead of building an
+# image nobody can address.
+_IMAGE_TAG_PATTERN = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$")
+
+
+def _validate_image_tag(tag: str) -> None:
+    if not _IMAGE_TAG_PATTERN.fullmatch(tag):
+        raise WallpaperEffectsError(
+            f"invalid image tag '{tag}': must match [A-Za-z0-9_][A-Za-z0-9_.-]{{0,127}}"
+        )
+
 
 def install_command(
     config_resolver: ConfigResolverPort,
@@ -29,15 +42,23 @@ def install_command(
     dump_effects: bool = False,
     container_engine: ContainerEngine | None = None,
     build_context: str | None = None,
+    image_tag: str | None = None,
 ) -> None:
     settings = config_resolver.resolve(explicit_path=Path(config_path) if config_path else None)
-    if container_engine is not None:
+    effective_tag = image_tag if image_tag is not None else settings.container.image_tag
+    _validate_image_tag(effective_tag)
+    if container_engine is not None or image_tag is not None:
         container = ContainerSettings(
-            engine=container_engine.value,
+            engine=(
+                container_engine.value
+                if container_engine is not None
+                else settings.container.engine
+            ),
             image_name=settings.container.image_name,
-            image_tag=settings.container.image_tag,
+            image_tag=effective_tag,
             image_registry=settings.container.image_registry,
         )
+
         settings = AppSettings(
             version=settings.version,
             execution=settings.execution,

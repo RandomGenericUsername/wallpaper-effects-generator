@@ -179,7 +179,7 @@ class LocalProcessor(EffectProcessorPort):
                     params=request.params,
                 )
                 try:
-                    composite = self._lookup_composite(effect_name)
+                    self._lookup_composite(effect_name)
                     result = self.process_composite(effect_name, step_request, merged_preset_params)
                     rendered = result.command
                     cmd_result = CommandResult(
